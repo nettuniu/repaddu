@@ -1,0 +1,13 @@
+# repaddu test map
+
+core/io/grouping/format
+- Files: include/repaddu/*.h, src/core_types.cpp, src/io_*.cpp, src/grouping_*.cpp, src/format_*.cpp
+- Tests: tests/test_filtering.cpp (ctest -R repaddu_test_filtering)
+
+cli
+- Files: src/cli_*.cpp, src/main.cpp
+- Tests: tests/test_grouping.cpp (ctest -R repaddu_test_grouping)
+
+cmake aggregation
+- Files: src/io_traversal.cpp, src/format_writer.cpp
+- Tests: tests/test_cmake_aggregation.cpp (ctest -R repaddu_test_cmake)

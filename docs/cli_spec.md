@@ -63,6 +63,7 @@ repaddu [options] --input <path> --output <path>
   - Default: `1`.
 - `--component-map <path>`
   - Mapping file for `--group-by component`.
+  - Format: JSON object mapping component names to arrays of path prefixes.
   - Default: empty (required when using `component`).
 - `--headers-first`
   - When grouping allows ordering, output headers before sources.
