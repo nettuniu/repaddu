@@ -82,7 +82,7 @@ namespace repaddu::format
             return out.str();
             }
 
-        std::string overviewTemplate(const std::string& overviewName, core::MarkerMode mode)
+        std::string overviewTemplate(const std::string& overviewName, core::MarkerMode mode, bool emitBuildFiles)
             {
             std::ostringstream out;
             out << "# repaddu output specification\n\n";
@@ -118,7 +118,15 @@ namespace repaddu::format
             out << "1) This overview file.\n";
             out << "2) Optional tree listing file if enabled.\n";
             out << "3) Optional aggregated CMakeLists file if enabled.\n";
-            out << "4) One or more grouped content files based on the chosen grouping strategy.\n\n";
+            if (emitBuildFiles)
+                {
+                out << "4) Optional aggregated build-system files if enabled.\n";
+                out << "5) One or more grouped content files based on the chosen grouping strategy.\n\n";
+                }
+            else
+                {
+                out << "4) One or more grouped content files based on the chosen grouping strategy.\n\n";
+                }
 
             out << "## Example encoded file\n";
             out << "```text\n";
@@ -188,6 +196,49 @@ namespace repaddu::format
             else
                 {
                 for (const auto& path : cmakeLists)
+                    {
+                    core::RunResult readResult;
+                    const std::filesystem::path absolute = options.inputPath / path;
+                    const std::string content = readFileContent(absolute, readResult);
+                    if (readResult.code != core::ExitCode::success)
+                        {
+                        outResult = readResult;
+                        return {};
+                        }
+
+                    core::FileEntry entry;
+                    entry.relativePath = path;
+                    entry.sizeBytes = static_cast<std::uintmax_t>(content.size());
+                    entry.fileClass = core::classifyExtension(core::toLowerCopy(entry.relativePath.extension().string()));
+                    out << markerBlock(entry, content, options.markers) << "\n";
+                    }
+                }
+
+            output.content = out.str();
+            output.contentBytes = static_cast<std::uintmax_t>(output.content.size());
+            outResult = { core::ExitCode::success, "" };
+            return output;
+            }
+
+        core::OutputContent buildBuildFilesOutput(const core::CliOptions& options,
+            const std::string& overviewName,
+            const std::vector<std::filesystem::path>& buildFiles,
+            int index,
+            core::RunResult& outResult)
+            {
+            core::OutputContent output;
+            output.filename = padNumber(index, options.numberWidth) + "_build_files.md";
+
+            std::ostringstream out;
+            out << boilerplateLine(overviewName);
+            out << "# Aggregated build-system files\n\n";
+            if (buildFiles.empty())
+                {
+                out << "No build-system files were found.\n";
+                }
+            else
+                {
+                for (const auto& path : buildFiles)
                     {
                     core::RunResult readResult;
                     const std::filesystem::path absolute = options.inputPath / path;
@@ -290,7 +341,8 @@ namespace repaddu::format
         const std::vector<core::FileEntry>& files,
         const std::vector<core::OutputChunk>& chunks,
         const std::string& treeListing,
-        const std::vector<std::filesystem::path>& cmakeLists)
+        const std::vector<std::filesystem::path>& cmakeLists,
+        const std::vector<std::filesystem::path>& buildFiles)
         {
         std::error_code errorCode;
         std::filesystem::create_directories(options.outputPath, errorCode);
@@ -304,7 +356,7 @@ namespace repaddu::format
 
         core::OutputContent overview;
         overview.filename = overviewName;
-        overview.content = overviewTemplate(overviewName, options.markers);
+        overview.content = overviewTemplate(overviewName, options.markers, options.emitBuildFiles);
         overview.contentBytes = static_cast<std::uintmax_t>(overview.content.size());
         outputs.push_back(std::move(overview));
 
@@ -322,6 +374,17 @@ namespace repaddu::format
             if (cmakeResult.code != core::ExitCode::success)
                 {
                 return cmakeResult;
+                }
+            ++index;
+            }
+
+        if (options.emitBuildFiles)
+            {
+            core::RunResult buildFilesResult;
+            outputs.push_back(buildBuildFilesOutput(options, overviewName, buildFiles, index, buildFilesResult));
+            if (buildFilesResult.code != core::ExitCode::success)
+                {
+                return buildFilesResult;
                 }
             ++index;
             }

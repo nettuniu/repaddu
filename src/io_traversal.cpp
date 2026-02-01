@@ -2,9 +2,11 @@
 
 #include "repaddu/core_types.h"
 #include "repaddu/io_binary.h"
+#include "repaddu/language_profiles.h"
 
 #include <algorithm>
 #include <filesystem>
+#include <cctype>
 
 namespace repaddu::io
     {
@@ -39,11 +41,28 @@ namespace repaddu::io
                 }
             return false;
             }
+
+        std::string normalizeFileName(std::string value)
+            {
+            for (char& ch : value)
+                {
+                ch = static_cast<char>(std::tolower(static_cast<unsigned char>(ch)));
+                }
+            return value;
+            }
         }
 
     core::RunResult traverseRepository(const core::CliOptions& options, TraversalResult& outResult)
         {
         outResult = TraversalResult{};
+
+        const std::vector<std::string> buildFileNames = core::resolveBuildFileNames(options);
+        std::vector<std::string> buildFileNamesLower;
+        buildFileNamesLower.reserve(buildFileNames.size());
+        for (const std::string& name : buildFileNames)
+            {
+            buildFileNamesLower.push_back(normalizeFileName(name));
+            }
 
         std::error_code errorCode;
         if (!std::filesystem::exists(options.inputPath, errorCode))
@@ -106,9 +125,15 @@ namespace repaddu::io
                     continue;
                     }
 
-                if (entry.path().filename() == "CMakeLists.txt")
+                const std::string filenameLower = normalizeFileName(entry.path().filename().string());
+                if (filenameLower == "cmakelists.txt")
                     {
                     outResult.cmakeLists.push_back(relativePath);
+                    }
+                if (std::find(buildFileNamesLower.begin(), buildFileNamesLower.end(), filenameLower)
+                    != buildFileNamesLower.end())
+                    {
+                    outResult.buildFiles.push_back(relativePath);
                     }
 
                 core::FileEntry fileEntry;
@@ -144,6 +169,12 @@ namespace repaddu::io
             });
 
         std::sort(outResult.cmakeLists.begin(), outResult.cmakeLists.end(),
+            [](const std::filesystem::path& a, const std::filesystem::path& b)
+            {
+            return a.string() < b.string();
+            });
+
+        std::sort(outResult.buildFiles.begin(), outResult.buildFiles.end(),
             [](const std::filesystem::path& a, const std::filesystem::path& b)
             {
             return a.string() < b.string();

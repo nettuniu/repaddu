@@ -1,7 +1,7 @@
 # repaddu test map
 
 core/io/grouping/format
-- Files: include/repaddu/*.h, src/core_types.cpp, src/io_*.cpp, src/grouping_*.cpp, src/format_*.cpp
+- Files: include/repaddu/*.h, src/core_types.cpp, src/language_profiles.cpp, src/io_*.cpp, src/grouping_*.cpp, src/format_*.cpp
 - Tests: tests/test_filtering.cpp (ctest -R repaddu_test_filtering)
 
 cli

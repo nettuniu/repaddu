@@ -1,6 +1,7 @@
 #include "repaddu/grouping_strategies.h"
 
 #include "repaddu/core_types.h"
+#include "repaddu/language_profiles.h"
 
 #include <algorithm>
 #include <limits>
@@ -23,6 +24,34 @@ namespace repaddu::grouping
                     normalized.insert(normalized.begin(), '.');
                     }
                 result.push_back(std::move(normalized));
+                }
+            return result;
+            }
+
+        std::vector<std::string> extensionsForLanguage(const core::CliOptions& options,
+            const core::LanguageProfile& profile)
+            {
+            std::vector<std::string> result;
+            if (profile.supportsHeaders)
+                {
+                if (options.includeHeaders && !options.includeSources)
+                    {
+                    result = normalizeExtensions(profile.headerExtensions);
+                    }
+                else if (options.includeSources && !options.includeHeaders)
+                    {
+                    result = normalizeExtensions(profile.sourceExtensions);
+                    }
+                else
+                    {
+                    result = normalizeExtensions(profile.sourceExtensions);
+                    const std::vector<std::string> headers = normalizeExtensions(profile.headerExtensions);
+                    result.insert(result.end(), headers.begin(), headers.end());
+                    }
+                }
+            else
+                {
+                result = normalizeExtensions(profile.sourceExtensions);
                 }
             return result;
             }
@@ -236,8 +265,18 @@ namespace repaddu::grouping
         outResult = { core::ExitCode::success, "" };
         GroupingResult result;
 
-        const std::vector<std::string> includeExt = normalizeExtensions(options.extensions);
+        std::vector<std::string> includeExt = normalizeExtensions(options.extensions);
         const std::vector<std::string> excludeExt = normalizeExtensions(options.excludeExtensions);
+        const core::LanguageProfile* languageProfile = nullptr;
+
+        if (includeExt.empty() && !options.language.empty())
+            {
+            languageProfile = core::findLanguageProfile(options.language);
+            if (languageProfile != nullptr)
+                {
+                includeExt = extensionsForLanguage(options, *languageProfile);
+                }
+            }
 
         for (std::size_t index = 0; index < files.size(); ++index)
             {

@@ -63,6 +63,6 @@ namespace repaddu::cli
 
         const std::string treeListing = format::renderTree(traversal.directories, treeFiles);
 
-        return format::writeOutputs(options, traversal.files, chunks, treeListing, traversal.cmakeLists);
+        return format::writeOutputs(options, traversal.files, chunks, treeListing, traversal.cmakeLists, traversal.buildFiles);
         }
     }

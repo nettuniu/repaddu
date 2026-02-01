@@ -31,6 +31,9 @@ repaddu -i . -o out --group-by size --max-bytes 200000
 
 # Component map grouping (JSON)
 repaddu -i . -o out --group-by component --component-map components.json
+
+# Aggregate build-system files for a Rust repo
+repaddu -i . -o out --language rust --emit-build-files
 ```
 
 ## Component map format

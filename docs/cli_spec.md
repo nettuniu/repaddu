@@ -77,10 +77,20 @@ repaddu [options] --input <path> --output <path>
 - `--emit-cmake`
   - Aggregate all `CMakeLists.txt` into a dedicated output file.
   - Default: `true`.
+- `--emit-build-files`
+  - Aggregate build-system files (based on selected language/build system).
+  - Default: `false`.
 - `--markers <mode>`
   - Boundary marker style for file content blocks.
   - Allowed values: `fenced`, `sentinel`.
   - Default: `fenced`.
+### Language and build system
+- `--language <id>`
+  - Explicit language profile: `auto`, `c`, `cpp`, `rust`, `python`.
+  - Default: `auto` (current C/C++ behavior).
+- `--build-system <id>`
+  - Explicit build system profile: `auto`, `cmake`, `make`, `meson`, `bazel`, `cargo`, `python`.
+  - Default: `auto`.
 
 ### Misc
 - `-h, --help`

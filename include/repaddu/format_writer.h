@@ -13,7 +13,8 @@ namespace repaddu::format
         const std::vector<core::FileEntry>& files,
         const std::vector<core::OutputChunk>& chunks,
         const std::string& treeListing,
-        const std::vector<std::filesystem::path>& cmakeLists);
+        const std::vector<std::filesystem::path>& cmakeLists,
+        const std::vector<std::filesystem::path>& buildFiles);
     }
 
 #endif // REPADDU_FORMAT_WRITER_H

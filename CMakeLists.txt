@@ -8,6 +8,7 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 
 add_library(repaddu_core
     src/core_types.cpp
+    src/language_profiles.cpp
 )
 
 target_include_directories(repaddu_core

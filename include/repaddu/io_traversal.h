@@ -13,6 +13,7 @@ namespace repaddu::io
         std::vector<core::FileEntry> files;
         std::vector<std::filesystem::path> directories;
         std::vector<std::filesystem::path> cmakeLists;
+        std::vector<std::filesystem::path> buildFiles;
         };
 
     core::RunResult traverseRepository(const core::CliOptions& options, TraversalResult& outResult);

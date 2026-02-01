@@ -1,6 +1,7 @@
 #include "repaddu/cli_parse.h"
 
 #include "repaddu/core_types.h"
+#include "repaddu/language_profiles.h"
 
 #include <sstream>
 
@@ -277,6 +278,36 @@ namespace repaddu::cli
                 {
                 options.scanLanguages = true;
                 }
+            else if (arg == "--language")
+                {
+                std::string value;
+                if (!requireValue(value))
+                    {
+                    return { options, { core::ExitCode::invalid_usage, "--language requires a value." }, "" };
+                    }
+                if (value != "auto" && core::findLanguageProfile(value) == nullptr)
+                    {
+                    return { options, { core::ExitCode::invalid_usage, "--language must be one of: auto, c, cpp, rust, python." }, "" };
+                    }
+                options.language = (value == "auto") ? "" : value;
+                }
+            else if (arg == "--build-system")
+                {
+                std::string value;
+                if (!requireValue(value))
+                    {
+                    return { options, { core::ExitCode::invalid_usage, "--build-system requires a value." }, "" };
+                    }
+                if (value != "auto" && core::findBuildSystemProfile(value) == nullptr)
+                    {
+                    return { options, { core::ExitCode::invalid_usage, "--build-system must be one of: auto, cmake, make, meson, bazel, cargo, python." }, "" };
+                    }
+                options.buildSystem = (value == "auto") ? "" : value;
+                }
+            else if (arg == "--emit-build-files")
+                {
+                options.emitBuildFiles = true;
+                }
             else
                 {
                 return { options, { core::ExitCode::invalid_usage, "Unknown argument: " + arg }, "" };
@@ -352,8 +383,11 @@ namespace repaddu::cli
         out << "  --headers-first             Order headers before sources in groups.\n";
         out << "  --emit-tree                 Emit recursive tree listing.\n";
         out << "  --emit-cmake                Emit aggregated CMakeLists.txt output.\n";
+        out << "  --emit-build-files          Emit aggregated build-system files.\n";
         out << "  --markers <mode>            fenced|sentinel. Default: fenced.\n";
         out << "  --scan-languages            Scan repository and report language percentages only.\n";
+        out << "  --language <id>             auto|c|cpp|rust|python. Default: auto.\n";
+        out << "  --build-system <id>         auto|cmake|make|meson|bazel|cargo|python. Default: auto.\n";
         out << "  -h, --help                  Show help.\n";
         out << "  --version                   Show version.\n";
         return out.str();

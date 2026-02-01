@@ -61,10 +61,13 @@ namespace repaddu::core
         bool headersFirst = false;
         bool emitTree = true;
         bool emitCMake = true;
+        bool emitBuildFiles = false;
         MarkerMode markers = MarkerMode::fenced;
         bool showHelp = false;
         bool showVersion = false;
         bool scanLanguages = false;
+        std::string language;
+        std::string buildSystem;
         };
 
     struct FileEntry
