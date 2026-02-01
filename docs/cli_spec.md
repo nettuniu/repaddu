@@ -16,6 +16,7 @@ repaddu [options] --input <path> --output <path>
   - Input repository or folder path.
 - `-o, --output <path>`
   - Output directory where numbered Markdown files are written.
+  - Optional when using `--scan-languages`.
 
 ### Output sizing and numbering
 - `--max-files <count>`
@@ -86,6 +87,8 @@ repaddu [options] --input <path> --output <path>
   - Show help and exit with code 0.
 - `--version`
   - Show version and exit with code 0.
+- `--scan-languages`
+  - Scan repository and report language percentages only (no output files).
 
 ## Precedence and conflicts
 - `--extensions` overrides `--include-headers` and `--include-sources`.

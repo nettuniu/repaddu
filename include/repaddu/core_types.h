@@ -64,6 +64,7 @@ namespace repaddu::core
         MarkerMode markers = MarkerMode::fenced;
         bool showHelp = false;
         bool showVersion = false;
+        bool scanLanguages = false;
         };
 
     struct FileEntry

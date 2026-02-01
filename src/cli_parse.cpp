@@ -273,6 +273,10 @@ namespace repaddu::cli
                     return { options, { core::ExitCode::invalid_usage, "--markers must be one of: fenced, sentinel." }, "" };
                     }
                 }
+            else if (arg == "--scan-languages")
+                {
+                options.scanLanguages = true;
+                }
             else
                 {
                 return { options, { core::ExitCode::invalid_usage, "Unknown argument: " + arg }, "" };
@@ -304,9 +308,13 @@ namespace repaddu::cli
             return result;
             }
 
-        if (options.inputPath.empty() || options.outputPath.empty())
+        if (options.inputPath.empty())
             {
-            return { options, { core::ExitCode::invalid_usage, "--input and --output are required." }, "" };
+            return { options, { core::ExitCode::invalid_usage, "--input is required." }, "" };
+            }
+        if (!options.scanLanguages && options.outputPath.empty())
+            {
+            return { options, { core::ExitCode::invalid_usage, "--output is required unless --scan-languages is used." }, "" };
             }
 
         if (options.groupBy == core::GroupingMode::component && options.componentMapPath.empty())
@@ -345,6 +353,7 @@ namespace repaddu::cli
         out << "  --emit-tree                 Emit recursive tree listing.\n";
         out << "  --emit-cmake                Emit aggregated CMakeLists.txt output.\n";
         out << "  --markers <mode>            fenced|sentinel. Default: fenced.\n";
+        out << "  --scan-languages            Scan repository and report language percentages only.\n";
         out << "  -h, --help                  Show help.\n";
         out << "  --version                   Show version.\n";
         return out.str();

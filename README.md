@@ -14,6 +14,9 @@ repaddu --input . --output ./out
 # Group by file type and list headers before sources
 repaddu -i . -o out --group-by type --headers-first
 
+# Scan repository language mix (no output files)
+repaddu -i . --scan-languages
+
 # Limit output to 12 files with a 200kB cap per file
 repaddu -i . -o out --max-files 12 --max-bytes 200000
 
