@@ -118,7 +118,11 @@ namespace repaddu::core
 
         if (result.empty())
             {
-            result.push_back("CMakeLists.txt");
+            // Default: Include all known build system files
+            for (const auto& profile : buildSystemProfiles())
+                {
+                appendBuildFiles(profile.buildFiles, result);
+                }
             }
 
         return result;

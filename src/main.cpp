@@ -1,8 +1,10 @@
 #include "repaddu/cli_parse.h"
 #include "repaddu/cli_run.h"
+#include "repaddu/ui_console.h"
 
 #include <iostream>
 #include <vector>
+#include <filesystem>
 
 int main(int argc, char** argv)
     {
@@ -13,7 +15,18 @@ int main(int argc, char** argv)
         args.emplace_back(argv[i]);
         }
 
-    repaddu::cli::ParseResult parseResult = repaddu::cli::parseArgs(args);
+    repaddu::core::CliOptions options;
+    
+    // 1. Try to load config from file
+    std::filesystem::path configPath = ".repaddu.json";
+    if (std::filesystem::exists(configPath))
+        {
+        repaddu::cli::loadConfigFile(configPath, options);
+        }
+
+    // 2. Parse args (overwrites config)
+    repaddu::cli::ParseResult parseResult = repaddu::cli::parseArgs(args, options);
+    
     if (!parseResult.output.empty())
         {
         std::cout << parseResult.output;
@@ -27,7 +40,9 @@ int main(int argc, char** argv)
         return static_cast<int>(parseResult.result.code);
         }
 
-    repaddu::core::RunResult runResult = repaddu::cli::run(parseResult.options);
+    repaddu::ui::ConsoleUI ui;
+    repaddu::core::RunResult runResult = repaddu::cli::run(parseResult.options, &ui);
+    
     if (runResult.code != repaddu::core::ExitCode::success)
         {
         std::cerr << runResult.message << "\n";
@@ -36,3 +51,4 @@ int main(int argc, char** argv)
 
     return static_cast<int>(repaddu::core::ExitCode::success);
     }
+

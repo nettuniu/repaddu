@@ -41,6 +41,13 @@ namespace repaddu::core
         other
         };
 
+    enum class OutputFormat
+        {
+        markdown,
+        jsonl,
+        html
+        };
+
     struct CliOptions
         {
         std::filesystem::path inputPath;
@@ -63,11 +70,20 @@ namespace repaddu::core
         bool emitCMake = true;
         bool emitBuildFiles = false;
         MarkerMode markers = MarkerMode::fenced;
+        OutputFormat format = OutputFormat::markdown;
         bool showHelp = false;
         bool showVersion = false;
         bool scanLanguages = false;
         std::string language;
         std::string buildSystem;
+
+        std::uintmax_t maxFileSize = 1024 * 1024; // 1MB default
+        bool forceLargeFiles = false;
+        bool redactPii = false;
+        bool analyzeOnly = false;
+        bool isolateDocs = false;
+        bool dryRun = false;
+        bool generateConfig = false;
         };
 
     struct FileEntry
@@ -76,6 +92,7 @@ namespace repaddu::core
         std::filesystem::path relativePath;
         std::string extensionLower;
         std::uintmax_t sizeBytes = 0;
+        std::uintmax_t tokenCount = 0;
         bool isBinary = false;
         FileClass fileClass = FileClass::other;
         };

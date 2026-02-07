@@ -11,3 +11,16 @@ cli
 cmake aggregation
 - Files: src/io_traversal.cpp, src/format_writer.cpp
 - Tests: tests/test_cmake_aggregation.cpp (ctest -R repaddu_test_cmake)
+
+# Future Tests (Planned - see PLAN.md)
+logging & safety
+- Files: src/logger.cpp, src/pii_redactor.cpp
+- Tests: tests/test_logging.cpp, tests/test_pii.cpp
+
+analysis & stats
+- Files: src/analysis_*.cpp
+- Tests: tests/test_analysis.cpp
+
+performance & concurrency
+- Files: src/io_traversal.cpp (threaded)
+- Tests: tests/test_concurrency.cpp

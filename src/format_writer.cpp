@@ -1,4 +1,7 @@
 #include "repaddu/format_writer.h"
+#include "repaddu/pii_redactor.h"
+#include "repaddu/analysis_tokens.h"
+#include "repaddu/logger.h"
 
 #include "repaddu/core_types.h"
 
@@ -19,7 +22,11 @@ namespace repaddu::format
             return out.str();
             }
 
-        std::string readFileContent(const std::filesystem::path& path, core::RunResult& outResult)
+        std::string readFileContent(const std::filesystem::path& path, 
+                                    core::RunResult& outResult,
+                                    std::uintmax_t* outTokens = nullptr,
+                                    security::PiiRedactor* redactor = nullptr,
+                                    const std::string& relativePath = "")
             {
             std::ifstream stream(path, std::ios::binary);
             if (!stream)
@@ -30,7 +37,19 @@ namespace repaddu::format
             std::ostringstream buffer;
             buffer << stream.rdbuf();
             outResult = { core::ExitCode::success, "" };
-            return buffer.str();
+            
+            std::string content = buffer.str();
+            if (redactor)
+                {
+                content = redactor->redact(content, relativePath);
+                }
+            
+            if (outTokens)
+                {
+                *outTokens = analysis::TokenEstimator::estimateTokens(content);
+                }
+
+            return content;
             }
 
         std::string escapeQuotes(std::string value)
@@ -58,6 +77,7 @@ namespace repaddu::format
                 out << "```repaddu-file\n";
                 out << "path: " << relative << "\n";
                 out << "bytes: " << entry.sizeBytes << "\n";
+                out << "tokens: " << entry.tokenCount << "\n";
                 out << "class: " << core::fileClassLabel(entry.fileClass) << "\n";
                 out << "```\n";
                 out << content;
@@ -71,6 +91,7 @@ namespace repaddu::format
                 {
                 out << "@@@ REPADDU FILE BEGIN path=\"" << escapeQuotes(relative)
                     << "\" bytes=" << entry.sizeBytes
+                    << " tokens=" << entry.tokenCount
                     << " class=" << core::fileClassLabel(entry.fileClass) << " @@@\n";
                 out << content;
                 if (!content.empty() && content.back() != '\n')
@@ -82,13 +103,23 @@ namespace repaddu::format
             return out.str();
             }
 
-        std::string overviewTemplate(const std::string& overviewName, core::MarkerMode mode, bool emitBuildFiles)
+        std::string overviewTemplate(const std::string& overviewName, core::MarkerMode mode, bool emitBuildFiles,
+            const std::vector<core::OutputContent>& generatedFiles)
             {
             std::ostringstream out;
             out << "# repaddu output specification\n\n";
             out << "This file explains the layout and markers used in every other output file.\n";
             out << "All other files start with a short note: \"Read \"" << overviewName
                 << "\" first for format and conventions.\"\n\n";
+
+            out << "## Table of Contents\n";
+            for (const auto& file : generatedFiles)
+                {
+                // Skip self referencing link if desired, or include it.
+                if (file.filename == overviewName) continue;
+                out << "- [" << file.filename << "](" << file.filename << ")\n";
+                }
+            out << "\n";
 
             out << "## Boundary markers\n";
             if (mode == core::MarkerMode::fenced)
@@ -120,7 +151,7 @@ namespace repaddu::format
             out << "3) Optional aggregated CMakeLists file if enabled.\n";
             if (emitBuildFiles)
                 {
-                out << "4) Optional aggregated build-system files if enabled.\n";
+                out << "4) Optional aggregated build-context files if enabled.\n";
                 out << "5) One or more grouped content files based on the chosen grouping strategy.\n\n";
                 }
             else
@@ -181,7 +212,8 @@ namespace repaddu::format
             const std::vector<std::filesystem::path>& cmakeLists,
             const std::vector<core::FileEntry>& files,
             int index,
-            core::RunResult& outResult)
+            core::RunResult& outResult,
+            security::PiiRedactor* redactor)
             {
             core::OutputContent output;
             output.filename = padNumber(index, options.numberWidth) + "_cmake.md";
@@ -199,15 +231,16 @@ namespace repaddu::format
                     {
                     core::RunResult readResult;
                     const std::filesystem::path absolute = options.inputPath / path;
-                    const std::string content = readFileContent(absolute, readResult);
+                    
+                    core::FileEntry entry;
+                    entry.relativePath = path;
+                    const std::string content = readFileContent(absolute, readResult, &entry.tokenCount, redactor, path.string());
                     if (readResult.code != core::ExitCode::success)
                         {
                         outResult = readResult;
                         return {};
                         }
 
-                    core::FileEntry entry;
-                    entry.relativePath = path;
                     entry.sizeBytes = static_cast<std::uintmax_t>(content.size());
                     entry.fileClass = core::classifyExtension(core::toLowerCopy(entry.relativePath.extension().string()));
                     out << markerBlock(entry, content, options.markers) << "\n";
@@ -224,10 +257,11 @@ namespace repaddu::format
             const std::string& overviewName,
             const std::vector<std::filesystem::path>& buildFiles,
             int index,
-            core::RunResult& outResult)
+            core::RunResult& outResult,
+            security::PiiRedactor* redactor)
             {
             core::OutputContent output;
-            output.filename = padNumber(index, options.numberWidth) + "_build_files.md";
+            output.filename = padNumber(index, options.numberWidth) + "_build_context.md";
 
             std::ostringstream out;
             out << boilerplateLine(overviewName);
@@ -242,15 +276,16 @@ namespace repaddu::format
                     {
                     core::RunResult readResult;
                     const std::filesystem::path absolute = options.inputPath / path;
-                    const std::string content = readFileContent(absolute, readResult);
+                    
+                    core::FileEntry entry;
+                    entry.relativePath = path;
+                    const std::string content = readFileContent(absolute, readResult, &entry.tokenCount, redactor, path.string());
                     if (readResult.code != core::ExitCode::success)
                         {
                         outResult = readResult;
                         return {};
                         }
 
-                    core::FileEntry entry;
-                    entry.relativePath = path;
                     entry.sizeBytes = static_cast<std::uintmax_t>(content.size());
                     entry.fileClass = core::classifyExtension(core::toLowerCopy(entry.relativePath.extension().string()));
                     out << markerBlock(entry, content, options.markers) << "\n";
@@ -263,13 +298,185 @@ namespace repaddu::format
             return output;
             }
 
+        std::string escapeJsonString(const std::string& value)
+            {
+            std::ostringstream ss;
+            ss << '"';
+            for (char c : value)
+                {
+                switch (c)
+                    {
+                    case '"': ss << "\\\""; break;
+                    case '\\': ss << "\\\\"; break;
+                    case '\b': ss << "\\b"; break;
+                    case '\f': ss << "\\f"; break;
+                    case '\n': ss << "\\n"; break;
+                    case '\r': ss << "\\r"; break;
+                    case '\t': ss << "\\t"; break;
+                    default:
+                        if ('\x00' <= c && c <= '\x1f')
+                            {
+                            ss << "\\u" << std::hex << std::setw(4) << std::setfill('0') << (int)c;
+                            }
+                        else
+                            {
+                            ss << c;
+                            }
+                    }
+                }
+            ss << '"';
+            return ss.str();
+            }
+
+        core::RunResult writeJsonlOutput(const core::CliOptions& options,
+            const std::vector<core::FileEntry>& files,
+            const std::vector<core::OutputChunk>& chunks,
+            security::PiiRedactor* redactor)
+            {
+            // For JSONL, we essentially flatten the chunks or just iterate all files in the chunks.
+            // Since chunks just point to files, we can iterate chunks and then their files.
+            // This preserves the "grouping" order which might be desirable.
+            
+            std::string filename = "dataset.jsonl";
+            std::filesystem::path outPath = options.outputPath / filename;
+
+            if (options.dryRun)
+                {
+                LogInfo("[Dry Run] Would write JSONL: " + filename);
+                return { core::ExitCode::success, "" };
+                }
+            
+            std::ofstream stream(outPath, std::ios::binary);
+            if (!stream)
+                {
+                return { core::ExitCode::io_failure, "Failed to create JSONL output file." };
+                }
+
+            // Track visited files to avoid duplicates if chunks overlap (though they shouldn't currently)
+            std::vector<bool> visited(files.size(), false);
+
+            for (const auto& chunk : chunks)
+                {
+                for (std::size_t fileIndex : chunk.fileIndices)
+                    {
+                    if (visited[fileIndex]) continue;
+                    visited[fileIndex] = true;
+
+                    core::RunResult readResult;
+                    core::FileEntry entry = files[fileIndex];
+                    const std::string content = readFileContent(entry.absolutePath, readResult, &entry.tokenCount, redactor, entry.relativePath.string());
+                    
+                    if (readResult.code != core::ExitCode::success)
+                        {
+                        return readResult;
+                        }
+
+                    stream << "{";
+                    stream << "\"path\": " << escapeJsonString(entry.relativePath.generic_string()) << ", ";
+                    stream << "\"class\": " << escapeJsonString(core::fileClassLabel(entry.fileClass)) << ", ";
+                    stream << "\"bytes\": " << entry.sizeBytes << ", ";
+                    stream << "\"tokens\": " << entry.tokenCount << ", ";
+                    stream << "\"content\": " << escapeJsonString(content);
+                    stream << "}\n";
+                    }
+                }
+            
+            return { core::ExitCode::success, "" };
+            }
+
+        core::RunResult writeHtmlOutput(const core::CliOptions& options,
+            const std::vector<core::FileEntry>& files,
+            security::PiiRedactor* redactor)
+            {
+            std::string filename = "index.html";
+            std::filesystem::path outPath = options.outputPath / filename;
+
+            if (options.dryRun)
+                {
+                LogInfo("[Dry Run] Would write HTML: " + filename);
+                return { core::ExitCode::success, "" };
+                }
+
+            std::ofstream stream(outPath);
+            if (!stream)
+                {
+                return { core::ExitCode::io_failure, "Failed to create HTML output file." };
+                }
+
+            // Minimal HTML template with embedded data
+            stream << R"(<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Repaddu Code Report</title>
+    <style>
+        body { font-family: sans-serif; margin: 0; display: flex; height: 100vh; overflow: hidden; }
+        #sidebar { width: 300px; border-right: 1px solid #ccc; overflow-y: auto; background: #f5f5f5; padding: 10px; }
+        #content { flex: 1; padding: 20px; overflow-y: auto; background: #fff; }
+        .file-item { cursor: pointer; padding: 2px 5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .file-item:hover { background: #e0e0e0; }
+        .file-item.active { background: #d0d0ff; font-weight: bold; }
+        pre { background: #f8f8f8; padding: 10px; border: 1px solid #ddd; overflow-x: auto; }
+    </style>
+</head>
+<body>
+    <div id="sidebar"><h3>Files</h3><div id="file-list"></div></div>
+    <div id="content"><h2>Select a file to view content</h2><pre id="code-view"></pre></div>
+    <script>
+        const files = [
+)";
+
+            // Embed file data
+            bool first = true;
+            for (const auto& entry : files)
+                {
+                if (!first) stream << ",\n";
+                first = false;
+
+                core::RunResult readResult;
+                // Re-read content (inefficient but simple for now)
+                std::string content = readFileContent(entry.absolutePath, readResult, nullptr, redactor, entry.relativePath.string());
+                // Note: Ignoring read errors for individual files in HTML report to proceed with others
+                
+                stream << "{ \"path\": " << escapeJsonString(entry.relativePath.generic_string()) 
+                       << ", \"content\": " << escapeJsonString(content) << " }";
+                }
+
+            stream << R"(
+        ];
+
+        const listEl = document.getElementById('file-list');
+        const codeEl = document.getElementById('code-view');
+        const titleEl = document.querySelector('#content h2');
+
+        files.forEach((file, index) => {
+            const div = document.createElement('div');
+            div.className = 'file-item';
+            div.textContent = file.path;
+            div.onclick = () => {
+                document.querySelectorAll('.file-item').forEach(el => el.classList.remove('active'));
+                div.classList.add('active');
+                titleEl.textContent = file.path;
+                codeEl.textContent = file.content;
+            };
+            listEl.appendChild(div);
+        });
+    </script>
+</body>
+</html>)";
+
+            return { core::ExitCode::success, "" };
+            }
+
         void appendChunkOutputs(const core::CliOptions& options,
             const std::string& overviewName,
             const core::OutputChunk& chunk,
             const std::vector<core::FileEntry>& files,
             std::vector<core::OutputContent>& outputs,
             int& index,
-            core::RunResult& outResult)
+            core::RunResult& outResult,
+            security::PiiRedactor* redactor)
             {
             std::ostringstream header;
             header << boilerplateLine(overviewName);
@@ -284,8 +491,8 @@ namespace repaddu::format
             for (std::size_t fileIndex : chunk.fileIndices)
                 {
                 core::RunResult readResult;
-                const core::FileEntry& entry = files[fileIndex];
-                const std::string content = readFileContent(entry.absolutePath, readResult);
+                core::FileEntry entry = files[fileIndex]; // Copy so we can update tokenCount
+                const std::string content = readFileContent(entry.absolutePath, readResult, &entry.tokenCount, redactor, entry.relativePath.string());
                 if (readResult.code != core::ExitCode::success)
                     {
                     outResult = readResult;
@@ -351,15 +558,27 @@ namespace repaddu::format
             return { core::ExitCode::io_failure, "Failed to create output directory." };
             }
 
+        // Initialize Redactor if needed
+        std::unique_ptr<security::PiiRedactor> redactor;
+        if (options.redactPii)
+            {
+            redactor = std::make_unique<security::PiiRedactor>();
+            }
+
+        if (options.format == core::OutputFormat::jsonl)
+            {
+            return writeJsonlOutput(options, files, chunks, redactor.get());
+            }
+
+        if (options.format == core::OutputFormat::html)
+            {
+            return writeHtmlOutput(options, files, redactor.get());
+            }
+
         std::vector<core::OutputContent> outputs;
         const std::string overviewName = padNumber(0, options.numberWidth) + "_overview.md";
 
-        core::OutputContent overview;
-        overview.filename = overviewName;
-        overview.content = overviewTemplate(overviewName, options.markers, options.emitBuildFiles);
-        overview.contentBytes = static_cast<std::uintmax_t>(overview.content.size());
-        outputs.push_back(std::move(overview));
-
+        // Generate chunks first
         int index = 1;
         if (options.emitTree)
             {
@@ -370,7 +589,7 @@ namespace repaddu::format
         if (options.emitCMake)
             {
             core::RunResult cmakeResult;
-            outputs.push_back(buildCMakeOutput(options, overviewName, cmakeLists, files, index, cmakeResult));
+            outputs.push_back(buildCMakeOutput(options, overviewName, cmakeLists, files, index, cmakeResult, redactor.get()));
             if (cmakeResult.code != core::ExitCode::success)
                 {
                 return cmakeResult;
@@ -381,7 +600,7 @@ namespace repaddu::format
         if (options.emitBuildFiles)
             {
             core::RunResult buildFilesResult;
-            outputs.push_back(buildBuildFilesOutput(options, overviewName, buildFiles, index, buildFilesResult));
+            outputs.push_back(buildBuildFilesOutput(options, overviewName, buildFiles, index, buildFilesResult, redactor.get()));
             if (buildFilesResult.code != core::ExitCode::success)
                 {
                 return buildFilesResult;
@@ -392,17 +611,26 @@ namespace repaddu::format
         for (const auto& chunk : chunks)
             {
             core::RunResult chunkResult;
-            appendChunkOutputs(options, overviewName, chunk, files, outputs, index, chunkResult);
+            appendChunkOutputs(options, overviewName, chunk, files, outputs, index, chunkResult, redactor.get());
             if (chunkResult.code != core::ExitCode::success)
                 {
                 return chunkResult;
                 }
             }
 
-        if (options.maxFiles > 0 && static_cast<int>(outputs.size()) > options.maxFiles)
+        if (options.maxFiles > 0 && static_cast<int>(outputs.size() + 1) > options.maxFiles) // +1 for overview
             {
             return { core::ExitCode::output_constraints, "Output file count exceeds --max-files." };
             }
+
+        // Generate overview LAST, so it knows about all files
+        core::OutputContent overview;
+        overview.filename = overviewName;
+        overview.content = overviewTemplate(overviewName, options.markers, options.emitBuildFiles, outputs);
+        overview.contentBytes = static_cast<std::uintmax_t>(overview.content.size());
+        
+        // Insert overview at the beginning
+        outputs.insert(outputs.begin(), std::move(overview));
 
         for (const auto& output : outputs)
             {
@@ -412,6 +640,13 @@ namespace repaddu::format
                 }
 
             const std::filesystem::path outPath = options.outputPath / output.filename;
+            
+            if (options.dryRun)
+                {
+                LogInfo("[Dry Run] Would write: " + output.filename + " (" + std::to_string(output.contentBytes) + " bytes)");
+                continue;
+                }
+
             std::ofstream stream(outPath, std::ios::binary);
             if (!stream)
                 {
@@ -422,6 +657,11 @@ namespace repaddu::format
                 {
                 return { core::ExitCode::io_failure, "Failed to flush output file." };
                 }
+            }
+
+        if (options.dryRun)
+            {
+            LogInfo("[Dry Run] Simulation complete. No files were written.");
             }
 
         return { core::ExitCode::success, "" };

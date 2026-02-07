@@ -9,6 +9,11 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 add_library(repaddu_core
     src/core_types.cpp
     src/language_profiles.cpp
+    src/logger.cpp
+    src/pii_redactor.cpp
+    src/analysis_tokens.cpp
+    src/analysis_tags.cpp
+    src/json_lite.cpp
 )
 
 target_include_directories(repaddu_core
@@ -56,6 +61,7 @@ add_library(repaddu_format
     src/format_writer.cpp
     src/format_tree.cpp
     src/format_language_report.cpp
+    src/format_analysis_report.cpp
 )
 
 target_include_directories(repaddu_format
@@ -70,9 +76,21 @@ target_link_libraries(repaddu_format
 
 target_compile_features(repaddu_format PUBLIC cxx_std_20)
 
+add_library(repaddu_ui
+    src/ui_console.cpp
+)
+
+target_include_directories(repaddu_ui
+    PUBLIC
+        ${CMAKE_CURRENT_SOURCE_DIR}/include
+)
+
+target_compile_features(repaddu_ui PUBLIC cxx_std_20)
+
 add_library(repaddu_cli
     src/cli_parse.cpp
     src/cli_run.cpp
+    src/config_generator.cpp
 )
 
 target_include_directories(repaddu_cli
@@ -86,6 +104,7 @@ target_link_libraries(repaddu_cli
         repaddu_io
         repaddu_grouping
         repaddu_format
+        repaddu_ui
 )
 
 target_compile_features(repaddu_cli PUBLIC cxx_std_20)
@@ -119,7 +138,7 @@ target_link_libraries(repaddu_test_filtering
 )
 
 target_compile_features(repaddu_test_filtering PRIVATE cxx_std_20)
-target_compile_definitions(repaddu_test_filtering PRIVATE REPADDU_TEST_ROOT=\"${CMAKE_CURRENT_SOURCE_DIR}\")
+target_compile_definitions(repaddu_test_filtering PRIVATE REPADDU_TEST_ROOT="${CMAKE_CURRENT_SOURCE_DIR}")
 
 add_executable(repaddu_test_grouping
     tests/test_grouping.cpp
@@ -139,7 +158,7 @@ target_link_libraries(repaddu_test_grouping
 )
 
 target_compile_features(repaddu_test_grouping PRIVATE cxx_std_20)
-target_compile_definitions(repaddu_test_grouping PRIVATE REPADDU_TEST_ROOT=\"${CMAKE_CURRENT_SOURCE_DIR}\")
+target_compile_definitions(repaddu_test_grouping PRIVATE REPADDU_TEST_ROOT="${CMAKE_CURRENT_SOURCE_DIR}")
 
 add_executable(repaddu_test_cmake
     tests/test_cmake_aggregation.cpp
@@ -159,8 +178,127 @@ target_link_libraries(repaddu_test_cmake
 )
 
 target_compile_features(repaddu_test_cmake PRIVATE cxx_std_20)
-target_compile_definitions(repaddu_test_cmake PRIVATE REPADDU_TEST_ROOT=\"${CMAKE_CURRENT_SOURCE_DIR}\")
+target_compile_definitions(repaddu_test_cmake PRIVATE REPADDU_TEST_ROOT="${CMAKE_CURRENT_SOURCE_DIR}")
+
+add_executable(repaddu_test_logging
+    tests/test_logging.cpp
+)
+
+target_include_directories(repaddu_test_logging
+    PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}/include
+)
+
+target_link_libraries(repaddu_test_logging
+    PRIVATE
+        repaddu_core
+)
+
+target_compile_features(repaddu_test_logging PRIVATE cxx_std_20)
+
+add_executable(repaddu_test_binary
+    tests/test_binary_detection.cpp
+)
+
+target_include_directories(repaddu_test_binary
+    PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}/include
+)
+
+target_link_libraries(repaddu_test_binary
+    PRIVATE
+        repaddu_io
+)
+
+target_compile_features(repaddu_test_binary PRIVATE cxx_std_20)
+
+add_executable(repaddu_test_large_file
+    tests/test_large_file.cpp
+)
+
+target_include_directories(repaddu_test_large_file
+    PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}/include
+)
+
+target_link_libraries(repaddu_test_large_file
+    PRIVATE
+        repaddu_grouping
+)
+
+target_compile_features(repaddu_test_large_file PRIVATE cxx_std_20)
+
+add_executable(repaddu_test_pii
+    tests/test_pii.cpp
+)
+
+target_include_directories(repaddu_test_pii
+    PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}/include
+)
+
+target_link_libraries(repaddu_test_pii
+    PRIVATE
+        repaddu_core
+)
+
+target_compile_features(repaddu_test_pii PRIVATE cxx_std_20)
+
+add_executable(repaddu_test_tokens
+    tests/test_tokens.cpp
+)
+
+target_include_directories(repaddu_test_tokens
+    PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}/include
+)
+
+target_link_libraries(repaddu_test_tokens
+    PRIVATE
+        repaddu_core
+)
+
+target_compile_features(repaddu_test_tokens PRIVATE cxx_std_20)
+
+add_executable(repaddu_test_tags
+    tests/test_tags.cpp
+)
+
+target_include_directories(repaddu_test_tags
+    PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}/include
+)
+
+target_link_libraries(repaddu_test_tags
+    PRIVATE
+        repaddu_core
+)
+
+target_compile_features(repaddu_test_tags PRIVATE cxx_std_20)
+
+add_executable(repaddu_test_ui
+    tests/test_ui.cpp
+)
+
+target_include_directories(repaddu_test_ui
+    PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}/include
+)
+
+target_link_libraries(repaddu_test_ui
+    PRIVATE
+        repaddu_ui
+)
+
+target_compile_features(repaddu_test_ui PRIVATE cxx_std_20)
 
 add_test(NAME repaddu_test_filtering COMMAND repaddu_test_filtering)
 add_test(NAME repaddu_test_grouping COMMAND repaddu_test_grouping)
 add_test(NAME repaddu_test_cmake COMMAND repaddu_test_cmake)
+add_test(NAME repaddu_test_logging COMMAND repaddu_test_logging)
+add_test(NAME repaddu_test_binary COMMAND repaddu_test_binary)
+add_test(NAME repaddu_test_large_file COMMAND repaddu_test_large_file)
+add_test(NAME repaddu_test_pii COMMAND repaddu_test_pii)
+add_test(NAME repaddu_test_tokens COMMAND repaddu_test_tokens)
+add_test(NAME repaddu_test_tags COMMAND repaddu_test_tags)
+add_test(NAME repaddu_test_ui COMMAND repaddu_test_ui)

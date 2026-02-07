@@ -1,119 +1,90 @@
+# REPADDU PROJECT PLAN
+
 # GOAL
-Build a C++ CLI application that converts a repository/folder into a sequence of Markdown files suitable for LLM/RAG ingestion (e.g., NotebookLM).
+Build a robust, cross-platform C++ CLI application that converts a repository/folder into a sequence of Markdown files optimized for LLM/RAG ingestion. The tool must be modular, highly configurable, and safe.
 
 # OUTPUT FORMAT
-- Output files are numbered and named: `000_category_filespecific.md`, `001_...`, etc.
-- File `000_*.md` explains how to interpret all other files (markers, boundaries, conventions).
-- Every other output file starts with a short note: “Read `000_*.md` first.”
+- **Numbered Files:** `000_category_filespecific.md`, `001_...`
+- **Summary File:** `000_*.md` contains instructions, metadata, and analysis.
+- **Content:** Subsequent files contain code/text with "Read 000 first" headers.
 
-# CORE REQUIREMENTS
-- Ignore `.git` files and folders.
-- Exclude binaries by default (must be enforced).
-- Provide a recursive file listing (ls-like tree) in a dedicated output section.
-- Collect all `CMakeLists.txt` files into a single output file, each preceded by its path.
+# ARCHITECTURE & COMPLIANCE
+- **Modularity:** Core logic separate from UI. TUI/Progress bars in a dedicated optional library (`repaddu_ui`).
+- **Cross-Platform:** Code must be compatible with Linux, Windows, and macOS.
+- **Safety:** PII redaction and secret detection with warnings.
+- **Performance:** Parallel traversal (optional), mmap support, zero-copy writing.
 
-# CLI REQUIREMENTS
-- Input path and output path options.
-- Output chunking options (e.g., number of files, max size per file).
-- Filtering options:
-  - Include only headers (`.h/.hpp`) or include source files (`.cpp/.cc/.cxx`) too.
-  - Option to group all headers first and all sources after.
-- Options that control how libraries are grouped (see next section).
+# TASKS
 
-# LIBRARY GROUPING OPTIONS (NEED MULTIPLE STRATEGIES)
-Provide switches for alternative grouping strategies, e.g.:
-- By directory (top-level folders).
-- By library/component (configurable mappings).
-- By file type (headers vs sources).
-- By size (balance to keep files similar length).
+## PHASE 1: Core Foundation & Safety
+1.  **Logging System**: Implement a robust logger (`repaddu::Logger`) with levels (INFO, WARN, DEBUG).
+    - Log magic byte detections, PII warnings, and skipped files.
+2.  **Binary & Large File Handling**:
+    - **Magic Bytes**: Use magic byte detection (custom or libmagic) to identify binaries. Log findings.
+    - **Size Guard**: Check file sizes. If > Threshold (e.g., 1MB), warn and exclude by default.
+    - **Force Include**: Add CLI option to force inclusion of large/binary files.
+3.  **PII & Secret Redaction**:
+    - Scan for emails, IP addresses, and common API key patterns.
+    - Replace with `<REDACTED>` and issue a **WARNING** to the user/log.
+4.  **CLI Configuration**:
+    - Support `.repaddu.yaml` or `.json` for complex configs.
+    - Tool works without config by default.
+    - Option to generate a default config file in a custom location.
 
-# ARCHITECTURE REQUIREMENTS
-- Modular design with libraries (no monolithic main).
-- Minimal code in `main` (just CLI parsing + orchestration).
-- Clear separation of parsing, filtering, grouping, and output formatting.
+## PHASE 2: Analysis & LLM Optimization
+5.  **Token Counting**: Implement BPE/heuristic tokenizer to estimate and report token usage per file/chunk.
+6.  **Context-Aware Chunking**:
+    - Split large files at logical boundaries (functions/classes) rather than hard byte limits.
+7.  **Analysis Mode**:
+    - Flag `--analyze-only`: Perform full scan, statistics, and checks *without* generating output files.
+    - **Language Stats**: Report % of C++, Python, etc.
+    - **Complexity**: (Optional) Heatmap/score for file complexity.
+    - **Dependency Map**: (Optional) Text-based graph of includes/imports.
+8.  **Tag Extractor (TODOs)**:
+    - Extract `@todo`, `@fixme`, etc.
+    - **Configurable**: Allow loading custom tag patterns from a file.
+9.  **Metadata Frontmatter**: (Optional, default OFF) Add YAML frontmatter to code blocks (author, date, size).
+10. **Documentation Isolation**: Option to group all `.md`/`.txt` files into a separate "Context" chunk.
 
-# GITHUB TASKS (DETAILED)
-1) Define CLI spec and defaults
-   - Enumerate flags, defaults, and examples.
-   - Decide short/long option names and help text.
-   - Define how conflicting flags are resolved.
-2) Define file type policy and binary exclusion
-   - List default include extensions.
-   - Specify a binary detection heuristic (size, NUL bytes).
-   - Add explicit allow/deny lists via CLI.
-3) Define output naming and numbering rules
-   - Specify numbering width and padding behavior.
-   - Define category naming rules and sanitization.
-   - Define stable ordering guarantees.
-4) Write `000_*.md` specification template
-   - Define markers that delimit files/sections.
-   - Describe metadata headers for each entry.
-   - Include example of one encoded file.
-5) Add “read 000 first” boilerplate for all other outputs
-   - Define the exact sentence and placement.
-   - Ensure it is added by the writer layer.
-6) Implement repository traversal and `.git` exclusion
-   - Use filesystem traversal with `.git` skipping.
-   - Ensure symlink handling is explicit.
-7) Implement binary file exclusion
-   - Apply binary heuristic before reading.
-   - Allow override via CLI (include-binary=false by default).
-8) Implement file filtering by extension
-   - Support headers-only, sources-only, or both.
-   - Allow custom extension list via CLI.
-9) Implement “headers first, then sources” grouping
-   - Ensure stable ordering within each group.
-   - Keep other grouping strategies compatible.
-10) Implement recursive “ls-like” listing output
-   - Generate a deterministic tree listing.
-   - Provide option to include/exclude hidden files.
-11) Aggregate all `CMakeLists.txt` files
-   - Find all matches, store sorted by path.
-   - Prefix each with its path in output.
-12) Grouping strategy: by directory
-   - Group by top-level folder (configurable depth).
-   - Ensure empty groups are not emitted.
-13) Grouping strategy: by library/component map
-   - Define a mapping file format (YAML/JSON/TOML).
-   - Resolve file → component mapping rules.
-14) Grouping strategy: by file type
-   - Group by extension class (headers/sources/other).
-   - Provide explicit ordering of classes.
-15) Grouping strategy: size-balanced chunks
-   - Implement bin-packing heuristic.
-   - Ensure deterministic output for same input.
-16) Chunk sizing options
-   - Support max files per output and/or max bytes.
-   - Handle overflow cases with clear error messages.
-17) Output writer abstraction
-   - Define interfaces for writer, formatter, and serializer.
-   - Ensure new formats can be added without touching core.
-18) Define content boundary markers
-   - Choose markers that are LLM-friendly and unambiguous.
-   - Ensure markers are documented in `000_*.md`.
-19) Enforce architectural boundaries and layering
-   - Define libs: core (model), io, grouping, formatting, cli.
-   - Ensure dependencies flow one-way and are acyclic.
-20) Unit tests: filtering rules
-   - Create fixture repo with mixed file types.
-   - Verify `.git` exclusion and extension filtering.
-21) Unit tests: chunking and grouping
-   - Test multiple grouping strategies.
-   - Verify determinism across runs.
-22) Unit tests: CMakeLists aggregation
-   - Ensure all `CMakeLists.txt` are found and ordered.
-23) Test fixtures
-   - Add minimal sample repositories.
-   - Include binary sample file for exclusion testing.
-24) README usage examples
-   - Add CLI examples for common scenarios.
-   - Document grouping strategies and tradeoffs.
-25) Update `TEST_INFO.txt`
-   - Add new code areas and required tests.
-   - Keep commands consistent with repository standards.
-26) Build integration (CMake)
-   - Add libraries and app target.
-   - Keep main small; link libs properly.
-27) Optional: CI script
-   - Build and run unit tests.
-   - Report artifacts or coverage if required.
+## PHASE 3: Modular UX & TUI
+11. **Dry Run Mode**: Simulate execution, reporting file counts, groups, and errors without writing.
+12. **Modular UI Library**: Create `repaddu_ui` for rich terminal features.
+    - **Default**: Standard CLI (text output).
+    - **Rich**: Progress bars, colored trees, icons (via `repaddu_ui` if linked/enabled).
+13. **Link Generation**: (Optional) Generate relative links in Summary pointing to specific chunks.
+14. **HTML Report**: (Optional) Generate `index.html` navigable tree/report.
+
+## PHASE 4: Build System & formats
+15. **Modular Build Aggregator**:
+    - Abstract build system parsing.
+    - Support CMake (default), plus optional modules for `package.json`, `Cargo.toml`, `requirements.txt`.
+16. **Output Formats**:
+    - Markdown (Default).
+    - JSONL (for fine-tuning).
+17. **Packaging & Distribution**:
+    - **Linux**: `.rpm`, `.deb`, Static Binary (Alpine/Musl).
+    - **Windows**: `.exe` (ensure path handling `\` vs `/`).
+    - **MacOS**: Universal binary/Homebrew formula.
+    - **CI/CD**: Github Actions for cross-platform builds.
+
+## PHASE 5: Testing & Documentation
+18. **Massive Testing Suite**:
+    - Unit tests for all modules.
+    - Fuzz testing for parser and file reader.
+    - Integration tests with "Agent Validation" (see `AGENT_TESTING_PLAN.md`).
+    - `TEST_INFO.txt` must be kept updated.
+19. **The "Huge Guide"**:
+    - Comprehensive documentation covering:
+        - Installation (all platforms).
+        - CLI Reference (every flag).
+        - Configuration (schema, examples).
+        - Recipes (Optimizing for Gemini, GPT-4, Local LLMs).
+        - Architecture internals for contributors.
+
+## PHASE 6: Performance (Optimization)
+20. **Parallel Traversal**:
+    - Multithreaded directory scanning.
+    - **Disable Option**: Flag to force single-threaded mode (debugging/determinism).
+21. **I/O Optimization**:
+    - Memory-mapped files (`mmap`) for reading.
+    - Zero-copy buffer management for writing.

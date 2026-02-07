@@ -1,21 +1,41 @@
 #include "repaddu/cli_run.h"
 
 #include "repaddu/core_types.h"
+#include "repaddu/config_generator.h"
 #include "repaddu/format_language_report.h"
+#include "repaddu/format_analysis_report.h"
 #include "repaddu/format_tree.h"
 #include "repaddu/format_writer.h"
 #include "repaddu/grouping_component_map.h"
 #include "repaddu/grouping_strategies.h"
 #include "repaddu/io_traversal.h"
+#include "repaddu/ui_console.h"
 
 #include <iostream>
 
 namespace repaddu::cli
     {
-    core::RunResult run(const core::CliOptions& options)
+    core::RunResult run(const core::CliOptions& options, ui::UserInterface* ui)
         {
+        // Use provided UI or fallback to local ConsoleUI
+        ui::ConsoleUI defaultUI;
+        if (!ui)
+            {
+            ui = &defaultUI;
+            }
+
+        if (options.generateConfig)
+            {
+            core::RunResult result = config::generateDefaultConfig();
+            ui->logInfo(result.message);
+            return result;
+            }
+
         io::TraversalResult traversal;
+        ui->startProgress("Scanning repository", 0);
         core::RunResult traversalResult = io::traverseRepository(options, traversal);
+        ui->endProgress();
+
         if (traversalResult.code != core::ExitCode::success)
             {
             return traversalResult;
@@ -24,7 +44,7 @@ namespace repaddu::cli
         if (options.scanLanguages)
             {
             const std::string report = format::renderLanguageReport(options, traversal.files);
-            std::cout << report;
+            std::cout << report; // Keep report on stdout as it's the main output
             return { core::ExitCode::success, "" };
             }
 
@@ -41,10 +61,20 @@ namespace repaddu::cli
             }
 
         core::RunResult groupingResult;
+        ui->startProgress("Grouping files", 0);
         grouping::GroupingResult grouped = grouping::filterAndGroupFiles(options, traversal.files, componentMapPtr, groupingResult);
+        ui->endProgress();
+
         if (groupingResult.code != core::ExitCode::success)
             {
             return groupingResult;
+            }
+
+        if (options.analyzeOnly)
+            {
+            const std::string report = format::renderAnalysisReport(options, traversal.files, grouped.includedIndices);
+            std::cout << report; // Report goes to stdout
+            return { core::ExitCode::success, "" };
             }
 
         core::RunResult chunkResult;
@@ -63,6 +93,10 @@ namespace repaddu::cli
 
         const std::string treeListing = format::renderTree(traversal.directories, treeFiles);
 
-        return format::writeOutputs(options, traversal.files, chunks, treeListing, traversal.cmakeLists, traversal.buildFiles);
+        ui->startProgress("Writing outputs", static_cast<int>(chunks.size()));
+        core::RunResult writeResult = format::writeOutputs(options, traversal.files, chunks, treeListing, traversal.cmakeLists, traversal.buildFiles);
+        ui->endProgress();
+        
+        return writeResult;
         }
     }

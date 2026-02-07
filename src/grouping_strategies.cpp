@@ -1,4 +1,5 @@
 #include "repaddu/grouping_strategies.h"
+#include "repaddu/logger.h"
 
 #include "repaddu/core_types.h"
 #include "repaddu/language_profiles.h"
@@ -104,9 +105,20 @@ namespace repaddu::grouping
             return result;
             }
 
+        bool isDocumentationFile(const core::FileEntry& entry)
+            {
+            const std::string& ext = entry.extensionLower;
+            return ext == ".md" || ext == ".txt" || ext == ".rst" || ext == ".adoc";
+            }
+
         std::string groupKeyForPath(const core::CliOptions& options, const core::FileEntry& entry,
             const ComponentMap* componentMap)
             {
+            if (options.isolateDocs && isDocumentationFile(entry))
+                {
+                return "documentation";
+                }
+
             switch (options.groupBy)
                 {
                 case core::GroupingMode::directory:
@@ -285,6 +297,16 @@ namespace repaddu::grouping
                 {
                 continue;
                 }
+            
+            // Size check
+            if (entry.sizeBytes > options.maxFileSize && !options.forceLargeFiles)
+                {
+                LogWarn("Skipping large file: " + entry.relativePath.string() + 
+                        " (" + std::to_string(entry.sizeBytes) + " bytes > " + 
+                        std::to_string(options.maxFileSize) + " bytes)");
+                continue;
+                }
+
             if (!extensionAllowed(entry.extensionLower, includeExt, excludeExt))
                 {
                 continue;
@@ -347,6 +369,14 @@ namespace repaddu::grouping
         std::sort(result.groups.begin(), result.groups.end(),
             [](const core::Group& lhs, const core::Group& rhs)
             {
+            if (lhs.name == "documentation" && rhs.name != "documentation")
+                {
+                return true;
+                }
+            if (rhs.name == "documentation" && lhs.name != "documentation")
+                {
+                return false;
+                }
             return lhs.name < rhs.name;
             });
 
