@@ -6,6 +6,8 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
+option(REPADDU_ENABLE_CLANG "Enable Clang-based C++ analysis" OFF)
+
 add_library(repaddu_core
     src/core_types.cpp
     src/language_profiles.cpp
@@ -13,6 +15,9 @@ add_library(repaddu_core
     src/pii_redactor.cpp
     src/analysis_tokens.cpp
     src/analysis_tags.cpp
+    src/analysis_graph.cpp
+    src/analysis_view.cpp
+    src/analysis_lsp.cpp
     src/json_lite.cpp
 )
 
@@ -62,6 +67,7 @@ add_library(repaddu_format
     src/format_tree.cpp
     src/format_language_report.cpp
     src/format_analysis_report.cpp
+    src/format_analysis_json.cpp
 )
 
 target_include_directories(repaddu_format
@@ -108,6 +114,52 @@ target_link_libraries(repaddu_cli
 )
 
 target_compile_features(repaddu_cli PUBLIC cxx_std_20)
+
+if (REPADDU_ENABLE_CLANG)
+    find_package(LLVM REQUIRED CONFIG)
+    find_package(Clang REQUIRED CONFIG)
+
+    add_library(repaddu_cpp_analyzer
+        src/analysis_cpp.cpp
+    )
+
+    target_include_directories(repaddu_cpp_analyzer
+        PUBLIC
+            ${CMAKE_CURRENT_SOURCE_DIR}/include
+            ${LLVM_INCLUDE_DIRS}
+    )
+
+    target_link_libraries(repaddu_cpp_analyzer
+        PUBLIC
+            repaddu_core
+            clangTooling
+            clangAST
+            clangASTMatchers
+            clangFrontend
+            clangBasic
+    )
+
+    target_compile_features(repaddu_cpp_analyzer PUBLIC cxx_std_20)
+    target_compile_definitions(repaddu_cpp_analyzer PUBLIC REPADDU_ENABLE_CLANG=1)
+
+    add_executable(repaddu_test_analysis_cpp
+        tests/test_analysis_cpp.cpp
+    )
+
+    target_include_directories(repaddu_test_analysis_cpp
+        PRIVATE
+            ${CMAKE_CURRENT_SOURCE_DIR}/include
+    )
+
+    target_link_libraries(repaddu_test_analysis_cpp
+        PRIVATE
+            repaddu_cpp_analyzer
+    )
+
+    target_compile_features(repaddu_test_analysis_cpp PRIVATE cxx_std_20)
+
+    add_test(NAME repaddu_test_analysis_cpp COMMAND repaddu_test_analysis_cpp)
+endif()
 
 add_executable(repaddu
     src/main.cpp
@@ -292,6 +344,153 @@ target_link_libraries(repaddu_test_ui
 
 target_compile_features(repaddu_test_ui PRIVATE cxx_std_20)
 
+add_executable(repaddu_test_analysis_graph
+    tests/test_analysis_graph.cpp
+)
+
+target_include_directories(repaddu_test_analysis_graph
+    PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}/include
+)
+
+target_link_libraries(repaddu_test_analysis_graph
+    PRIVATE
+        repaddu_core
+)
+
+target_compile_features(repaddu_test_analysis_graph PRIVATE cxx_std_20)
+
+add_executable(repaddu_test_analysis_views
+    tests/test_analysis_views.cpp
+)
+
+target_include_directories(repaddu_test_analysis_views
+    PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}/include
+)
+
+target_link_libraries(repaddu_test_analysis_views
+    PRIVATE
+        repaddu_core
+)
+
+target_compile_features(repaddu_test_analysis_views PRIVATE cxx_std_20)
+
+add_executable(repaddu_test_cli_parse_analysis
+    tests/test_cli_parse_analysis.cpp
+)
+
+target_include_directories(repaddu_test_cli_parse_analysis
+    PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}/include
+)
+
+target_link_libraries(repaddu_test_cli_parse_analysis
+    PRIVATE
+        repaddu_cli
+)
+
+target_compile_features(repaddu_test_cli_parse_analysis PRIVATE cxx_std_20)
+
+add_executable(repaddu_test_config_analysis
+    tests/test_config_analysis.cpp
+)
+
+target_include_directories(repaddu_test_config_analysis
+    PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}/include
+)
+
+target_link_libraries(repaddu_test_config_analysis
+    PRIVATE
+        repaddu_cli
+)
+
+target_compile_features(repaddu_test_config_analysis PRIVATE cxx_std_20)
+
+add_executable(repaddu_test_analysis_json
+    tests/test_analysis_json.cpp
+)
+
+target_include_directories(repaddu_test_analysis_json
+    PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}/include
+)
+
+target_link_libraries(repaddu_test_analysis_json
+    PRIVATE
+        repaddu_format
+)
+
+target_compile_features(repaddu_test_analysis_json PRIVATE cxx_std_20)
+
+add_executable(repaddu_test_fixture_picobench
+    tests/test_fixture_picobench.cpp
+)
+
+target_include_directories(repaddu_test_fixture_picobench
+    PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}/include
+)
+
+target_link_libraries(repaddu_test_fixture_picobench
+    PRIVATE
+        repaddu_core
+        repaddu_io
+        repaddu_format
+)
+
+target_compile_features(repaddu_test_fixture_picobench PRIVATE cxx_std_20)
+target_compile_definitions(repaddu_test_fixture_picobench PRIVATE REPADDU_TEST_ROOT="${CMAKE_CURRENT_SOURCE_DIR}")
+
+add_executable(repaddu_test_lsp_client
+    tests/test_lsp_client.cpp
+)
+
+target_include_directories(repaddu_test_lsp_client
+    PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}/include
+)
+
+target_link_libraries(repaddu_test_lsp_client
+    PRIVATE
+        repaddu_core
+)
+
+target_compile_features(repaddu_test_lsp_client PRIVATE cxx_std_20)
+
+add_executable(repaddu_test_lsp_symbols
+    tests/test_lsp_symbols.cpp
+)
+
+target_include_directories(repaddu_test_lsp_symbols
+    PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}/include
+)
+
+target_link_libraries(repaddu_test_lsp_symbols
+    PRIVATE
+        repaddu_core
+)
+
+target_compile_features(repaddu_test_lsp_symbols PRIVATE cxx_std_20)
+
+add_executable(repaddu_test_lsp_relationships
+    tests/test_lsp_relationships.cpp
+)
+
+target_include_directories(repaddu_test_lsp_relationships
+    PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}/include
+)
+
+target_link_libraries(repaddu_test_lsp_relationships
+    PRIVATE
+        repaddu_core
+)
+
+target_compile_features(repaddu_test_lsp_relationships PRIVATE cxx_std_20)
+
 add_test(NAME repaddu_test_filtering COMMAND repaddu_test_filtering)
 add_test(NAME repaddu_test_grouping COMMAND repaddu_test_grouping)
 add_test(NAME repaddu_test_cmake COMMAND repaddu_test_cmake)
@@ -302,3 +501,12 @@ add_test(NAME repaddu_test_pii COMMAND repaddu_test_pii)
 add_test(NAME repaddu_test_tokens COMMAND repaddu_test_tokens)
 add_test(NAME repaddu_test_tags COMMAND repaddu_test_tags)
 add_test(NAME repaddu_test_ui COMMAND repaddu_test_ui)
+add_test(NAME repaddu_test_analysis_graph COMMAND repaddu_test_analysis_graph)
+add_test(NAME repaddu_test_analysis_views COMMAND repaddu_test_analysis_views)
+add_test(NAME repaddu_test_cli_parse_analysis COMMAND repaddu_test_cli_parse_analysis)
+add_test(NAME repaddu_test_config_analysis COMMAND repaddu_test_config_analysis)
+add_test(NAME repaddu_test_analysis_json COMMAND repaddu_test_analysis_json)
+add_test(NAME repaddu_test_fixture_picobench COMMAND repaddu_test_fixture_picobench)
+add_test(NAME repaddu_test_lsp_client COMMAND repaddu_test_lsp_client)
+add_test(NAME repaddu_test_lsp_symbols COMMAND repaddu_test_lsp_symbols)
+add_test(NAME repaddu_test_lsp_relationships COMMAND repaddu_test_lsp_relationships)

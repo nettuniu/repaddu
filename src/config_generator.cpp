@@ -36,6 +36,10 @@ namespace repaddu::config
         ofs << "    \"force_large\": false,\n";
         ofs << "    \"redact_pii\": false,\n";
         ofs << "    \"analyze_only\": false,\n";
+        ofs << "    \"analysis_enabled\": false,\n";
+        ofs << "    \"analysis_views\": [],\n";
+        ofs << "    \"analysis_deep\": false,\n";
+        ofs << "    \"analysis_collapse\": \"none\",\n";
         ofs << "    \"isolate_docs\": false,\n";
         ofs << "    \"dry_run\": false,\n";
         ofs << "    \"format\": \"markdown\",\n";

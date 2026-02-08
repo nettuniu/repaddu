@@ -1,6 +1,7 @@
 #include "repaddu/format_analysis_report.h"
 #include "repaddu/format_language_report.h"
 #include "repaddu/analysis_tokens.h"
+#include "repaddu/analysis_view.h"
 #include <sstream>
 #include <iomanip>
 #include <numeric>
@@ -58,6 +59,84 @@ namespace repaddu::format
         
         out << "\n==========================================\n";
         
+        return out.str();
+        }
+
+    std::string renderAnalysisReportWithViews(const core::CliOptions& options,
+                                              const std::vector<core::FileEntry>& allFiles,
+                                              const std::vector<std::size_t>& includedIndices,
+                                              const analysis::AnalysisGraph& graph,
+                                              const analysis::AnalysisViewOptions& viewOptions)
+        {
+        std::ostringstream out;
+        out << renderAnalysisReport(options, allFiles, includedIndices);
+
+        if (!options.analysisEnabled)
+            {
+            return out.str();
+            }
+
+        analysis::AnalysisViewRegistry registry = analysis::buildDefaultViewRegistry();
+        std::vector<std::string> views = options.analysisViews;
+        if (views.empty())
+            {
+            views = registry.viewNames();
+            }
+
+        out << "\nANALYSIS VIEWS\n";
+        out << "====================\n";
+
+        for (const auto& viewName : views)
+            {
+            const analysis::AnalysisViewResult view = registry.render(viewName, graph, viewOptions);
+            out << "\nVIEW: " << view.name << "\n";
+            if (view.metadata.count("error") != 0)
+                {
+                out << "error: " << view.metadata.at("error") << "\n";
+                continue;
+                }
+
+            if (view.nodes.empty())
+                {
+                out << "nodes: none\n";
+                }
+            else
+                {
+                out << "nodes:\n";
+                for (const auto& node : view.nodes)
+                    {
+                    out << "node: " << node.id;
+                    if (!node.group.empty())
+                        {
+                        out << " group=" << node.group;
+                        }
+                    if (!node.label.empty())
+                        {
+                        out << " label=" << node.label;
+                        }
+                    out << "\n";
+                    }
+                }
+
+            if (view.edges.empty())
+                {
+                out << "edges: none\n";
+                }
+            else
+                {
+                out << "edges:\n";
+                for (const auto& edge : view.edges)
+                    {
+                    out << "edge: " << edge.from << " -> " << edge.to;
+                    if (!edge.label.empty())
+                        {
+                        out << " label=" << edge.label;
+                        }
+                    out << "\n";
+                    }
+                }
+            }
+
         return out.str();
         }
     }

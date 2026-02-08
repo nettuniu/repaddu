@@ -4,6 +4,9 @@
 #include "repaddu/config_generator.h"
 #include "repaddu/format_language_report.h"
 #include "repaddu/format_analysis_report.h"
+#include "repaddu/format_analysis_json.h"
+#include "repaddu/analysis_graph.h"
+#include "repaddu/analysis_view.h"
 #include "repaddu/format_tree.h"
 #include "repaddu/format_writer.h"
 #include "repaddu/grouping_component_map.h"
@@ -72,7 +75,18 @@ namespace repaddu::cli
 
         if (options.analyzeOnly)
             {
-            const std::string report = format::renderAnalysisReport(options, traversal.files, grouped.includedIndices);
+            std::string report;
+            if (options.format == core::OutputFormat::jsonl)
+                {
+                report = format::renderAnalysisJson(options, traversal.files, grouped.includedIndices);
+                }
+            else
+                {
+                analysis::AnalysisGraph graph;
+                analysis::AnalysisViewOptions viewOptions;
+                viewOptions.collapseMode = options.analysisCollapse;
+                report = format::renderAnalysisReportWithViews(options, traversal.files, grouped.includedIndices, graph, viewOptions);
+                }
             std::cout << report; // Report goes to stdout
             return { core::ExitCode::success, "" };
             }

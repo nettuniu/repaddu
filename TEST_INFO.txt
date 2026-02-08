@@ -6,7 +6,7 @@ core/io/grouping/format
 
 cli
 - Files: src/cli_*.cpp, src/main.cpp
-- Tests: tests/test_grouping.cpp (ctest -R repaddu_test_grouping)
+- Tests: tests/test_grouping.cpp (ctest -R repaddu_test_grouping), tests/test_cli_parse_analysis.cpp (ctest -R repaddu_test_cli_parse_analysis), tests/test_config_analysis.cpp (ctest -R repaddu_test_config_analysis)
 
 cmake aggregation
 - Files: src/io_traversal.cpp, src/format_writer.cpp
@@ -20,6 +20,30 @@ logging & safety
 analysis & stats
 - Files: src/analysis_*.cpp
 - Tests: tests/test_analysis.cpp
+
+analysis graph
+- Files: include/repaddu/analysis_graph.h, src/analysis_graph.cpp
+- Tests: tests/test_analysis_graph.cpp (ctest -R repaddu_test_analysis_graph)
+
+analysis views
+- Files: include/repaddu/analysis_view.h, src/analysis_view.cpp
+- Tests: tests/test_analysis_views.cpp (ctest -R repaddu_test_analysis_views)
+
+analysis output json
+- Files: include/repaddu/format_analysis_json.h, src/format_analysis_json.cpp
+- Tests: tests/test_analysis_json.cpp (ctest -R repaddu_test_analysis_json)
+
+analysis cpp
+- Files: include/repaddu/analysis_cpp.h, src/analysis_cpp.cpp
+- Tests: tests/test_analysis_cpp.cpp (ctest -R repaddu_test_analysis_cpp) [requires REPADDU_ENABLE_CLANG=ON]
+
+lsp analysis
+- Files: include/repaddu/analysis_lsp.h, src/analysis_lsp.cpp
+- Tests: tests/test_lsp_client.cpp (ctest -R repaddu_test_lsp_client), tests/test_lsp_symbols.cpp (ctest -R repaddu_test_lsp_symbols), tests/test_lsp_relationships.cpp (ctest -R repaddu_test_lsp_relationships)
+
+fixtures/picobench
+- Files: fixtures/picobench, tests/test_fixture_picobench.cpp
+- Tests: tests/test_fixture_picobench.cpp (ctest -R repaddu_test_fixture_picobench)
 
 performance & concurrency
 - Files: src/io_traversal.cpp (threaded)

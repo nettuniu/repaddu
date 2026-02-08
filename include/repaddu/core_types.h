@@ -81,6 +81,10 @@ namespace repaddu::core
         bool forceLargeFiles = false;
         bool redactPii = false;
         bool analyzeOnly = false;
+        bool analysisEnabled = false;
+        std::vector<std::string> analysisViews;
+        bool analysisDeep = false;
+        std::string analysisCollapse = "none";
         bool isolateDocs = false;
         bool dryRun = false;
         bool generateConfig = false;

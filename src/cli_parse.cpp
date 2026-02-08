@@ -337,6 +337,39 @@ namespace repaddu::cli
                 {
                 options.analyzeOnly = true;
                 }
+            else if (arg == "--analysis")
+                {
+                options.analysisEnabled = true;
+                }
+            else if (arg == "--analysis-views")
+                {
+                std::string value;
+                if (!requireValue(value))
+                    {
+                    return { options, { core::ExitCode::invalid_usage, "--analysis-views requires a value." }, "" };
+                    }
+                options.analysisViews = splitCsv(value);
+                }
+            else if (arg == "--analysis-deep")
+                {
+                options.analysisDeep = true;
+                }
+            else if (arg == "--analysis-collapse")
+                {
+                std::string value;
+                if (!requireValue(value))
+                    {
+                    return { options, { core::ExitCode::invalid_usage, "--analysis-collapse requires a value." }, "" };
+                    }
+                if (value == "none" || value == "folder" || value == "target")
+                    {
+                    options.analysisCollapse = value;
+                    }
+                else
+                    {
+                    return { options, { core::ExitCode::invalid_usage, "--analysis-collapse must be one of: none, folder, target." }, "" };
+                    }
+                }
             else if (arg == "--isolate-docs")
                 {
                 options.isolateDocs = true;
@@ -446,6 +479,10 @@ namespace repaddu::cli
         out << "  --force-large               Include large files despite size check.\n";
         out << "  --redact-pii                Redact emails, IPs, and secrets from output.\n";
         out << "  --analyze-only              Scan and report statistics without generating files.\n";
+        out << "  --analysis                  Enable symbol analysis (AST/LSP) when available.\n";
+        out << "  --analysis-views <csv>      Comma-separated analysis views to emit.\n";
+        out << "  --analysis-deep             Enable deeper relationship analysis (optional edges).\n";
+        out << "  --analysis-collapse <mode>  none|folder|target. Default: none.\n";
         out << "  --isolate-docs              Group all documentation files (*.md, *.txt) into a separate chunk.\n";
         out << "  --dry-run                   Simulate execution without writing files.\n";
         out << "  --init                      Generate a default .repaddu.json config file.\n";
@@ -538,6 +575,10 @@ namespace repaddu::cli
         getBool("force_large", opt.forceLargeFiles);
         getBool("redact_pii", opt.redactPii);
         getBool("analyze_only", opt.analyzeOnly);
+        getBool("analysis_enabled", opt.analysisEnabled);
+        getString("analysis_collapse", opt.analysisCollapse);
+        getBool("analysis_deep", opt.analysisDeep);
+        getStringArray("analysis_views", opt.analysisViews);
         getBool("isolate_docs", opt.isolateDocs);
         getBool("dry_run", opt.dryRun);
         

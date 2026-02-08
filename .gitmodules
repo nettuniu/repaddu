@@ -1,0 +1,3 @@
+[submodule "fixtures/picobench"]
+	path = fixtures/picobench
+	url = https://github.com/iboB/picobench.git
