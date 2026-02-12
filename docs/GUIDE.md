@@ -64,7 +64,9 @@ repaddu [options] --input <path> --output <path>
 Notes:
 
 - `--output` is optional for `--scan-languages`, `--analyze-only`, and `--init`.
-- If `.repaddu.json` exists in the current directory, it is loaded first; CLI args override config values.
+- By default `.repaddu.json` in the current directory is loaded first.
+- Use `--config <path>` to load a different config file and to choose the target path for `--init`.
+- CLI args override config values.
 
 ### Core options
 
@@ -115,6 +117,7 @@ Notes:
 ### Config/bootstrap and misc
 
 - `--init` or `--generate-config`: Create default `.repaddu.json` in current folder.
+- `--config <path>`: Config path to load and/or generate (default `.repaddu.json`).
 - `--language <id>`: `auto|c|cpp|rust|python`.
 - `--build-system <id>`: `auto|cmake|make|meson|bazel|cargo|python`.
 - `-h, --help`: Print help.
@@ -131,6 +134,7 @@ Notes:
 ## Configuration Reference
 
 Config file: `.repaddu.json` (loaded automatically from current working directory if present).
+Use `--config <path>` to override the default config location.
 
 ### Precedence
 
@@ -140,6 +144,12 @@ Config file: `.repaddu.json` (loaded automatically from current working director
 
 ```bash
 repaddu --init
+```
+
+Generate at a custom path:
+
+```bash
+repaddu --config ./configs/project.repaddu.json --init
 ```
 
 ### Supported keys
@@ -318,4 +328,3 @@ For external fixture repositories (for example `fixtures/picobench`), always ini
 ```bash
 git submodule update --init --recursive
 ```
-
