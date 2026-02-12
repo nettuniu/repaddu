@@ -37,6 +37,9 @@ namespace repaddu::analysis
             int sendRequest(const std::string& method, const std::string& paramsJson);
             void sendNotification(const std::string& method, const std::string& paramsJson);
             bool readMessage(LspMessage& message);
+            int sendInitialize(const std::string& rootUri);
+            int requestDocumentSymbols(const std::string& documentUri);
+            void sendShutdownAndExit();
 
         private:
             std::istream& in_;

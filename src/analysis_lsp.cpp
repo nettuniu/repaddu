@@ -7,6 +7,21 @@ namespace repaddu::analysis
     {
     namespace
         {
+        std::string jsonEscape(const std::string& value)
+            {
+            std::string escaped;
+            escaped.reserve(value.size());
+            for (const char ch : value)
+                {
+                if (ch == '\\' || ch == '"')
+                    {
+                    escaped.push_back('\\');
+                    }
+                escaped.push_back(ch);
+                }
+            return escaped;
+            }
+
         std::string trim(const std::string& value)
             {
             std::size_t start = 0;
@@ -297,6 +312,26 @@ namespace repaddu::analysis
     bool LspClient::readMessage(LspMessage& message)
         {
         return LspMessageIO::readMessage(in_, message);
+        }
+
+    int LspClient::sendInitialize(const std::string& rootUri)
+        {
+        std::ostringstream params;
+        params << "{\"rootUri\":\"" << jsonEscape(rootUri) << "\"}";
+        return sendRequest("initialize", params.str());
+        }
+
+    int LspClient::requestDocumentSymbols(const std::string& documentUri)
+        {
+        std::ostringstream params;
+        params << "{\"textDocument\":{\"uri\":\"" << jsonEscape(documentUri) << "\"}}";
+        return sendRequest("textDocument/documentSymbol", params.str());
+        }
+
+    void LspClient::sendShutdownAndExit()
+        {
+        sendRequest("shutdown", "{}");
+        sendNotification("exit", "");
         }
 
     core::RunResult parseDocumentSymbols(const std::string& jsonPayload, AnalysisGraph& graph)
