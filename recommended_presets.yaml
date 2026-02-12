@@ -1,0 +1,53 @@
+version: 1
+presets:
+  baseline:
+    description: "General-purpose repository export for broad code comprehension"
+    args:
+      - "--input"
+      - "."
+      - "--output"
+      - "out_baseline"
+
+  deep_context:
+    description: "Architecture-oriented export with analysis views"
+    args:
+      - "--input"
+      - "."
+      - "--output"
+      - "out_deep"
+      - "--analysis"
+      - "--analysis-views"
+      - "symbols,dependencies"
+      - "--analysis-collapse"
+      - "folder"
+
+  safety_first:
+    description: "Redaction-aware export for external sharing"
+    args:
+      - "--input"
+      - "."
+      - "--output"
+      - "out_safe"
+      - "--redact-pii"
+      - "--max-file-size"
+      - "1048576"
+
+  chunk_stress:
+    description: "Small-chunk mode for context stitching validation"
+    args:
+      - "--input"
+      - "."
+      - "--output"
+      - "out_chunk_stress"
+      - "--max-bytes"
+      - "500"
+
+  multi_language_scan:
+    description: "Language/build coverage and build-file detection oriented export"
+    args:
+      - "--input"
+      - "."
+      - "--output"
+      - "out_multilang"
+      - "--emit-build-files"
+      - "--scan-languages"
