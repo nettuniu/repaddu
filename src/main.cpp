@@ -6,6 +6,21 @@
 #include <vector>
 #include <filesystem>
 
+namespace
+    {
+    std::filesystem::path detectConfigPathFromArgs(const std::vector<std::string>& args)
+        {
+        for (std::size_t i = 1; i + 1 < args.size(); ++i)
+            {
+            if (args[i] == "--config")
+                {
+                return args[i + 1];
+                }
+            }
+        return ".repaddu.json";
+        }
+    }
+
 int main(int argc, char** argv)
     {
     std::vector<std::string> args;
@@ -16,9 +31,10 @@ int main(int argc, char** argv)
         }
 
     repaddu::core::CliOptions options;
-    
+
     // 1. Try to load config from file
-    std::filesystem::path configPath = ".repaddu.json";
+    std::filesystem::path configPath = detectConfigPathFromArgs(args);
+    options.configPath = configPath;
     if (std::filesystem::exists(configPath))
         {
         repaddu::cli::loadConfigFile(configPath, options);
@@ -51,4 +67,3 @@ int main(int argc, char** argv)
 
     return static_cast<int>(repaddu::core::ExitCode::success);
     }
-

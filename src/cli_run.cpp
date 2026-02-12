@@ -30,7 +30,7 @@ namespace repaddu::cli
 
         if (options.generateConfig)
             {
-            core::RunResult result = config::generateDefaultConfig();
+            core::RunResult result = config::generateDefaultConfig(options.configPath);
             ui->logInfo(result.message);
             return result;
             }

@@ -88,6 +88,7 @@ namespace repaddu::core
         bool isolateDocs = false;
         bool dryRun = false;
         bool generateConfig = false;
+        std::filesystem::path configPath = ".repaddu.json";
         bool parallelTraversal = true;
         };
 

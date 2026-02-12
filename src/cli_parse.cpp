@@ -112,6 +112,15 @@ namespace repaddu::cli
                     }
                 options.outputPath = value;
                 }
+            else if (arg == "--config")
+                {
+                std::string value;
+                if (!requireValue(value))
+                    {
+                    return { options, { core::ExitCode::invalid_usage, "--config requires a value." }, "" };
+                    }
+                options.configPath = value;
+                }
             else if (arg == "--max-files")
                 {
                 std::string value;
@@ -496,6 +505,7 @@ namespace repaddu::cli
         out << "  --isolate-docs              Group all documentation files (*.md, *.txt) into a separate chunk.\n";
         out << "  --dry-run                   Simulate execution without writing files.\n";
         out << "  --init                      Generate a default .repaddu.json config file.\n";
+        out << "  --config <path>             Config path to load and/or generate. Default: .repaddu.json.\n";
         out << "  --format <fmt>              markdown|jsonl|html. Default: markdown.\n";
         out << "  --group-by <mode>           directory|component|type|size. Default: directory.\n";
         out << "  --group-depth <n>           Depth for directory grouping. Default: 1.\n";
