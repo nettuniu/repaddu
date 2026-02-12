@@ -3,6 +3,7 @@
 #include "repaddu/core_types.h"
 
 #include <algorithm>
+#include <map>
 
 namespace repaddu::core
     {
@@ -92,6 +93,109 @@ namespace repaddu::core
                 }
             }
         return nullptr;
+        }
+
+    DetectionResult detectLanguageAndBuildSystem(const std::vector<FileEntry>& files)
+        {
+        DetectionResult result;
+
+        std::map<std::string, std::size_t> languageScores;
+        bool hasCMake = false;
+        bool hasMeson = false;
+        bool hasBazel = false;
+        bool hasCargo = false;
+        bool hasPythonBuild = false;
+        bool hasMake = false;
+
+        for (const auto& file : files)
+            {
+            const std::string filename = toLowerCopy(file.relativePath.filename().string());
+            if (filename == "cmakelists.txt")
+                {
+                hasCMake = true;
+                }
+            else if (filename == "meson.build")
+                {
+                hasMeson = true;
+                }
+            else if (filename == "build" || filename == "build.bazel")
+                {
+                hasBazel = true;
+                }
+            else if (filename == "cargo.toml" || filename == "cargo.lock"
+                || filename == "rust-toolchain" || filename == "rust-toolchain.toml")
+                {
+                hasCargo = true;
+                }
+            else if (filename == "pyproject.toml" || filename == "setup.py"
+                || filename == "setup.cfg" || filename == "requirements.txt")
+                {
+                hasPythonBuild = true;
+                }
+            else if (filename == "makefile")
+                {
+                hasMake = true;
+                }
+
+            if (file.isBinary)
+                {
+                continue;
+                }
+
+            for (const auto& profile : languageProfiles())
+                {
+                bool matched = std::find(profile.sourceExtensions.begin(), profile.sourceExtensions.end(),
+                    file.extensionLower) != profile.sourceExtensions.end();
+                if (!matched && profile.supportsHeaders)
+                    {
+                    matched = std::find(profile.headerExtensions.begin(), profile.headerExtensions.end(),
+                        file.extensionLower) != profile.headerExtensions.end();
+                    }
+                if (matched)
+                    {
+                    languageScores[profile.id] += 1;
+                    }
+                }
+            }
+
+        const std::vector<std::string> languagePriority = { "cpp", "c", "rust", "python" };
+        std::size_t bestScore = 0;
+        for (const auto& id : languagePriority)
+            {
+            const std::size_t score = languageScores[id];
+            if (score > bestScore)
+                {
+                bestScore = score;
+                result.languageId = id;
+                }
+            }
+
+        if (hasCargo)
+            {
+            result.buildSystemId = "cargo";
+            }
+        else if (hasCMake)
+            {
+            result.buildSystemId = "cmake";
+            }
+        else if (hasMeson)
+            {
+            result.buildSystemId = "meson";
+            }
+        else if (hasBazel)
+            {
+            result.buildSystemId = "bazel";
+            }
+        else if (hasPythonBuild)
+            {
+            result.buildSystemId = "python";
+            }
+        else if (hasMake)
+            {
+            result.buildSystemId = "make";
+            }
+
+        return result;
         }
 
     std::vector<std::string> resolveBuildFileNames(const CliOptions& options)

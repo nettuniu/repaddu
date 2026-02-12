@@ -25,8 +25,15 @@ namespace repaddu::core
         std::vector<std::string> buildFiles;
         };
 
+    struct DetectionResult
+        {
+        std::string languageId;
+        std::string buildSystemId;
+        };
+
     const LanguageProfile* findLanguageProfile(std::string_view id);
     const BuildSystemProfile* findBuildSystemProfile(std::string_view id);
+    DetectionResult detectLanguageAndBuildSystem(const std::vector<FileEntry>& files);
     std::vector<std::string> resolveBuildFileNames(const CliOptions& options);
     }
 

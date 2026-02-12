@@ -12,6 +12,7 @@
 #include "repaddu/grouping_component_map.h"
 #include "repaddu/grouping_strategies.h"
 #include "repaddu/io_traversal.h"
+#include "repaddu/language_profiles.h"
 #include "repaddu/ui_console.h"
 
 #include <iostream>
@@ -51,11 +52,25 @@ namespace repaddu::cli
             return { core::ExitCode::success, "" };
             }
 
+        core::CliOptions effectiveOptions = options;
+        if (effectiveOptions.language.empty() || effectiveOptions.buildSystem.empty())
+            {
+            const core::DetectionResult detected = core::detectLanguageAndBuildSystem(traversal.files);
+            if (effectiveOptions.language.empty())
+                {
+                effectiveOptions.language = detected.languageId;
+                }
+            if (effectiveOptions.buildSystem.empty())
+                {
+                effectiveOptions.buildSystem = detected.buildSystemId;
+                }
+            }
+
         grouping::ComponentMap componentMap;
         const grouping::ComponentMap* componentMapPtr = nullptr;
-        if (options.groupBy == core::GroupingMode::component)
+        if (effectiveOptions.groupBy == core::GroupingMode::component)
             {
-            core::RunResult mapResult = grouping::loadComponentMap(options.componentMapPath, componentMap);
+            core::RunResult mapResult = grouping::loadComponentMap(effectiveOptions.componentMapPath, componentMap);
             if (mapResult.code != core::ExitCode::success)
                 {
                 return mapResult;
@@ -65,7 +80,7 @@ namespace repaddu::cli
 
         core::RunResult groupingResult;
         ui->startProgress("Grouping files", 0);
-        grouping::GroupingResult grouped = grouping::filterAndGroupFiles(options, traversal.files, componentMapPtr, groupingResult);
+        grouping::GroupingResult grouped = grouping::filterAndGroupFiles(effectiveOptions, traversal.files, componentMapPtr, groupingResult);
         ui->endProgress();
 
         if (groupingResult.code != core::ExitCode::success)
@@ -78,22 +93,22 @@ namespace repaddu::cli
             std::string report;
             analysis::AnalysisGraph graph;
             analysis::AnalysisViewOptions viewOptions;
-            viewOptions.collapseMode = options.analysisCollapse;
-            if (options.format == core::OutputFormat::jsonl)
+            viewOptions.collapseMode = effectiveOptions.analysisCollapse;
+            if (effectiveOptions.format == core::OutputFormat::jsonl)
                 {
-                report = format::renderAnalysisJson(options, traversal.files, grouped.includedIndices,
+                report = format::renderAnalysisJson(effectiveOptions, traversal.files, grouped.includedIndices,
                     &graph, &viewOptions);
                 }
             else
                 {
-                report = format::renderAnalysisReportWithViews(options, traversal.files, grouped.includedIndices, graph, viewOptions);
+                report = format::renderAnalysisReportWithViews(effectiveOptions, traversal.files, grouped.includedIndices, graph, viewOptions);
                 }
             std::cout << report; // Report goes to stdout
             return { core::ExitCode::success, "" };
             }
 
         core::RunResult chunkResult;
-        std::vector<core::OutputChunk> chunks = grouping::chunkGroups(options, traversal.files, grouped.groups, chunkResult);
+        std::vector<core::OutputChunk> chunks = grouping::chunkGroups(effectiveOptions, traversal.files, grouped.groups, chunkResult);
         if (chunkResult.code != core::ExitCode::success)
             {
             return chunkResult;
@@ -109,7 +124,7 @@ namespace repaddu::cli
         const std::string treeListing = format::renderTree(traversal.directories, treeFiles);
 
         ui->startProgress("Writing outputs", static_cast<int>(chunks.size()));
-        core::RunResult writeResult = format::writeOutputs(options, traversal.files, chunks, treeListing, traversal.cmakeLists, traversal.buildFiles);
+        core::RunResult writeResult = format::writeOutputs(effectiveOptions, traversal.files, chunks, treeListing, traversal.cmakeLists, traversal.buildFiles);
         ui->endProgress();
         
         return writeResult;
