@@ -1,4 +1,5 @@
 #include "repaddu/format_analysis_json.h"
+#include "repaddu/analysis_view.h"
 
 #include <algorithm>
 #include <iomanip>
@@ -77,7 +78,9 @@ namespace repaddu::format
 
     std::string renderAnalysisJson(const core::CliOptions& options,
                                    const std::vector<core::FileEntry>& allFiles,
-                                   const std::vector<std::size_t>& includedIndices)
+                                   const std::vector<std::size_t>& includedIndices,
+                                   const analysis::AnalysisGraph* graph,
+                                   const analysis::AnalysisViewOptions* viewOptions)
         {
         std::uintmax_t totalSize = 0;
         for (const auto& f : allFiles)
@@ -207,6 +210,79 @@ namespace repaddu::format
             out << "\n";
             ++index;
             }
+        out << "  ]\n";
+        out << ",\n";
+        out << "  \"views\": [\n";
+
+        if (options.analysisEnabled && graph != nullptr)
+            {
+            analysis::AnalysisViewRegistry registry = analysis::buildDefaultViewRegistry();
+            std::vector<std::string> views = options.analysisViews;
+            if (views.empty())
+                {
+                views = registry.viewNames();
+                }
+
+            for (std::size_t viewIndex = 0; viewIndex < views.size(); ++viewIndex)
+                {
+                analysis::AnalysisViewOptions effectiveOptions;
+                if (viewOptions != nullptr)
+                    {
+                    effectiveOptions = *viewOptions;
+                    }
+                const analysis::AnalysisViewResult view = registry.render(views[viewIndex], *graph, effectiveOptions);
+
+                out << "    {\n";
+                out << "      \"name\": \"" << escapeJson(view.name) << "\",\n";
+                out << "      \"metadata\": {";
+                std::size_t metaIndex = 0;
+                for (const auto& item : view.metadata)
+                    {
+                    if (metaIndex > 0)
+                        {
+                        out << ", ";
+                        }
+                    out << "\"" << escapeJson(item.first) << "\": \"" << escapeJson(item.second) << "\"";
+                    ++metaIndex;
+                    }
+                out << "},\n";
+                out << "      \"nodes\": [\n";
+                for (std::size_t nodeIndex = 0; nodeIndex < view.nodes.size(); ++nodeIndex)
+                    {
+                    const auto& node = view.nodes[nodeIndex];
+                    out << "        {\"id\": \"" << escapeJson(node.id) << "\", "
+                        << "\"label\": \"" << escapeJson(node.label) << "\", "
+                        << "\"group\": \"" << escapeJson(node.group) << "\"}";
+                    if (nodeIndex + 1 < view.nodes.size())
+                        {
+                        out << ",";
+                        }
+                    out << "\n";
+                    }
+                out << "      ],\n";
+                out << "      \"edges\": [\n";
+                for (std::size_t edgeIndex = 0; edgeIndex < view.edges.size(); ++edgeIndex)
+                    {
+                    const auto& edge = view.edges[edgeIndex];
+                    out << "        {\"from\": \"" << escapeJson(edge.from) << "\", "
+                        << "\"to\": \"" << escapeJson(edge.to) << "\", "
+                        << "\"label\": \"" << escapeJson(edge.label) << "\"}";
+                    if (edgeIndex + 1 < view.edges.size())
+                        {
+                        out << ",";
+                        }
+                    out << "\n";
+                    }
+                out << "      ]\n";
+                out << "    }";
+                if (viewIndex + 1 < views.size())
+                    {
+                    out << ",";
+                    }
+                out << "\n";
+                }
+            }
+
         out << "  ]\n";
         out << "}\n";
 

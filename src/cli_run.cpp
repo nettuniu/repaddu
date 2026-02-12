@@ -76,15 +76,16 @@ namespace repaddu::cli
         if (options.analyzeOnly)
             {
             std::string report;
+            analysis::AnalysisGraph graph;
+            analysis::AnalysisViewOptions viewOptions;
+            viewOptions.collapseMode = options.analysisCollapse;
             if (options.format == core::OutputFormat::jsonl)
                 {
-                report = format::renderAnalysisJson(options, traversal.files, grouped.includedIndices);
+                report = format::renderAnalysisJson(options, traversal.files, grouped.includedIndices,
+                    &graph, &viewOptions);
                 }
             else
                 {
-                analysis::AnalysisGraph graph;
-                analysis::AnalysisViewOptions viewOptions;
-                viewOptions.collapseMode = options.analysisCollapse;
                 report = format::renderAnalysisReportWithViews(options, traversal.files, grouped.includedIndices, graph, viewOptions);
                 }
             std::cout << report; // Report goes to stdout
