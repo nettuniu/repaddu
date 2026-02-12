@@ -7,42 +7,41 @@
 
 namespace
     {
-    std::filesystem::path prepareFixture()
+    std::filesystem::path fixtureRoot()
         {
-        std::filesystem::path dir = std::filesystem::temp_directory_path() / "repaddu_cpp_analysis_fixture";
-        std::filesystem::create_directories(dir);
+        const std::filesystem::path root = REPADDU_TEST_ROOT;
+        return root / "fixtures" / "analysis_cpp";
+        }
 
-        const std::filesystem::path sourcePath = dir / "sample.cpp";
-        std::ofstream source(sourcePath);
-        source << "namespace sample {\n";
-        source << "class Base {\n";
-        source << "public:\n";
-        source << "    virtual void run() = 0;\n";
-        source << "};\n";
-        source << "class Derived : public Base {\n";
-        source << "public:\n";
-        source << "    void run() override {}\n";
-        source << "};\n";
-        source << "}\n";
+    std::filesystem::path prepareWorkDir()
+        {
+        const std::filesystem::path tempDir = std::filesystem::temp_directory_path() / "repaddu_cpp_analysis_fixture";
+        std::filesystem::remove_all(tempDir);
+        std::filesystem::create_directories(tempDir);
 
-        const std::filesystem::path compileCommands = dir / "compile_commands.json";
-        std::ofstream commands(compileCommands);
-        commands << "[\n";
-        commands << "  {\n";
-        commands << "    \"directory\": \"" << dir.string() << "\",\n";
-        commands << "    \"command\": \"clang++ -std=c++20 -c " << sourcePath.string() << "\",\n";
-        commands << "    \"file\": \"" << sourcePath.string() << "\"\n";
-        commands << "  }\n";
-        commands << "]\n";
+        const std::filesystem::path fixtureDir = fixtureRoot();
+        const std::filesystem::path sourcePath = tempDir / "sample.cpp";
+        std::filesystem::copy_file(fixtureDir / "sample.cpp", sourcePath,
+            std::filesystem::copy_options::overwrite_existing);
 
-        return dir;
+        const std::filesystem::path compileCommandsPath = tempDir / "compile_commands.json";
+        std::ofstream compileCommands(compileCommandsPath);
+        compileCommands << "[\n";
+        compileCommands << "  {\n";
+        compileCommands << "    \"directory\": \"" << tempDir.string() << "\",\n";
+        compileCommands << "    \"command\": \"clang++ -std=c++20 -c " << sourcePath.string() << "\",\n";
+        compileCommands << "    \"file\": \"" << sourcePath.string() << "\"\n";
+        compileCommands << "  }\n";
+        compileCommands << "]\n";
+
+        return tempDir;
         }
     }
 
 void test_cpp_analysis()
     {
     repaddu::analysis::AnalysisGraph graph;
-    const auto dir = prepareFixture();
+    const auto dir = prepareWorkDir();
 
     repaddu::analysis::CppAnalysisOptions options;
     options.compileCommandsPath = dir;

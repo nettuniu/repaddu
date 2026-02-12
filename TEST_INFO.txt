@@ -39,7 +39,7 @@ analysis cpp
 
 lsp analysis
 - Files: include/repaddu/analysis_lsp.h, src/analysis_lsp.cpp
-- Tests: tests/test_lsp_client.cpp (ctest -R repaddu_test_lsp_client), tests/test_lsp_symbols.cpp (ctest -R repaddu_test_lsp_symbols), tests/test_lsp_relationships.cpp (ctest -R repaddu_test_lsp_relationships)
+- Tests: tests/test_analysis_lsp.cpp (ctest -R repaddu_test_analysis_lsp), tests/test_lsp_client.cpp (ctest -R repaddu_test_lsp_client), tests/test_lsp_symbols.cpp (ctest -R repaddu_test_lsp_symbols), tests/test_lsp_relationships.cpp (ctest -R repaddu_test_lsp_relationships)
 
 fixtures/picobench
 - Files: fixtures/picobench, tests/test_fixture_picobench.cpp

@@ -157,6 +157,7 @@ if (REPADDU_ENABLE_CLANG)
     )
 
     target_compile_features(repaddu_test_analysis_cpp PRIVATE cxx_std_20)
+    target_compile_definitions(repaddu_test_analysis_cpp PRIVATE REPADDU_TEST_ROOT="${CMAKE_CURRENT_SOURCE_DIR}")
 
     add_test(NAME repaddu_test_analysis_cpp COMMAND repaddu_test_analysis_cpp)
 endif()
@@ -491,6 +492,23 @@ target_link_libraries(repaddu_test_lsp_relationships
 
 target_compile_features(repaddu_test_lsp_relationships PRIVATE cxx_std_20)
 
+add_executable(repaddu_test_analysis_lsp
+    tests/test_analysis_lsp.cpp
+)
+
+target_include_directories(repaddu_test_analysis_lsp
+    PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}/include
+)
+
+target_link_libraries(repaddu_test_analysis_lsp
+    PRIVATE
+        repaddu_core
+)
+
+target_compile_features(repaddu_test_analysis_lsp PRIVATE cxx_std_20)
+target_compile_definitions(repaddu_test_analysis_lsp PRIVATE REPADDU_TEST_ROOT="${CMAKE_CURRENT_SOURCE_DIR}")
+
 add_test(NAME repaddu_test_filtering COMMAND repaddu_test_filtering)
 add_test(NAME repaddu_test_grouping COMMAND repaddu_test_grouping)
 add_test(NAME repaddu_test_cmake COMMAND repaddu_test_cmake)
@@ -510,3 +528,4 @@ add_test(NAME repaddu_test_fixture_picobench COMMAND repaddu_test_fixture_picobe
 add_test(NAME repaddu_test_lsp_client COMMAND repaddu_test_lsp_client)
 add_test(NAME repaddu_test_lsp_symbols COMMAND repaddu_test_lsp_symbols)
 add_test(NAME repaddu_test_lsp_relationships COMMAND repaddu_test_lsp_relationships)
+add_test(NAME repaddu_test_analysis_lsp COMMAND repaddu_test_analysis_lsp)

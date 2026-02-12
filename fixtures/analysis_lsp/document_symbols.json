@@ -1,0 +1,28 @@
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "result": [
+    {
+      "name": "core",
+      "kind": 3,
+      "children": [
+        {
+          "name": "Widget",
+          "kind": 5,
+          "children": [
+            {
+              "name": "run",
+              "kind": 6,
+              "access": "public"
+            },
+            {
+              "name": "debugOnly",
+              "kind": 6,
+              "access": "private"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
