@@ -343,8 +343,14 @@ namespace repaddu::analysis
         }
 
     core::RunResult parseTypeHierarchySupertypes(const std::string& jsonPayload,
-        const std::string& originQualifiedName, AnalysisGraph& graph)
+        const std::string& originQualifiedName, AnalysisGraph& graph,
+        const LspRelationshipOptions& options)
         {
+        if (!options.deepEnabled || !options.capabilitySupported)
+            {
+            return { core::ExitCode::success, "" };
+            }
+
         json::JsonValue root;
         core::RunResult parseResult = parseJson(jsonPayload, root);
         if (parseResult.code != core::ExitCode::success)
@@ -368,8 +374,14 @@ namespace repaddu::analysis
         }
 
     core::RunResult parseImplementationItems(const std::string& jsonPayload,
-        const std::string& originQualifiedName, AnalysisGraph& graph)
+        const std::string& originQualifiedName, AnalysisGraph& graph,
+        const LspRelationshipOptions& options)
         {
+        if (!options.deepEnabled || !options.capabilitySupported)
+            {
+            return { core::ExitCode::success, "" };
+            }
+
         json::JsonValue root;
         core::RunResult parseResult = parseJson(jsonPayload, root);
         if (parseResult.code != core::ExitCode::success)

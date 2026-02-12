@@ -11,6 +11,12 @@
 
 namespace repaddu::analysis
     {
+    struct LspRelationshipOptions
+        {
+        bool deepEnabled = false;
+        bool capabilitySupported = false;
+        };
+
     struct LspMessage
         {
         std::string payload;
@@ -40,9 +46,11 @@ namespace repaddu::analysis
 
     core::RunResult parseDocumentSymbols(const std::string& jsonPayload, AnalysisGraph& graph);
     core::RunResult parseTypeHierarchySupertypes(const std::string& jsonPayload,
-        const std::string& originQualifiedName, AnalysisGraph& graph);
+        const std::string& originQualifiedName, AnalysisGraph& graph,
+        const LspRelationshipOptions& options = {});
     core::RunResult parseImplementationItems(const std::string& jsonPayload,
-        const std::string& originQualifiedName, AnalysisGraph& graph);
+        const std::string& originQualifiedName, AnalysisGraph& graph,
+        const LspRelationshipOptions& options = {});
     }
 
 #endif // REPADDU_ANALYSIS_LSP_H

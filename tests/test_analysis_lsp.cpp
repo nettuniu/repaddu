@@ -73,14 +73,18 @@ void test_lsp_analysis_integration()
     iface.qualifiedName = "Interface";
     graph.addSymbol(iface);
 
+    repaddu::analysis::LspRelationshipOptions options;
+    options.deepEnabled = true;
+    options.capabilitySupported = true;
+
     const std::string supertypesPayload = readTextFile(fixtures / "type_hierarchy_supertypes.json");
     const auto hierarchyResult = repaddu::analysis::parseTypeHierarchySupertypes(
-        supertypesPayload, "Origin", graph);
+        supertypesPayload, "Origin", graph, options);
     assert(hierarchyResult.code == repaddu::core::ExitCode::success);
 
     const std::string implPayload = readTextFile(fixtures / "implementations.json");
     const auto implResult = repaddu::analysis::parseImplementationItems(
-        implPayload, "Interface", graph);
+        implPayload, "Interface", graph, options);
     assert(implResult.code == repaddu::core::ExitCode::success);
 
     const auto* base = graph.findSymbolByQualifiedName("sample::Base");
