@@ -116,50 +116,70 @@ target_link_libraries(repaddu_cli
 target_compile_features(repaddu_cli PUBLIC cxx_std_20)
 
 if (REPADDU_ENABLE_CLANG)
-    find_package(LLVM REQUIRED CONFIG)
-    find_package(Clang REQUIRED CONFIG)
+    set(REPADDU_ENABLE_CLANG_TARGETS ON)
 
-    add_library(repaddu_cpp_analyzer
-        src/analysis_cpp.cpp
-    )
+    find_program(REPADDU_LLVM_CONFIG_EXECUTABLE NAMES llvm-config llvm-config-18)
+    if (REPADDU_LLVM_CONFIG_EXECUTABLE)
+        execute_process(
+            COMMAND ${REPADDU_LLVM_CONFIG_EXECUTABLE} --libdir
+            OUTPUT_VARIABLE REPADDU_LLVM_LIBDIR
+            OUTPUT_STRIP_TRAILING_WHITESPACE
+            ERROR_QUIET
+        )
+        if (REPADDU_LLVM_LIBDIR AND NOT EXISTS "${REPADDU_LLVM_LIBDIR}/libclangBasic.a")
+            message(WARNING
+                "REPADDU_ENABLE_CLANG=ON requested, but libclangBasic.a was not found in ${REPADDU_LLVM_LIBDIR}. "
+                "Skipping Clang analyzer targets.")
+            set(REPADDU_ENABLE_CLANG_TARGETS OFF)
+        endif()
+    endif()
 
-    target_include_directories(repaddu_cpp_analyzer
-        PUBLIC
-            ${CMAKE_CURRENT_SOURCE_DIR}/include
-            ${LLVM_INCLUDE_DIRS}
-    )
+    if (REPADDU_ENABLE_CLANG_TARGETS)
+        find_package(LLVM REQUIRED CONFIG)
+        find_package(Clang REQUIRED CONFIG)
 
-    target_link_libraries(repaddu_cpp_analyzer
-        PUBLIC
-            repaddu_core
-            clangTooling
-            clangAST
-            clangASTMatchers
-            clangFrontend
-            clangBasic
-    )
+        add_library(repaddu_cpp_analyzer
+            src/analysis_cpp.cpp
+        )
 
-    target_compile_features(repaddu_cpp_analyzer PUBLIC cxx_std_20)
-    target_compile_definitions(repaddu_cpp_analyzer PUBLIC REPADDU_ENABLE_CLANG=1)
+        target_include_directories(repaddu_cpp_analyzer
+            PUBLIC
+                ${CMAKE_CURRENT_SOURCE_DIR}/include
+                ${LLVM_INCLUDE_DIRS}
+        )
 
-    add_executable(repaddu_test_analysis_cpp
-        tests/test_analysis_cpp.cpp
-    )
+        target_link_libraries(repaddu_cpp_analyzer
+            PUBLIC
+                repaddu_core
+                clangTooling
+                clangAST
+                clangASTMatchers
+                clangFrontend
+                clangBasic
+        )
 
-    target_include_directories(repaddu_test_analysis_cpp
-        PRIVATE
-            ${CMAKE_CURRENT_SOURCE_DIR}/include
-    )
+        target_compile_features(repaddu_cpp_analyzer PUBLIC cxx_std_20)
+        target_compile_definitions(repaddu_cpp_analyzer PUBLIC REPADDU_ENABLE_CLANG=1)
 
-    target_link_libraries(repaddu_test_analysis_cpp
-        PRIVATE
-            repaddu_cpp_analyzer
-    )
+        add_executable(repaddu_test_analysis_cpp
+            tests/test_analysis_cpp.cpp
+        )
 
-    target_compile_features(repaddu_test_analysis_cpp PRIVATE cxx_std_20)
-    target_compile_definitions(repaddu_test_analysis_cpp PRIVATE REPADDU_TEST_ROOT="${CMAKE_CURRENT_SOURCE_DIR}")
+        target_include_directories(repaddu_test_analysis_cpp
+            PRIVATE
+                ${CMAKE_CURRENT_SOURCE_DIR}/include
+        )
 
-    add_test(NAME repaddu_test_analysis_cpp COMMAND repaddu_test_analysis_cpp)
+        target_link_libraries(repaddu_test_analysis_cpp
+            PRIVATE
+                repaddu_cpp_analyzer
+        )
+
+        target_compile_features(repaddu_test_analysis_cpp PRIVATE cxx_std_20)
+        target_compile_definitions(repaddu_test_analysis_cpp PRIVATE REPADDU_TEST_ROOT="${CMAKE_CURRENT_SOURCE_DIR}")
+
+        add_test(NAME repaddu_test_analysis_cpp COMMAND repaddu_test_analysis_cpp)
+    endif()
 endif()
 
 add_executable(repaddu

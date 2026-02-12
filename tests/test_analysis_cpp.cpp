@@ -91,9 +91,49 @@ void test_cpp_analysis()
     assert(sawImplementedBy);
     }
 
+void test_cpp_analysis_without_deep_edges()
+    {
+    repaddu::analysis::AnalysisGraph graph;
+    const auto dir = prepareWorkDir();
+
+    repaddu::analysis::CppAnalysisOptions options;
+    options.compileCommandsPath = dir;
+    options.deep = false;
+
+    const auto result = repaddu::analysis::analyzeCppProject(options, graph);
+    assert(result.code == repaddu::core::ExitCode::success);
+
+    bool sawInherits = false;
+    bool sawOverrides = false;
+    bool sawImplementedBy = false;
+    for (const auto& edge : graph.edges())
+        {
+        const auto& from = graph.getSymbol(edge.from);
+        const auto& to = graph.getSymbol(edge.to);
+        if (from.qualifiedName == "sample::Derived" && to.qualifiedName == "sample::Base"
+            && edge.kind == repaddu::analysis::EdgeKind::inherits)
+            {
+            sawInherits = true;
+            }
+        if (edge.kind == repaddu::analysis::EdgeKind::overrides)
+            {
+            sawOverrides = true;
+            }
+        if (edge.kind == repaddu::analysis::EdgeKind::implemented_by)
+            {
+            sawImplementedBy = true;
+            }
+        }
+
+    assert(sawInherits);
+    assert(!sawOverrides);
+    assert(!sawImplementedBy);
+    }
+
 int main()
     {
     test_cpp_analysis();
+    test_cpp_analysis_without_deep_edges();
     std::cout << "C++ analysis tests passed." << std::endl;
     return 0;
     }
