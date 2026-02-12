@@ -1,9 +1,32 @@
 #include "repaddu/analysis_tags.h"
+
+#include <fstream>
 #include <sstream>
 #include <algorithm>
+#include <cctype>
 
 namespace repaddu::analysis
     {
+    namespace
+        {
+        std::string trimCopy(const std::string& value)
+            {
+            std::size_t start = 0;
+            while (start < value.size() && std::isspace(static_cast<unsigned char>(value[start])) != 0)
+                {
+                ++start;
+                }
+
+            std::size_t end = value.size();
+            while (end > start && std::isspace(static_cast<unsigned char>(value[end - 1])) != 0)
+                {
+                --end;
+                }
+
+            return value.substr(start, end - start);
+            }
+        }
+
     TagExtractor::TagExtractor()
         {
         tags_ = {"TODO", "FIXME", "BUG", "HACK"};
@@ -15,6 +38,45 @@ namespace repaddu::analysis
             {
             tags_.push_back(tag);
             }
+        }
+
+    bool TagExtractor::loadTagPatternsFromFile(const std::filesystem::path& path, bool replaceExisting)
+        {
+        std::ifstream input(path);
+        if (!input)
+            {
+            return false;
+            }
+
+        std::vector<std::string> loadedTags;
+        std::string line;
+        while (std::getline(input, line))
+            {
+            const std::string trimmed = trimCopy(line);
+            if (trimmed.empty())
+                {
+                continue;
+                }
+            if (!trimmed.empty() && trimmed.front() == '#')
+                {
+                continue;
+                }
+            if (std::find(loadedTags.begin(), loadedTags.end(), trimmed) == loadedTags.end())
+                {
+                loadedTags.push_back(trimmed);
+                }
+            }
+
+        if (replaceExisting)
+            {
+            tags_.clear();
+            }
+        for (const auto& tag : loadedTags)
+            {
+            addTagPattern(tag);
+            }
+
+        return true;
         }
 
     std::vector<TagMatch> TagExtractor::extract(const std::string& content, const std::string& filePath)
