@@ -88,6 +88,7 @@ namespace repaddu::core
         bool isolateDocs = false;
         bool dryRun = false;
         bool generateConfig = false;
+        bool parallelTraversal = true;
         };
 
     struct FileEntry

@@ -190,6 +190,14 @@ namespace repaddu::cli
                 {
                 options.followSymlinks = true;
                 }
+            else if (arg == "--single-thread")
+                {
+                options.parallelTraversal = false;
+                }
+            else if (arg == "--parallel-traversal")
+                {
+                options.parallelTraversal = true;
+                }
             else if (arg == "--include-binaries")
                 {
                 options.includeBinaries = true;
@@ -474,6 +482,8 @@ namespace repaddu::cli
         out << "  --exclude-extensions <csv>  Exclude these extensions after includes.\n";
         out << "  --include-hidden            Include hidden files/directories.\n";
         out << "  --follow-symlinks           Follow directory symlinks.\n";
+        out << "  --single-thread             Force single-threaded traversal.\n";
+        out << "  --parallel-traversal        Enable parallel traversal (default).\n";
         out << "  --include-binaries          Include binary files.\n";
         out << "  --max-file-size <bytes>     Skip files larger than this (default 1MB).\n";
         out << "  --force-large               Include large files despite size check.\n";
@@ -581,6 +591,7 @@ namespace repaddu::cli
         getStringArray("analysis_views", opt.analysisViews);
         getBool("isolate_docs", opt.isolateDocs);
         getBool("dry_run", opt.dryRun);
+        getBool("parallel_traversal", opt.parallelTraversal);
         
         if (obj.count("group_by") && obj.at("group_by").isString())
             {

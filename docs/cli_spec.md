@@ -48,6 +48,12 @@ repaddu [options] --input <path> --output <path>
 - `--follow-symlinks`
   - Follow directory symlinks.
   - Default: `false`.
+- `--single-thread`
+  - Force single-threaded traversal.
+  - Default: `false`.
+- `--parallel-traversal`
+  - Enable parallel traversal.
+  - Default: `true`.
 
 ### Binary handling
 - `--include-binaries`

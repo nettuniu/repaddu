@@ -47,10 +47,42 @@ void test_invalid_collapse()
     assert(result.result.code == repaddu::core::ExitCode::invalid_usage);
     }
 
+void test_parallel_flags()
+    {
+    std::vector<std::string> args =
+        {
+        "repaddu",
+        "--single-thread",
+        "-i",
+        "input",
+        "-o",
+        "out"
+        };
+
+    auto result = repaddu::cli::parseArgs(args);
+    assert(result.result.code == repaddu::core::ExitCode::success);
+    assert(result.options.parallelTraversal == false);
+
+    args =
+        {
+        "repaddu",
+        "--single-thread",
+        "--parallel-traversal",
+        "-i",
+        "input",
+        "-o",
+        "out"
+        };
+    result = repaddu::cli::parseArgs(args);
+    assert(result.result.code == repaddu::core::ExitCode::success);
+    assert(result.options.parallelTraversal == true);
+    }
+
 int main()
     {
     test_analysis_flags();
     test_invalid_collapse();
+    test_parallel_flags();
     std::cout << "CLI analysis parse tests passed." << std::endl;
     return 0;
     }

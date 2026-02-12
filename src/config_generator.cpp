@@ -42,6 +42,7 @@ namespace repaddu::config
         ofs << "    \"analysis_collapse\": \"none\",\n";
         ofs << "    \"isolate_docs\": false,\n";
         ofs << "    \"dry_run\": false,\n";
+        ofs << "    \"parallel_traversal\": true,\n";
         ofs << "    \"format\": \"markdown\",\n";
         ofs << "    \"group_by\": \"directory\",\n";
         ofs << "    \"markers\": \"fenced\",\n";
