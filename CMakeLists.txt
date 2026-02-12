@@ -499,6 +499,24 @@ target_link_libraries(repaddu_test_multilanguage_fixture
 target_compile_features(repaddu_test_multilanguage_fixture PRIVATE cxx_std_20)
 target_compile_definitions(repaddu_test_multilanguage_fixture PRIVATE REPADDU_TEST_ROOT="${CMAKE_CURRENT_SOURCE_DIR}")
 
+add_executable(repaddu_test_concurrency
+    tests/test_concurrency.cpp
+)
+
+target_include_directories(repaddu_test_concurrency
+    PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}/include
+)
+
+target_link_libraries(repaddu_test_concurrency
+    PRIVATE
+        repaddu_core
+        repaddu_io
+)
+
+target_compile_features(repaddu_test_concurrency PRIVATE cxx_std_20)
+target_compile_definitions(repaddu_test_concurrency PRIVATE REPADDU_TEST_ROOT="${CMAKE_CURRENT_SOURCE_DIR}")
+
 add_executable(repaddu_test_lsp_client
     tests/test_lsp_client.cpp
 )
@@ -582,6 +600,7 @@ add_test(NAME repaddu_test_analysis_json COMMAND repaddu_test_analysis_json)
 add_test(NAME repaddu_test_fixture_picobench COMMAND repaddu_test_fixture_picobench)
 add_test(NAME repaddu_test_language_profiles COMMAND repaddu_test_language_profiles)
 add_test(NAME repaddu_test_multilanguage_fixture COMMAND repaddu_test_multilanguage_fixture)
+add_test(NAME repaddu_test_concurrency COMMAND repaddu_test_concurrency)
 add_test(NAME repaddu_test_lsp_client COMMAND repaddu_test_lsp_client)
 add_test(NAME repaddu_test_lsp_symbols COMMAND repaddu_test_lsp_symbols)
 add_test(NAME repaddu_test_lsp_relationships COMMAND repaddu_test_lsp_relationships)

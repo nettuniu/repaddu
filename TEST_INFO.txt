@@ -47,4 +47,4 @@ fixtures/picobench
 
 performance & concurrency
 - Files: src/io_traversal.cpp (threaded)
-- Tests: tests/test_concurrency.cpp
+- Tests: tests/test_concurrency.cpp (ctest -R repaddu_test_concurrency)
