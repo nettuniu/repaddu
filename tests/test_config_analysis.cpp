@@ -131,12 +131,35 @@ void test_analysis_yaml_keeps_hash_inside_quotes()
     assert(options.analysisViews[1] == "dependencies");
     }
 
+void test_analysis_yaml_escaped_quote_before_inline_comment()
+    {
+    const std::string content =
+        "analysis_enabled: true\n"
+        "analysis_views: [\"symbols\", \"dependencies\"]\n"
+        "analysis_collapse: none\n"
+        "tag_patterns: \"custom\\\"tags#1.txt\" # comment after escaped quote sequence\n";
+
+    const auto path = writeConfig(content, "repaddu_analysis_config_escaped_quote.yaml");
+    repaddu::core::CliOptions options;
+    const auto result = repaddu::cli::loadConfigFile(path, options);
+    std::filesystem::remove(path);
+
+    assert(result.code == repaddu::core::ExitCode::success);
+    assert(options.analysisEnabled == true);
+    assert(options.analysisCollapse == "none");
+    assert(options.tagPatternsPath == std::filesystem::path("custom\\\"tags#1.txt"));
+    assert(options.analysisViews.size() == 2);
+    assert(options.analysisViews[0] == "symbols");
+    assert(options.analysisViews[1] == "dependencies");
+    }
+
 int main()
     {
     test_analysis_config();
     test_analysis_yaml_config();
     test_analysis_yaml_config_with_inline_comments();
     test_analysis_yaml_keeps_hash_inside_quotes();
+    test_analysis_yaml_escaped_quote_before_inline_comment();
     std::cout << "Config analysis tests passed." << std::endl;
     return 0;
     }
