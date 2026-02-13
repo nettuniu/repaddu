@@ -660,13 +660,21 @@ namespace repaddu::cli
                 noInlineComment.reserve(line.size());
                 bool inSingleQuote = false;
                 bool inDoubleQuote = false;
+                bool escapedInDoubleQuote = false;
                 for (char ch : line)
                     {
+                    if (ch == '\\' && inDoubleQuote && !escapedInDoubleQuote)
+                        {
+                        escapedInDoubleQuote = true;
+                        noInlineComment.push_back(ch);
+                        continue;
+                        }
+
                     if (ch == '\'' && !inDoubleQuote)
                         {
                         inSingleQuote = !inSingleQuote;
                         }
-                    else if (ch == '"' && !inSingleQuote)
+                    else if (ch == '"' && !inSingleQuote && !escapedInDoubleQuote)
                         {
                         inDoubleQuote = !inDoubleQuote;
                         }
@@ -675,6 +683,7 @@ namespace repaddu::cli
                         break;
                         }
                     noInlineComment.push_back(ch);
+                    escapedInDoubleQuote = false;
                     }
 
                 const std::string stripped = trim(noInlineComment);
