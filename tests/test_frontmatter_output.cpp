@@ -33,6 +33,17 @@ namespace
         std::filesystem::create_directories(path);
         return path;
         }
+
+    repaddu::core::FileEntry makeCustomEntry(const std::filesystem::path& absolutePath, const std::filesystem::path& relativePath)
+        {
+        repaddu::core::FileEntry entry;
+        entry.absolutePath = absolutePath;
+        entry.relativePath = relativePath;
+        entry.extensionLower = repaddu::core::toLowerCopy(absolutePath.extension().string());
+        entry.fileClass = repaddu::core::classifyExtension(entry.extensionLower);
+        entry.sizeBytes = std::filesystem::file_size(absolutePath);
+        return entry;
+        }
     }
 
 void test_frontmatter_enabled()
@@ -111,11 +122,86 @@ void test_overview_links_disabled()
     assert(content.find("- 001_source.md") != std::string::npos);
     }
 
+void test_jsonl_output_writes_dataset_and_escapes_content()
+    {
+    const std::filesystem::path repoRoot = std::filesystem::path(REPADDU_TEST_ROOT) / "fixtures" / "sample_repo";
+    const std::filesystem::path inputRoot = makeTempOutDir("repaddu_jsonl_input");
+    const std::filesystem::path outputRoot = makeTempOutDir("repaddu_jsonl_output");
+    const std::filesystem::path sourcePath = inputRoot / "src" / "escaped.cpp";
+    std::filesystem::create_directories(sourcePath.parent_path());
+
+    {
+    std::ofstream out(sourcePath, std::ios::binary);
+    out << "const char* s = \"hello\";\n";
+    out << "line2\n";
+    }
+
+    repaddu::core::CliOptions options;
+    options.inputPath = repoRoot;
+    options.outputPath = outputRoot;
+    options.format = repaddu::core::OutputFormat::jsonl;
+
+    std::vector<repaddu::core::FileEntry> files =
+        {
+        makeCustomEntry(sourcePath, std::filesystem::path("src/escaped.cpp"))
+        };
+
+    repaddu::core::OutputChunk chunk;
+    chunk.category = "source";
+    chunk.title = "source";
+    chunk.fileIndices = { 0, 0 };
+
+    const auto result = repaddu::format::writeOutputs(options, files, { chunk }, "", {}, {});
+    assert(result.code == repaddu::core::ExitCode::success);
+
+    const std::filesystem::path jsonlPath = outputRoot / "dataset.jsonl";
+    assert(std::filesystem::exists(jsonlPath));
+    assert(!std::filesystem::exists(outputRoot / "000_overview.md"));
+
+    const std::string content = readText(jsonlPath);
+    assert(content.find("\"path\": \"src/escaped.cpp\"") != std::string::npos);
+    assert(content.find("\"content\": \"const char* s = \\\"hello\\\";\\nline2\\n\"") != std::string::npos);
+
+    std::size_t lineCount = 0;
+    for (char ch : content)
+        {
+        if (ch == '\n')
+            {
+            ++lineCount;
+            }
+        }
+    assert(lineCount == 1);
+    }
+
+void test_jsonl_dry_run_writes_nothing()
+    {
+    const std::filesystem::path repoRoot = std::filesystem::path(REPADDU_TEST_ROOT) / "fixtures" / "sample_repo";
+    const std::filesystem::path outputRoot = makeTempOutDir("repaddu_jsonl_dry_run");
+
+    repaddu::core::CliOptions options;
+    options.inputPath = repoRoot;
+    options.outputPath = outputRoot;
+    options.format = repaddu::core::OutputFormat::jsonl;
+    options.dryRun = true;
+
+    std::vector<repaddu::core::FileEntry> files = { makeEntry(repoRoot) };
+    repaddu::core::OutputChunk chunk;
+    chunk.category = "source";
+    chunk.title = "source";
+    chunk.fileIndices = { 0 };
+
+    const auto result = repaddu::format::writeOutputs(options, files, { chunk }, "", {}, {});
+    assert(result.code == repaddu::core::ExitCode::success);
+    assert(!std::filesystem::exists(outputRoot / "dataset.jsonl"));
+    }
+
 int main()
     {
     test_frontmatter_enabled();
     test_frontmatter_disabled();
     test_overview_links_disabled();
+    test_jsonl_output_writes_dataset_and_escapes_content();
+    test_jsonl_dry_run_writes_nothing();
     std::cout << "Frontmatter output tests passed." << std::endl;
     return 0;
     }
