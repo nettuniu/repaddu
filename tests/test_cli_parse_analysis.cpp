@@ -88,11 +88,20 @@ void test_parallel_flags()
     assert(result.options.parallelTraversal == true);
     }
 
+void test_help_mentions_config_generation_formats()
+    {
+    const std::string help = repaddu::cli::helpText();
+    assert(help.find("--init") != std::string::npos);
+    assert(help.find("JSON or YAML") != std::string::npos);
+    assert(help.find("--config <path>") != std::string::npos);
+    }
+
 int main()
     {
     test_analysis_flags();
     test_invalid_collapse();
     test_parallel_flags();
+    test_help_mentions_config_generation_formats();
     std::cout << "CLI analysis parse tests passed." << std::endl;
     return 0;
     }
