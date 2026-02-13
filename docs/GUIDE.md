@@ -137,7 +137,8 @@ Notes:
 
 ## Configuration Reference
 
-Config file: `.repaddu.json` (loaded automatically from current working directory if present).
+Config files: `.repaddu.json`, `.repaddu.yaml`, or `.repaddu.yml`.
+Auto-load precedence in current working directory: `.repaddu.json` then `.repaddu.yaml` then `.repaddu.yml`.
 Use `--config <path>` to override the default config location.
 
 ### Precedence

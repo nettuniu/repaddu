@@ -8,16 +8,17 @@
 
 namespace
     {
-    std::filesystem::path detectConfigPathFromArgs(const std::vector<std::string>& args)
+    bool detectConfigPathFromArgs(const std::vector<std::string>& args, std::filesystem::path& outPath)
         {
         for (std::size_t i = 1; i + 1 < args.size(); ++i)
             {
             if (args[i] == "--config")
                 {
-                return args[i + 1];
+                outPath = args[i + 1];
+                return true;
                 }
             }
-        return ".repaddu.json";
+        return false;
         }
     }
 
@@ -33,7 +34,28 @@ int main(int argc, char** argv)
     repaddu::core::CliOptions options;
 
     // 1. Try to load config from file
-    std::filesystem::path configPath = detectConfigPathFromArgs(args);
+    std::filesystem::path configPath;
+    const bool hasExplicitConfigPath = detectConfigPathFromArgs(args, configPath);
+    if (!hasExplicitConfigPath)
+        {
+        if (std::filesystem::exists(".repaddu.json"))
+            {
+            configPath = ".repaddu.json";
+            }
+        else if (std::filesystem::exists(".repaddu.yaml"))
+            {
+            configPath = ".repaddu.yaml";
+            }
+        else if (std::filesystem::exists(".repaddu.yml"))
+            {
+            configPath = ".repaddu.yml";
+            }
+        else
+            {
+            configPath = ".repaddu.json";
+            }
+        }
+
     options.configPath = configPath;
     if (std::filesystem::exists(configPath))
         {

@@ -112,8 +112,8 @@ repaddu [options] --input <path> --output <path>
 
 ### Misc
 - `--config <path>`
-  - Config file path to load and/or generate.
-  - Default: `.repaddu.json`.
+  - Config file path to load and/or generate (`.json`, `.yaml`, `.yml`).
+  - Default target for generation: `.repaddu.json`.
 - `-h, --help`
   - Show help and exit with code 0.
 - `--version`
