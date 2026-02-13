@@ -95,6 +95,17 @@ void test_detect_npm_build_system_case_insensitive_filename()
     assert(detected.buildSystemId == "npm");
     }
 
+void test_find_profiles_case_insensitive_lookup()
+    {
+    const repaddu::core::LanguageProfile* language = repaddu::core::findLanguageProfile("CPP");
+    assert(language != nullptr);
+    assert(language->id == "cpp");
+
+    const repaddu::core::BuildSystemProfile* build = repaddu::core::findBuildSystemProfile("NPM");
+    assert(build != nullptr);
+    assert(build->id == "npm");
+    }
+
 void test_resolve_build_files_default_includes_known_systems()
     {
     repaddu::core::CliOptions options;
@@ -151,6 +162,7 @@ int main()
     test_build_system_precedence();
     test_detect_npm_build_system();
     test_detect_npm_build_system_case_insensitive_filename();
+    test_find_profiles_case_insensitive_lookup();
     test_resolve_build_files_default_includes_known_systems();
     test_resolve_build_files_deduplicates_language_and_build();
     test_resolve_build_files_unions_build_system_and_language();
