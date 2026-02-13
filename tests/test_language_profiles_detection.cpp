@@ -1,6 +1,7 @@
 #include "repaddu/language_profiles.h"
 
 #include <cassert>
+#include <algorithm>
 #include <filesystem>
 #include <iostream>
 #include <vector>
@@ -82,6 +83,42 @@ void test_detect_npm_build_system()
     assert(detected.buildSystemId == "npm");
     }
 
+void test_resolve_build_files_default_includes_known_systems()
+    {
+    repaddu::core::CliOptions options;
+    const std::vector<std::string> names = repaddu::core::resolveBuildFileNames(options);
+
+    assert(std::find(names.begin(), names.end(), "CMakeLists.txt") != names.end());
+    assert(std::find(names.begin(), names.end(), "package.json") != names.end());
+    assert(std::find(names.begin(), names.end(), "pyproject.toml") != names.end());
+    }
+
+void test_resolve_build_files_deduplicates_language_and_build()
+    {
+    repaddu::core::CliOptions options;
+    options.language = "python";
+    options.buildSystem = "python";
+
+    const std::vector<std::string> names = repaddu::core::resolveBuildFileNames(options);
+    const std::size_t pyprojectCount = static_cast<std::size_t>(
+        std::count(names.begin(), names.end(), "pyproject.toml"));
+    const std::size_t setupPyCount = static_cast<std::size_t>(
+        std::count(names.begin(), names.end(), "setup.py"));
+    assert(pyprojectCount == 1);
+    assert(setupPyCount == 1);
+    }
+
+void test_resolve_build_files_unions_build_system_and_language()
+    {
+    repaddu::core::CliOptions options;
+    options.language = "cpp";
+    options.buildSystem = "npm";
+
+    const std::vector<std::string> names = repaddu::core::resolveBuildFileNames(options);
+    assert(std::find(names.begin(), names.end(), "CMakeLists.txt") != names.end());
+    assert(std::find(names.begin(), names.end(), "package.json") != names.end());
+    }
+
 int main()
     {
     test_detect_rust_and_cargo();
@@ -89,6 +126,9 @@ int main()
     test_detect_none_when_unknown();
     test_build_system_precedence();
     test_detect_npm_build_system();
+    test_resolve_build_files_default_includes_known_systems();
+    test_resolve_build_files_deduplicates_language_and_build();
+    test_resolve_build_files_unions_build_system_and_language();
     std::cout << "Language/build auto-detection tests passed." << std::endl;
     return 0;
     }
