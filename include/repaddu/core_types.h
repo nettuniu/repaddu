@@ -70,6 +70,7 @@ namespace repaddu::core
         bool emitCMake = true;
         bool emitBuildFiles = false;
         MarkerMode markers = MarkerMode::fenced;
+        bool emitFrontmatter = false;
         OutputFormat format = OutputFormat::markdown;
         bool showHelp = false;
         bool showVersion = false;

@@ -18,6 +18,7 @@ void test_analysis_flags()
         "--extract-tags",
         "--tag-patterns",
         "tags.txt",
+        "--frontmatter",
         "-i",
         "input",
         "-o",
@@ -31,6 +32,7 @@ void test_analysis_flags()
     assert(result.options.analysisCollapse == "folder");
     assert(result.options.extractTags == true);
     assert(result.options.tagPatternsPath == std::filesystem::path("tags.txt"));
+    assert(result.options.emitFrontmatter == true);
     assert(result.options.analysisViews.size() == 2);
     assert(result.options.analysisViews[0] == "symbols");
     assert(result.options.analysisViews[1] == "dependencies");

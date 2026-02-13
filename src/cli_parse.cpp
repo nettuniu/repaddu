@@ -294,6 +294,10 @@ namespace repaddu::cli
                     return { options, { core::ExitCode::invalid_usage, "--markers must be one of: fenced, sentinel." }, "" };
                     }
                 }
+            else if (arg == "--frontmatter")
+                {
+                options.emitFrontmatter = true;
+                }
             else if (arg == "--scan-languages")
                 {
                 options.scanLanguages = true;
@@ -530,6 +534,7 @@ namespace repaddu::cli
         out << "  --emit-cmake                Emit aggregated CMakeLists.txt output.\n";
         out << "  --emit-build-files          Emit aggregated build-system files.\n";
         out << "  --markers <mode>            fenced|sentinel. Default: fenced.\n";
+        out << "  --frontmatter               Add YAML frontmatter metadata before each file content block.\n";
         out << "  --scan-languages            Scan repository and report language percentages only.\n";
         out << "  --language <id>             auto|c|cpp|rust|python. Default: auto.\n";
         out << "  --build-system <id>         auto|cmake|make|meson|bazel|cargo|python. Default: auto.\n";
@@ -606,6 +611,7 @@ namespace repaddu::cli
         getBool("emit_tree", opt.emitTree);
         getBool("emit_cmake", opt.emitCMake);
         getBool("emit_build_files", opt.emitBuildFiles);
+        getBool("frontmatter", opt.emitFrontmatter);
         getUInt64("max_file_size", opt.maxFileSize);
         getBool("force_large", opt.forceLargeFiles);
         getBool("redact_pii", opt.redactPii);

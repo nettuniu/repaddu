@@ -100,6 +100,7 @@ Notes:
 - `--emit-cmake`: Include aggregated `CMakeLists.txt` output.
 - `--emit-build-files`: Include aggregated build-system file output.
 - `--markers <mode>`: `fenced|sentinel` block boundary style.
+- `--frontmatter`: Add YAML frontmatter metadata before each file content block.
 - `--format <fmt>`: `markdown|jsonl|html`.
 
 ### Analysis options
@@ -170,6 +171,7 @@ repaddu --config ./configs/project.repaddu.json --init
 - `emit_tree` (bool)
 - `emit_cmake` (bool)
 - `emit_build_files` (bool)
+- `frontmatter` (bool)
 - `max_file_size` (integer)
 - `force_large` (bool)
 - `redact_pii` (bool)

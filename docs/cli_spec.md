@@ -90,6 +90,9 @@ repaddu [options] --input <path> --output <path>
   - Boundary marker style for file content blocks.
   - Allowed values: `fenced`, `sentinel`.
   - Default: `fenced`.
+- `--frontmatter`
+  - Add YAML frontmatter metadata before each emitted file content block.
+  - Default: `false`.
 - `--extract-tags`
   - Include TODO/FIXME-like tag summary in `--analyze-only` textual output.
   - Default: `false`.

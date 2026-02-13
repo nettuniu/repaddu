@@ -256,7 +256,7 @@ namespace repaddu::format
             };
 
         void writeMarkerBlock(OutputWriter& writer, const core::FileEntry& entry, const std::string& content,
-            core::MarkerMode mode)
+            core::MarkerMode mode, bool emitFrontmatter)
             {
             const std::string relative = entry.relativePath.generic_string();
             if (mode == core::MarkerMode::fenced)
@@ -275,6 +275,23 @@ namespace repaddu::format
                 writer.write(core::fileClassLabel(entry.fileClass));
                 writer.write("\n");
                 writer.write("```\n");
+                if (emitFrontmatter)
+                    {
+                    writer.write("---\n");
+                    writer.write("path: ");
+                    writer.write(relative);
+                    writer.write("\n");
+                    writer.write("bytes: ");
+                    writer.write(std::to_string(entry.sizeBytes));
+                    writer.write("\n");
+                    writer.write("tokens: ");
+                    writer.write(std::to_string(entry.tokenCount));
+                    writer.write("\n");
+                    writer.write("class: ");
+                    writer.write(core::fileClassLabel(entry.fileClass));
+                    writer.write("\n");
+                    writer.write("---\n");
+                    }
                 writer.write(content);
                 if (!content.empty() && content.back() != '\n')
                     {
@@ -293,6 +310,23 @@ namespace repaddu::format
                 writer.write(" class=");
                 writer.write(core::fileClassLabel(entry.fileClass));
                 writer.write(" @@@\n");
+                if (emitFrontmatter)
+                    {
+                    writer.write("---\n");
+                    writer.write("path: ");
+                    writer.write(relative);
+                    writer.write("\n");
+                    writer.write("bytes: ");
+                    writer.write(std::to_string(entry.sizeBytes));
+                    writer.write("\n");
+                    writer.write("tokens: ");
+                    writer.write(std::to_string(entry.tokenCount));
+                    writer.write("\n");
+                    writer.write("class: ");
+                    writer.write(core::fileClassLabel(entry.fileClass));
+                    writer.write("\n");
+                    writer.write("---\n");
+                    }
                 writer.write(content);
                 if (!content.empty() && content.back() != '\n')
                     {
@@ -462,7 +496,7 @@ namespace repaddu::format
 
                 entry.sizeBytes = static_cast<std::uintmax_t>(content.size());
                 entry.fileClass = core::classifyExtension(core::toLowerCopy(entry.relativePath.extension().string()));
-                writeMarkerBlock(writer, entry, content, options.markers);
+                writeMarkerBlock(writer, entry, content, options.markers, options.emitFrontmatter);
                 writer.write("\n");
                 if (!writer.ok)
                     {
@@ -474,10 +508,10 @@ namespace repaddu::format
             }
 
         std::uintmax_t markerBlockBytes(const core::FileEntry& entry, const std::string& content,
-            core::MarkerMode mode)
+            core::MarkerMode mode, bool emitFrontmatter)
             {
             OutputWriter counter;
-            writeMarkerBlock(counter, entry, content, mode);
+            writeMarkerBlock(counter, entry, content, mode, emitFrontmatter);
             return counter.bytes;
             }
 
@@ -683,7 +717,8 @@ namespace repaddu::format
                         }
                     entry.tokenCount = outTokenCounts[fileIndex];
 
-                    std::uintmax_t blockBytes = markerBlockBytes(entry, content, options.markers);
+                    std::uintmax_t blockBytes = markerBlockBytes(entry, content, options.markers,
+                        options.emitFrontmatter);
                     blockBytes += 1; // newline between blocks
 
                     if (options.maxBytes > 0 && !chunk.fileIndices.empty()
@@ -977,7 +1012,7 @@ namespace repaddu::format
                     return readResult;
                     }
                 entry.tokenCount = tokenCounts[fileIndex];
-                writeMarkerBlock(writer, entry, content, options.markers);
+                writeMarkerBlock(writer, entry, content, options.markers, options.emitFrontmatter);
                 writer.write("\n");
                 if (!writer.ok)
                     {

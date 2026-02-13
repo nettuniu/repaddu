@@ -2,7 +2,7 @@
 
 core/io/grouping/format
 - Files: include/repaddu/*.h, src/core_types.cpp, src/language_profiles.cpp, src/io_*.cpp, src/grouping_*.cpp, src/format_*.cpp
-- Tests: tests/test_filtering.cpp (ctest -R repaddu_test_filtering), tests/test_grouping.cpp (ctest -R repaddu_test_grouping), tests/test_isolate_docs.cpp (ctest -R repaddu_test_isolate_docs), tests/test_language_profiles_detection.cpp (ctest -R repaddu_test_language_profiles), tests/test_multilanguage_fixture.cpp (ctest -R repaddu_test_multilanguage_fixture)
+- Tests: tests/test_filtering.cpp (ctest -R repaddu_test_filtering), tests/test_grouping.cpp (ctest -R repaddu_test_grouping), tests/test_isolate_docs.cpp (ctest -R repaddu_test_isolate_docs), tests/test_language_profiles_detection.cpp (ctest -R repaddu_test_language_profiles), tests/test_multilanguage_fixture.cpp (ctest -R repaddu_test_multilanguage_fixture), tests/test_frontmatter_output.cpp (ctest -R repaddu_test_frontmatter_output)
 
 cli
 - Files: src/cli_*.cpp, src/main.cpp
