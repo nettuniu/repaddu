@@ -51,6 +51,16 @@ void test_generate_config_custom_path()
     assert(runResult.code == repaddu::core::ExitCode::success);
     assert(std::filesystem::exists(tempPath));
 
+    std::ifstream ifs(tempPath);
+    assert(static_cast<bool>(ifs));
+    std::ostringstream content;
+    content << ifs.rdbuf();
+    const std::string value = content.str();
+
+    assert(value.find("{\n") != std::string::npos);
+    assert(value.find("\"input\": \".\"") != std::string::npos);
+    assert(value.find("input: .\n") == std::string::npos);
+
     std::filesystem::remove(tempPath, errorCode);
     }
 
