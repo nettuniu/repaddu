@@ -153,6 +153,54 @@ void test_analysis_yaml_escaped_quote_before_inline_comment()
     assert(options.analysisViews[1] == "dependencies");
     }
 
+void test_config_format_values_json_and_yaml()
+    {
+    {
+    const std::string content =
+        "{\n"
+        "  \"format\": \"jsonl\"\n"
+        "}\n";
+
+    const auto path = writeConfig(content, "repaddu_format_json_config.json");
+    repaddu::core::CliOptions options;
+    const auto result = repaddu::cli::loadConfigFile(path, options);
+    std::filesystem::remove(path);
+
+    assert(result.code == repaddu::core::ExitCode::success);
+    assert(options.format == repaddu::core::OutputFormat::jsonl);
+    }
+
+    {
+    const std::string content =
+        "format: html\n";
+
+    const auto path = writeConfig(content, "repaddu_format_yaml_config.yaml");
+    repaddu::core::CliOptions options;
+    const auto result = repaddu::cli::loadConfigFile(path, options);
+    std::filesystem::remove(path);
+
+    assert(result.code == repaddu::core::ExitCode::success);
+    assert(options.format == repaddu::core::OutputFormat::html);
+    }
+    }
+
+void test_invalid_config_format_preserves_current_value()
+    {
+    const std::string content =
+        "{\n"
+        "  \"format\": \"pdf\"\n"
+        "}\n";
+
+    const auto path = writeConfig(content, "repaddu_format_invalid_config.json");
+    repaddu::core::CliOptions options;
+    options.format = repaddu::core::OutputFormat::html;
+    const auto result = repaddu::cli::loadConfigFile(path, options);
+    std::filesystem::remove(path);
+
+    assert(result.code == repaddu::core::ExitCode::success);
+    assert(options.format == repaddu::core::OutputFormat::html);
+    }
+
 int main()
     {
     test_analysis_config();
@@ -160,6 +208,8 @@ int main()
     test_analysis_yaml_config_with_inline_comments();
     test_analysis_yaml_keeps_hash_inside_quotes();
     test_analysis_yaml_escaped_quote_before_inline_comment();
+    test_config_format_values_json_and_yaml();
+    test_invalid_config_format_preserves_current_value();
     std::cout << "Config analysis tests passed." << std::endl;
     return 0;
     }

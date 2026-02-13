@@ -97,12 +97,65 @@ void test_help_mentions_config_generation_formats()
     assert(help.find(".repaddu.yaml/.repaddu.yml") != std::string::npos);
     }
 
+void test_format_flag_accepts_known_values()
+    {
+    std::vector<std::string> args =
+        {
+        "repaddu",
+        "--format",
+        "jsonl",
+        "-i",
+        "input",
+        "-o",
+        "out"
+        };
+
+    auto result = repaddu::cli::parseArgs(args);
+    assert(result.result.code == repaddu::core::ExitCode::success);
+    assert(result.options.format == repaddu::core::OutputFormat::jsonl);
+
+    args =
+        {
+        "repaddu",
+        "--format",
+        "html",
+        "-i",
+        "input",
+        "-o",
+        "out"
+        };
+
+    result = repaddu::cli::parseArgs(args);
+    assert(result.result.code == repaddu::core::ExitCode::success);
+    assert(result.options.format == repaddu::core::OutputFormat::html);
+    }
+
+void test_format_flag_rejects_unknown_value()
+    {
+    const std::vector<std::string> args =
+        {
+        "repaddu",
+        "--format",
+        "pdf",
+        "-i",
+        "input",
+        "-o",
+        "out"
+        };
+
+    const auto result = repaddu::cli::parseArgs(args);
+    assert(result.result.code == repaddu::core::ExitCode::invalid_usage);
+    assert(result.result.message.find("--format must be one of: markdown, jsonl, html.") != std::string::npos);
+    }
+
 int main()
     {
     test_analysis_flags();
     test_invalid_collapse();
     test_parallel_flags();
     test_help_mentions_config_generation_formats();
+    test_format_flag_accepts_known_values();
+    test_format_flag_rejects_unknown_value();
     std::cout << "CLI analysis parse tests passed." << std::endl;
     return 0;
     }

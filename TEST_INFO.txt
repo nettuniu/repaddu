@@ -8,7 +8,7 @@ core/io/grouping/format
 cli
 - Files: src/cli_*.cpp, src/main.cpp
 - Tests: tests/test_grouping.cpp (ctest -R repaddu_test_grouping), tests/test_cli_parse_analysis.cpp (ctest -R repaddu_test_cli_parse_analysis), tests/test_config_analysis.cpp (ctest -R repaddu_test_config_analysis), tests/test_cli_config_path.cpp (ctest -R repaddu_test_cli_config_path), tests/test_dry_run.cpp (ctest -R repaddu_test_dry_run)
-- Notes: tests/test_config_analysis.cpp validates JSON/YAML config loading behavior including inline comments and quoted values; tests/test_cli_config_path.cpp validates config generation for .json/.yaml/.yml paths and config auto-load precedence resolution.
+- Notes: tests/test_config_analysis.cpp validates JSON/YAML config loading behavior including inline comments, quoted values, and output `format` parsing/fallback; tests/test_cli_parse_analysis.cpp validates `--format` accepted values and invalid-value rejection; tests/test_cli_config_path.cpp validates config generation for .json/.yaml/.yml paths and config auto-load precedence resolution.
 
 cmake aggregation
 - Files: src/io_traversal.cpp, src/format_writer.cpp
