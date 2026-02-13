@@ -83,6 +83,18 @@ void test_detect_npm_build_system()
     assert(detected.buildSystemId == "npm");
     }
 
+void test_detect_npm_build_system_case_insensitive_filename()
+    {
+    const std::vector<repaddu::core::FileEntry> files =
+        {
+            makeFile("Package.JSON", ".json"),
+            makeFile("index.js", ".js")
+        };
+
+    const repaddu::core::DetectionResult detected = repaddu::core::detectLanguageAndBuildSystem(files);
+    assert(detected.buildSystemId == "npm");
+    }
+
 void test_resolve_build_files_default_includes_known_systems()
     {
     repaddu::core::CliOptions options;
@@ -119,6 +131,18 @@ void test_resolve_build_files_unions_build_system_and_language()
     assert(std::find(names.begin(), names.end(), "package.json") != names.end());
     }
 
+void test_resolve_build_files_unknown_ids_fall_back_to_default_set()
+    {
+    repaddu::core::CliOptions options;
+    options.language = "unknown-language";
+    options.buildSystem = "unknown-build-system";
+
+    const std::vector<std::string> names = repaddu::core::resolveBuildFileNames(options);
+    assert(std::find(names.begin(), names.end(), "CMakeLists.txt") != names.end());
+    assert(std::find(names.begin(), names.end(), "Cargo.toml") != names.end());
+    assert(std::find(names.begin(), names.end(), "package.json") != names.end());
+    }
+
 int main()
     {
     test_detect_rust_and_cargo();
@@ -126,9 +150,11 @@ int main()
     test_detect_none_when_unknown();
     test_build_system_precedence();
     test_detect_npm_build_system();
+    test_detect_npm_build_system_case_insensitive_filename();
     test_resolve_build_files_default_includes_known_systems();
     test_resolve_build_files_deduplicates_language_and_build();
     test_resolve_build_files_unions_build_system_and_language();
+    test_resolve_build_files_unknown_ids_fall_back_to_default_set();
     std::cout << "Language/build auto-detection tests passed." << std::endl;
     return 0;
     }
