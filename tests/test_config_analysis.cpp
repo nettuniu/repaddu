@@ -26,7 +26,8 @@ void test_analysis_config()
         "  \"analysis_collapse\": \"folder\",\n"
         "  \"extract_tags\": true,\n"
         "  \"tag_patterns\": \"custom_tags.txt\",\n"
-        "  \"frontmatter\": true\n"
+        "  \"frontmatter\": true,\n"
+        "  \"emit_links\": false\n"
         "}\n";
 
     const auto path = writeConfig(content);
@@ -41,6 +42,7 @@ void test_analysis_config()
     assert(options.extractTags == true);
     assert(options.tagPatternsPath == std::filesystem::path("custom_tags.txt"));
     assert(options.emitFrontmatter == true);
+    assert(options.emitLinks == false);
     assert(options.analysisViews.size() == 2);
     assert(options.analysisViews[0] == "symbols");
     assert(options.analysisViews[1] == "dependencies");

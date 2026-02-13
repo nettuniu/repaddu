@@ -332,6 +332,10 @@ namespace repaddu::cli
                 {
                 options.emitBuildFiles = true;
                 }
+            else if (arg == "--no-links")
+                {
+                options.emitLinks = false;
+                }
             else if (arg == "--max-file-size")
                 {
                 std::string value;
@@ -533,6 +537,7 @@ namespace repaddu::cli
         out << "  --emit-tree                 Emit recursive tree listing.\n";
         out << "  --emit-cmake                Emit aggregated CMakeLists.txt output.\n";
         out << "  --emit-build-files          Emit aggregated build-system files.\n";
+        out << "  --no-links                  Disable markdown links in overview table of contents.\n";
         out << "  --markers <mode>            fenced|sentinel. Default: fenced.\n";
         out << "  --frontmatter               Add YAML frontmatter metadata before each file content block.\n";
         out << "  --scan-languages            Scan repository and report language percentages only.\n";
@@ -611,6 +616,7 @@ namespace repaddu::cli
         getBool("emit_tree", opt.emitTree);
         getBool("emit_cmake", opt.emitCMake);
         getBool("emit_build_files", opt.emitBuildFiles);
+        getBool("emit_links", opt.emitLinks);
         getBool("frontmatter", opt.emitFrontmatter);
         getUInt64("max_file_size", opt.maxFileSize);
         getBool("force_large", opt.forceLargeFiles);

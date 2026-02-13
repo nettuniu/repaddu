@@ -32,6 +32,7 @@ namespace repaddu::config
         ofs << "    \"emit_tree\": true,\n";
         ofs << "    \"emit_cmake\": true,\n";
         ofs << "    \"emit_build_files\": false,\n";
+        ofs << "    \"emit_links\": true,\n";
         ofs << "    \"frontmatter\": false,\n";
         ofs << "    \"max_file_size\": 1048576,\n";
         ofs << "    \"force_large\": false,\n";

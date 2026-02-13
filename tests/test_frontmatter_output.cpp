@@ -85,10 +85,37 @@ void test_frontmatter_disabled()
     assert(content.find("---\npath: src/main.cpp\n") == std::string::npos);
     }
 
+void test_overview_links_disabled()
+    {
+    const std::filesystem::path repoRoot = std::filesystem::path(REPADDU_TEST_ROOT) / "fixtures" / "sample_repo";
+
+    repaddu::core::CliOptions options;
+    options.inputPath = repoRoot;
+    options.outputPath = makeTempOutDir("repaddu_overview_no_links");
+    options.emitTree = false;
+    options.emitCMake = false;
+    options.emitBuildFiles = false;
+    options.emitLinks = false;
+
+    std::vector<repaddu::core::FileEntry> files = { makeEntry(repoRoot) };
+    repaddu::core::OutputChunk chunk;
+    chunk.category = "source";
+    chunk.title = "source";
+    chunk.fileIndices = { 0 };
+
+    const auto result = repaddu::format::writeOutputs(options, files, { chunk }, "", {}, {});
+    assert(result.code == repaddu::core::ExitCode::success);
+
+    const std::string content = readText(options.outputPath / "000_overview.md");
+    assert(content.find("[001_source.md](001_source.md)") == std::string::npos);
+    assert(content.find("- 001_source.md") != std::string::npos);
+    }
+
 int main()
     {
     test_frontmatter_enabled();
     test_frontmatter_disabled();
+    test_overview_links_disabled();
     std::cout << "Frontmatter output tests passed." << std::endl;
     return 0;
     }

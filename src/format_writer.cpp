@@ -337,7 +337,7 @@ namespace repaddu::format
             }
 
         std::string overviewTemplate(const std::string& overviewName, core::MarkerMode mode, bool emitBuildFiles,
-            const std::vector<std::string>& generatedFiles)
+            bool emitLinks, const std::vector<std::string>& generatedFiles)
             {
             std::ostringstream out;
             out << "# repaddu output specification\n\n";
@@ -350,7 +350,14 @@ namespace repaddu::format
                 {
                 // Skip self referencing link if desired, or include it.
                 if (filename == overviewName) continue;
-                out << "- [" << filename << "](" << filename << ")\n";
+                if (emitLinks)
+                    {
+                    out << "- [" << filename << "](" << filename << ")\n";
+                    }
+                else
+                    {
+                    out << "- " << filename << "\n";
+                    }
                 }
             out << "\n";
 
@@ -878,7 +885,8 @@ namespace repaddu::format
             outputNames.push_back(output.filename);
             }
 
-        const std::string overviewContent = overviewTemplate(overviewName, options.markers, options.emitBuildFiles, outputNames);
+        const std::string overviewContent = overviewTemplate(overviewName, options.markers, options.emitBuildFiles,
+            options.emitLinks, outputNames);
         const std::uintmax_t overviewBytes = static_cast<std::uintmax_t>(overviewContent.size());
         if (options.maxBytes > 0 && overviewBytes > options.maxBytes)
             {

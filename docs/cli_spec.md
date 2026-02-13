@@ -93,6 +93,9 @@ repaddu [options] --input <path> --output <path>
 - `--frontmatter`
   - Add YAML frontmatter metadata before each emitted file content block.
   - Default: `false`.
+- `--no-links`
+  - Disable markdown links in overview table of contents (plain filenames only).
+  - Default: links enabled.
 - `--extract-tags`
   - Include TODO/FIXME-like tag summary in `--analyze-only` textual output.
   - Default: `false`.
