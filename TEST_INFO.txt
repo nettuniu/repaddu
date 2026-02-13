@@ -15,7 +15,7 @@ cmake aggregation
 # Future Tests (Planned - see PLAN.md)
 logging & safety
 - Files: src/logger.cpp, src/pii_redactor.cpp
-- Tests: tests/test_logging.cpp, tests/test_pii.cpp
+- Tests: tests/test_logging.cpp (ctest -R repaddu_test_logging), tests/test_pii.cpp (ctest -R repaddu_test_pii)
 
 analysis & stats
 - Files: src/analysis_*.cpp
