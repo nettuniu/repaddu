@@ -309,6 +309,46 @@ void test_generated_json_and_yaml_defaults_are_equivalent()
     std::filesystem::remove(yamlPath, errorCode);
     }
 
+void test_cli_format_overrides_loaded_config_format()
+    {
+    repaddu::core::CliOptions baseOptions;
+    baseOptions.format = repaddu::core::OutputFormat::html;
+
+    const std::vector<std::string> args =
+        {
+            "repaddu",
+            "--format",
+            "jsonl",
+            "-i",
+            ".",
+            "-o",
+            "out"
+        };
+
+    const auto result = repaddu::cli::parseArgs(args, baseOptions);
+    assert(result.result.code == repaddu::core::ExitCode::success);
+    assert(result.options.format == repaddu::core::OutputFormat::jsonl);
+    }
+
+void test_loaded_config_format_is_preserved_without_cli_override()
+    {
+    repaddu::core::CliOptions baseOptions;
+    baseOptions.format = repaddu::core::OutputFormat::jsonl;
+
+    const std::vector<std::string> args =
+        {
+            "repaddu",
+            "-i",
+            ".",
+            "-o",
+            "out"
+        };
+
+    const auto result = repaddu::cli::parseArgs(args, baseOptions);
+    assert(result.result.code == repaddu::core::ExitCode::success);
+    assert(result.options.format == repaddu::core::OutputFormat::jsonl);
+    }
+
 int main()
     {
     test_resolve_config_path_explicit_override();
@@ -322,6 +362,8 @@ int main()
     test_generate_config_custom_yaml_path();
     test_generate_config_custom_yml_uppercase_path();
     test_generated_json_and_yaml_defaults_are_equivalent();
+    test_cli_format_overrides_loaded_config_format();
+    test_loaded_config_format_is_preserved_without_cli_override();
     std::cout << "CLI config path tests passed." << std::endl;
     return 0;
     }
