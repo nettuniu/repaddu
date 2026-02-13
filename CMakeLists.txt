@@ -480,6 +480,22 @@ target_link_libraries(repaddu_test_analysis_json
 
 target_compile_features(repaddu_test_analysis_json PRIVATE cxx_std_20)
 
+add_executable(repaddu_test_analysis_tags_report
+    tests/test_analysis_tags_report.cpp
+)
+
+target_include_directories(repaddu_test_analysis_tags_report
+    PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}/include
+)
+
+target_link_libraries(repaddu_test_analysis_tags_report
+    PRIVATE
+        repaddu_cli
+)
+
+target_compile_features(repaddu_test_analysis_tags_report PRIVATE cxx_std_20)
+
 add_executable(repaddu_test_fixture_picobench
     tests/test_fixture_picobench.cpp
 )
@@ -634,6 +650,7 @@ add_test(NAME repaddu_test_cli_parse_analysis COMMAND repaddu_test_cli_parse_ana
 add_test(NAME repaddu_test_config_analysis COMMAND repaddu_test_config_analysis)
 add_test(NAME repaddu_test_cli_config_path COMMAND repaddu_test_cli_config_path)
 add_test(NAME repaddu_test_analysis_json COMMAND repaddu_test_analysis_json)
+add_test(NAME repaddu_test_analysis_tags_report COMMAND repaddu_test_analysis_tags_report)
 add_test(NAME repaddu_test_fixture_picobench COMMAND repaddu_test_fixture_picobench)
 add_test(NAME repaddu_test_language_profiles COMMAND repaddu_test_language_profiles)
 add_test(NAME repaddu_test_multilanguage_fixture COMMAND repaddu_test_multilanguage_fixture)

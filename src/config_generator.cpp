@@ -40,6 +40,8 @@ namespace repaddu::config
         ofs << "    \"analysis_views\": [],\n";
         ofs << "    \"analysis_deep\": false,\n";
         ofs << "    \"analysis_collapse\": \"none\",\n";
+        ofs << "    \"extract_tags\": false,\n";
+        ofs << "    \"tag_patterns\": \"\",\n";
         ofs << "    \"isolate_docs\": false,\n";
         ofs << "    \"dry_run\": false,\n";
         ofs << "    \"parallel_traversal\": true,\n";

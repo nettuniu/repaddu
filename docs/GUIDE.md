@@ -110,6 +110,8 @@ Notes:
 - `--analysis-views <csv>`: Select analysis views.
 - `--analysis-deep`: Enable deeper relationship extraction.
 - `--analysis-collapse <mode>`: `none|folder|target`.
+- `--extract-tags`: Include TODO/FIXME-like tag summary in analyze output.
+- `--tag-patterns <path>`: Load additional tag patterns from file (one per line).
 - `--isolate-docs`: Put docs (`.md`, `.txt`) in a separate chunk.
 - `--redact-pii`: Redact common PII patterns.
 - `--dry-run`: Simulate run without writing files.
@@ -176,6 +178,8 @@ repaddu --config ./configs/project.repaddu.json --init
 - `analysis_views` (array of strings)
 - `analysis_deep` (bool)
 - `analysis_collapse` (`none|folder|target`)
+- `extract_tags` (bool)
+- `tag_patterns` (string path)
 - `isolate_docs` (bool)
 - `dry_run` (bool)
 - `parallel_traversal` (bool)

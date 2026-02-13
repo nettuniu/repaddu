@@ -85,6 +85,8 @@ namespace repaddu::core
         std::vector<std::string> analysisViews;
         bool analysisDeep = false;
         std::string analysisCollapse = "none";
+        bool extractTags = false;
+        std::filesystem::path tagPatternsPath;
         bool isolateDocs = false;
         bool dryRun = false;
         bool generateConfig = false;

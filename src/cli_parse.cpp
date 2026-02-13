@@ -387,6 +387,19 @@ namespace repaddu::cli
                     return { options, { core::ExitCode::invalid_usage, "--analysis-collapse must be one of: none, folder, target." }, "" };
                     }
                 }
+            else if (arg == "--extract-tags")
+                {
+                options.extractTags = true;
+                }
+            else if (arg == "--tag-patterns")
+                {
+                std::string value;
+                if (!requireValue(value))
+                    {
+                    return { options, { core::ExitCode::invalid_usage, "--tag-patterns requires a value." }, "" };
+                    }
+                options.tagPatternsPath = value;
+                }
             else if (arg == "--isolate-docs")
                 {
                 options.isolateDocs = true;
@@ -502,6 +515,8 @@ namespace repaddu::cli
         out << "  --analysis-views <csv>      Comma-separated analysis views to emit.\n";
         out << "  --analysis-deep             Enable deeper relationship analysis (optional edges).\n";
         out << "  --analysis-collapse <mode>  none|folder|target. Default: none.\n";
+        out << "  --extract-tags              Extract TODO/FIXME-like tags in analyze output.\n";
+        out << "  --tag-patterns <path>       Load additional tag patterns from file (one per line).\n";
         out << "  --isolate-docs              Group all documentation files (*.md, *.txt) into a separate chunk.\n";
         out << "  --dry-run                   Simulate execution without writing files.\n";
         out << "  --init                      Generate a default .repaddu.json config file.\n";
@@ -599,6 +614,8 @@ namespace repaddu::cli
         getString("analysis_collapse", opt.analysisCollapse);
         getBool("analysis_deep", opt.analysisDeep);
         getStringArray("analysis_views", opt.analysisViews);
+        getBool("extract_tags", opt.extractTags);
+        getPath("tag_patterns", opt.tagPatternsPath);
         getBool("isolate_docs", opt.isolateDocs);
         getBool("dry_run", opt.dryRun);
         getBool("parallel_traversal", opt.parallelTraversal);

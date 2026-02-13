@@ -90,6 +90,12 @@ repaddu [options] --input <path> --output <path>
   - Boundary marker style for file content blocks.
   - Allowed values: `fenced`, `sentinel`.
   - Default: `fenced`.
+- `--extract-tags`
+  - Include TODO/FIXME-like tag summary in `--analyze-only` textual output.
+  - Default: `false`.
+- `--tag-patterns <path>`
+  - Load additional tag patterns from file (one pattern per line, `#` comments allowed).
+  - Default: empty.
 ### Language and build system
 - `--language <id>`
   - Explicit language profile: `auto`, `c`, `cpp`, `rust`, `python`.

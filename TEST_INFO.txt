@@ -23,7 +23,7 @@ analysis & stats
 
 analysis tags
 - Files: include/repaddu/analysis_tags.h, src/analysis_tags.cpp
-- Tests: tests/test_tags.cpp (ctest -R repaddu_test_tags)
+- Tests: tests/test_tags.cpp (ctest -R repaddu_test_tags), tests/test_analysis_tags_report.cpp (ctest -R repaddu_test_analysis_tags_report)
 
 analysis graph
 - Files: include/repaddu/analysis_graph.h, src/analysis_graph.cpp

@@ -1,6 +1,7 @@
 #include "repaddu/cli_parse.h"
 
 #include <cassert>
+#include <filesystem>
 #include <iostream>
 
 void test_analysis_flags()
@@ -14,6 +15,9 @@ void test_analysis_flags()
         "--analysis-deep",
         "--analysis-collapse",
         "folder",
+        "--extract-tags",
+        "--tag-patterns",
+        "tags.txt",
         "-i",
         "input",
         "-o",
@@ -25,6 +29,8 @@ void test_analysis_flags()
     assert(result.options.analysisEnabled == true);
     assert(result.options.analysisDeep == true);
     assert(result.options.analysisCollapse == "folder");
+    assert(result.options.extractTags == true);
+    assert(result.options.tagPatternsPath == std::filesystem::path("tags.txt"));
     assert(result.options.analysisViews.size() == 2);
     assert(result.options.analysisViews[0] == "symbols");
     assert(result.options.analysisViews[1] == "dependencies");
