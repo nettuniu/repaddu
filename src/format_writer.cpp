@@ -58,7 +58,7 @@ namespace repaddu::format
                 return true;
                 }
 
-            if (size.QuadPart > static_cast<LONGLONG>(std::numeric_limits<std::size_t>::max()))
+            if (size.QuadPart > static_cast<LONGLONG>((std::numeric_limits<std::size_t>::max)()))
                 {
                 CloseHandle(fileHandle);
                 return false;
