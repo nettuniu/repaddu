@@ -114,6 +114,9 @@ repaddu [options] --input <path> --output <path>
 - `--config <path>`
   - Config file path to load and/or generate (`.json`, `.yaml`, `.yml`).
   - Default target for generation: `.repaddu.json`.
+- `--init` / `--generate-config`
+  - Generate a default config at `--config` path.
+  - Output format follows extension (`.json`, `.yaml`, `.yml`), default `.repaddu.json`.
 - `-h, --help`
   - Show help and exit with code 0.
 - `--version`
@@ -122,7 +125,7 @@ repaddu [options] --input <path> --output <path>
   - Scan repository and report language percentages only (no output files).
 
 ## Precedence and conflicts
-- Config precedence: defaults < config file (`--config` path or `.repaddu.json`) < CLI flags.
+- Config precedence: defaults < config file (`--config` path or auto-loaded `.repaddu.json`/`.repaddu.yaml`/`.repaddu.yml`) < CLI flags.
 - `--extensions` overrides `--include-headers` and `--include-sources`.
 - If both `--include-headers` and `--include-sources` are omitted, default is `sources`.
 - `--group-by component` requires `--component-map`.

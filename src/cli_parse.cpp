@@ -529,7 +529,7 @@ namespace repaddu::cli
         out << "  --tag-patterns <path>       Load additional tag patterns from file (one per line).\n";
         out << "  --isolate-docs              Group all documentation files (*.md, *.txt) into a separate chunk.\n";
         out << "  --dry-run                   Simulate execution without writing files.\n";
-        out << "  --init                      Generate a default .repaddu.json config file.\n";
+        out << "  --init                      Generate a default config file (JSON or YAML by --config extension).\n";
         out << "  --config <path>             Config path to load and/or generate. Default: .repaddu.json.\n";
         out << "  --format <fmt>              markdown|jsonl|html. Default: markdown.\n";
         out << "  --group-by <mode>           directory|component|type|size. Default: directory.\n";

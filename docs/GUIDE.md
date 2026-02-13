@@ -120,7 +120,7 @@ Notes:
 
 ### Config/bootstrap and misc
 
-- `--init` or `--generate-config`: Create default `.repaddu.json` in current folder.
+- `--init` or `--generate-config`: Create a default config in current folder (`.repaddu.json` by default).
 - `--config <path>`: Config path to load and/or generate (default `.repaddu.json`).
 - `--language <id>`: `auto|c|cpp|rust|python`.
 - `--build-system <id>`: `auto|cmake|make|meson|bazel|cargo|npm|python`.
@@ -143,7 +143,7 @@ Use `--config <path>` to override the default config location.
 
 ### Precedence
 
-- Defaults (built-in) < `.repaddu.json` < CLI flags
+- Defaults (built-in) < auto-loaded config (`.repaddu.json`, `.repaddu.yaml`, `.repaddu.yml`) < CLI flags
 
 ### Generate starter config
 
@@ -155,6 +155,12 @@ Generate at a custom path:
 
 ```bash
 repaddu --config ./configs/project.repaddu.json --init
+```
+
+Generate YAML config:
+
+```bash
+repaddu --config ./configs/project.repaddu.yaml --init
 ```
 
 ### Supported keys
