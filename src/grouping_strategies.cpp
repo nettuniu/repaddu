@@ -107,6 +107,12 @@ namespace repaddu::grouping
 
         bool isDocumentationFile(const core::FileEntry& entry)
             {
+            const std::string filenameLower = core::toLowerCopy(entry.relativePath.filename().string());
+            if (filenameLower == "cmakelists.txt" || filenameLower == "requirements.txt")
+                {
+                return false;
+                }
+
             const std::string& ext = entry.extensionLower;
             return ext == ".md" || ext == ".txt" || ext == ".rst" || ext == ".adoc";
             }
@@ -293,6 +299,7 @@ namespace repaddu::grouping
         for (std::size_t index = 0; index < files.size(); ++index)
             {
             const core::FileEntry& entry = files[index];
+            const bool documentationFile = options.isolateDocs && isDocumentationFile(entry);
             if (!options.includeBinaries && entry.isBinary)
                 {
                 continue;
@@ -312,7 +319,7 @@ namespace repaddu::grouping
                 continue;
                 }
 
-            if (includeExt.empty())
+            if (includeExt.empty() && !documentationFile)
                 {
                 if (options.includeHeaders && !options.includeSources)
                     {
@@ -342,10 +349,44 @@ namespace repaddu::grouping
 
         if (options.groupBy == core::GroupingMode::size)
             {
-            core::Group group;
-            group.name = "size";
-            group.fileIndices = result.includedIndices;
-            result.groups.push_back(std::move(group));
+            if (options.isolateDocs)
+                {
+                core::Group docsGroup;
+                docsGroup.name = "documentation";
+                core::Group sizeGroup;
+                sizeGroup.name = "size";
+
+                for (std::size_t index : result.includedIndices)
+                    {
+                    if (isDocumentationFile(files[index]))
+                        {
+                        docsGroup.fileIndices.push_back(index);
+                        }
+                    else
+                        {
+                        sizeGroup.fileIndices.push_back(index);
+                        }
+                    }
+
+                if (!docsGroup.fileIndices.empty())
+                    {
+                    docsGroup.fileIndices = applyHeadersFirst(files, docsGroup.fileIndices, options.headersFirst);
+                    result.groups.push_back(std::move(docsGroup));
+                    }
+                if (!sizeGroup.fileIndices.empty())
+                    {
+                    sizeGroup.fileIndices = applyHeadersFirst(files, sizeGroup.fileIndices, options.headersFirst);
+                    result.groups.push_back(std::move(sizeGroup));
+                    }
+                }
+            else
+                {
+                core::Group group;
+                group.name = "size";
+                group.fileIndices = result.includedIndices;
+                result.groups.push_back(std::move(group));
+                }
+
             return result;
             }
 
@@ -423,7 +464,35 @@ namespace repaddu::grouping
                 {
                 return {};
                 }
-            return sizeBalancedChunks(options, files, groups.front().fileIndices);
+
+            std::vector<core::OutputChunk> result;
+            for (const auto& group : groups)
+                {
+                if (group.fileIndices.empty())
+                    {
+                    continue;
+                    }
+
+                if (options.isolateDocs && group.name == "documentation")
+                    {
+                    core::OutputChunk docsChunk;
+                    docsChunk.category = "documentation";
+                    docsChunk.title = "documentation";
+                    docsChunk.fileIndices = group.fileIndices;
+                    std::sort(docsChunk.fileIndices.begin(), docsChunk.fileIndices.end(),
+                        [&files](std::size_t lhs, std::size_t rhs)
+                        {
+                        return files[lhs].relativePath.string() < files[rhs].relativePath.string();
+                        });
+                    result.push_back(std::move(docsChunk));
+                    continue;
+                    }
+
+                std::vector<core::OutputChunk> sized = sizeBalancedChunks(options, files, group.fileIndices);
+                result.insert(result.end(), sized.begin(), sized.end());
+                }
+
+            return result;
             }
 
         std::vector<core::OutputChunk> chunks;

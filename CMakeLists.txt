@@ -233,6 +233,25 @@ target_link_libraries(repaddu_test_grouping
 target_compile_features(repaddu_test_grouping PRIVATE cxx_std_20)
 target_compile_definitions(repaddu_test_grouping PRIVATE REPADDU_TEST_ROOT="${CMAKE_CURRENT_SOURCE_DIR}")
 
+add_executable(repaddu_test_isolate_docs
+    tests/test_isolate_docs.cpp
+)
+
+target_include_directories(repaddu_test_isolate_docs
+    PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}/include
+)
+
+target_link_libraries(repaddu_test_isolate_docs
+    PRIVATE
+        repaddu_core
+        repaddu_io
+        repaddu_grouping
+)
+
+target_compile_features(repaddu_test_isolate_docs PRIVATE cxx_std_20)
+target_compile_definitions(repaddu_test_isolate_docs PRIVATE REPADDU_TEST_ROOT="${CMAKE_CURRENT_SOURCE_DIR}")
+
 add_executable(repaddu_test_cmake
     tests/test_cmake_aggregation.cpp
 )
@@ -600,6 +619,7 @@ target_compile_definitions(repaddu_test_analysis_lsp PRIVATE REPADDU_TEST_ROOT="
 
 add_test(NAME repaddu_test_filtering COMMAND repaddu_test_filtering)
 add_test(NAME repaddu_test_grouping COMMAND repaddu_test_grouping)
+add_test(NAME repaddu_test_isolate_docs COMMAND repaddu_test_isolate_docs)
 add_test(NAME repaddu_test_cmake COMMAND repaddu_test_cmake)
 add_test(NAME repaddu_test_logging COMMAND repaddu_test_logging)
 add_test(NAME repaddu_test_binary COMMAND repaddu_test_binary)
