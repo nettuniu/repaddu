@@ -6,7 +6,7 @@ core/io/grouping/format
 
 cli
 - Files: src/cli_*.cpp, src/main.cpp
-- Tests: tests/test_grouping.cpp (ctest -R repaddu_test_grouping), tests/test_cli_parse_analysis.cpp (ctest -R repaddu_test_cli_parse_analysis), tests/test_config_analysis.cpp (ctest -R repaddu_test_config_analysis), tests/test_cli_config_path.cpp (ctest -R repaddu_test_cli_config_path)
+- Tests: tests/test_grouping.cpp (ctest -R repaddu_test_grouping), tests/test_cli_parse_analysis.cpp (ctest -R repaddu_test_cli_parse_analysis), tests/test_config_analysis.cpp (ctest -R repaddu_test_config_analysis), tests/test_cli_config_path.cpp (ctest -R repaddu_test_cli_config_path), tests/test_dry_run.cpp (ctest -R repaddu_test_dry_run)
 
 cmake aggregation
 - Files: src/io_traversal.cpp, src/format_writer.cpp
