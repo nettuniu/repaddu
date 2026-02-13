@@ -8,6 +8,97 @@
 #include <sstream>
 #include <vector>
 
+namespace
+    {
+    class ScopedCurrentPath
+        {
+        public:
+            explicit ScopedCurrentPath(const std::filesystem::path& path)
+              :
+              previousPath_(std::filesystem::current_path())
+                {
+                std::filesystem::current_path(path);
+                }
+
+            ~ScopedCurrentPath()
+                {
+                std::error_code errorCode;
+                std::filesystem::current_path(previousPath_, errorCode);
+                }
+
+        private:
+            std::filesystem::path previousPath_;
+        };
+
+    void writeFile(const std::filesystem::path& path, const std::string& content)
+        {
+        std::ofstream ofs(path);
+        ofs << content;
+        }
+
+    void removeIfExists(const std::filesystem::path& path)
+        {
+        std::error_code errorCode;
+        std::filesystem::remove(path, errorCode);
+        }
+
+    void clearDefaultConfigFiles()
+        {
+        removeIfExists(".repaddu.json");
+        removeIfExists(".repaddu.yaml");
+        removeIfExists(".repaddu.yml");
+        }
+    }
+
+void test_resolve_config_path_explicit_override()
+    {
+    const std::vector<std::string> args =
+        {
+            "repaddu",
+            "--config",
+            "configs/custom.yaml"
+        };
+    assert(repaddu::cli::resolveConfigPath(args) == std::filesystem::path("configs/custom.yaml"));
+    }
+
+void test_resolve_config_path_precedence_order()
+    {
+    const std::filesystem::path tempDir = std::filesystem::temp_directory_path()
+        / "repaddu_resolve_config_precedence";
+    std::error_code errorCode;
+    std::filesystem::remove_all(tempDir, errorCode);
+    std::filesystem::create_directories(tempDir, errorCode);
+    ScopedCurrentPath cwd(tempDir);
+
+    clearDefaultConfigFiles();
+    writeFile(".repaddu.yml", "input: yml\n");
+    assert(repaddu::cli::resolveConfigPath({ "repaddu" }) == std::filesystem::path(".repaddu.yml"));
+
+    writeFile(".repaddu.yaml", "input: yaml\n");
+    assert(repaddu::cli::resolveConfigPath({ "repaddu" }) == std::filesystem::path(".repaddu.yaml"));
+
+    writeFile(".repaddu.json", "{ \"input\": \"json\" }\n");
+    assert(repaddu::cli::resolveConfigPath({ "repaddu" }) == std::filesystem::path(".repaddu.json"));
+
+    clearDefaultConfigFiles();
+    std::filesystem::remove_all(tempDir, errorCode);
+    }
+
+void test_resolve_config_path_default_when_missing()
+    {
+    const std::filesystem::path tempDir = std::filesystem::temp_directory_path()
+        / "repaddu_resolve_config_default";
+    std::error_code errorCode;
+    std::filesystem::remove_all(tempDir, errorCode);
+    std::filesystem::create_directories(tempDir, errorCode);
+    ScopedCurrentPath cwd(tempDir);
+
+    clearDefaultConfigFiles();
+    assert(repaddu::cli::resolveConfigPath({ "repaddu" }) == std::filesystem::path(".repaddu.json"));
+
+    std::filesystem::remove_all(tempDir, errorCode);
+    }
+
 void test_config_path_parsing()
     {
     const std::vector<std::string> args =
@@ -184,6 +275,9 @@ void test_generated_json_and_yaml_defaults_are_equivalent()
 
 int main()
     {
+    test_resolve_config_path_explicit_override();
+    test_resolve_config_path_precedence_order();
+    test_resolve_config_path_default_when_missing();
     test_config_path_parsing();
     test_config_missing_value();
     test_generate_config_custom_path();

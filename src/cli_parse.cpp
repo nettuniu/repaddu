@@ -496,6 +496,31 @@ namespace repaddu::cli
         return result;
         }
 
+    std::filesystem::path resolveConfigPath(const std::vector<std::string>& args)
+        {
+        for (std::size_t i = 1; i + 1 < args.size(); ++i)
+            {
+            if (args[i] == "--config")
+                {
+                return args[i + 1];
+                }
+            }
+
+        if (std::filesystem::exists(".repaddu.json"))
+            {
+            return ".repaddu.json";
+            }
+        if (std::filesystem::exists(".repaddu.yaml"))
+            {
+            return ".repaddu.yaml";
+            }
+        if (std::filesystem::exists(".repaddu.yml"))
+            {
+            return ".repaddu.yml";
+            }
+        return ".repaddu.json";
+        }
+
     std::string helpText()
         {
         std::ostringstream out;

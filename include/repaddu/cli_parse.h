@@ -15,6 +15,7 @@ namespace repaddu::cli
             };
     
         ParseResult parseArgs(const std::vector<std::string>& args, const core::CliOptions& baseOptions = core::CliOptions{});
+        std::filesystem::path resolveConfigPath(const std::vector<std::string>& args);
         
         core::RunResult loadConfigFile(const std::filesystem::path& path, core::CliOptions& outOptions);
     
