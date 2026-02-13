@@ -99,6 +99,29 @@ void test_resolve_config_path_default_when_missing()
     std::filesystem::remove_all(tempDir, errorCode);
     }
 
+void test_resolve_config_path_ignores_missing_config_value()
+    {
+    const std::filesystem::path tempDir = std::filesystem::temp_directory_path()
+        / "repaddu_resolve_config_missing_value";
+    std::error_code errorCode;
+    std::filesystem::remove_all(tempDir, errorCode);
+    std::filesystem::create_directories(tempDir, errorCode);
+    ScopedCurrentPath cwd(tempDir);
+
+    clearDefaultConfigFiles();
+    writeFile(".repaddu.yaml", "input: yaml\n");
+
+    const std::vector<std::string> args =
+        {
+            "repaddu",
+            "--config"
+        };
+    assert(repaddu::cli::resolveConfigPath(args) == std::filesystem::path(".repaddu.yaml"));
+
+    clearDefaultConfigFiles();
+    std::filesystem::remove_all(tempDir, errorCode);
+    }
+
 void test_config_path_parsing()
     {
     const std::vector<std::string> args =
@@ -278,6 +301,7 @@ int main()
     test_resolve_config_path_explicit_override();
     test_resolve_config_path_precedence_order();
     test_resolve_config_path_default_when_missing();
+    test_resolve_config_path_ignores_missing_config_value();
     test_config_path_parsing();
     test_config_missing_value();
     test_generate_config_custom_path();
