@@ -656,7 +656,28 @@ namespace repaddu::cli
             std::string line;
             while (std::getline(stream, line))
                 {
-                const std::string stripped = trim(line);
+                std::string noInlineComment;
+                noInlineComment.reserve(line.size());
+                bool inSingleQuote = false;
+                bool inDoubleQuote = false;
+                for (char ch : line)
+                    {
+                    if (ch == '\'' && !inDoubleQuote)
+                        {
+                        inSingleQuote = !inSingleQuote;
+                        }
+                    else if (ch == '"' && !inSingleQuote)
+                        {
+                        inDoubleQuote = !inDoubleQuote;
+                        }
+                    else if (ch == '#' && !inSingleQuote && !inDoubleQuote)
+                        {
+                        break;
+                        }
+                    noInlineComment.push_back(ch);
+                    }
+
+                const std::string stripped = trim(noInlineComment);
                 if (stripped.empty() || stripped.front() == '#')
                     {
                     continue;
