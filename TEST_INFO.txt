@@ -19,7 +19,7 @@ logging & safety
 
 analysis & stats
 - Files: src/analysis_*.cpp
-- Tests: tests/test_analysis.cpp
+- Tests: tests/test_analysis.cpp (ctest -R repaddu_test_analysis)
 
 analysis tags
 - Files: include/repaddu/analysis_tags.h, src/analysis_tags.cpp

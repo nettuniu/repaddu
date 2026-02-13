@@ -480,6 +480,23 @@ target_link_libraries(repaddu_test_analysis_json
 
 target_compile_features(repaddu_test_analysis_json PRIVATE cxx_std_20)
 
+add_executable(repaddu_test_analysis
+    tests/test_analysis.cpp
+)
+
+target_include_directories(repaddu_test_analysis
+    PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}/include
+)
+
+target_link_libraries(repaddu_test_analysis
+    PRIVATE
+        repaddu_cli
+)
+
+target_compile_features(repaddu_test_analysis PRIVATE cxx_std_20)
+target_compile_definitions(repaddu_test_analysis PRIVATE REPADDU_TEST_ROOT="${CMAKE_CURRENT_SOURCE_DIR}")
+
 add_executable(repaddu_test_frontmatter_output
     tests/test_frontmatter_output.cpp
 )
@@ -666,6 +683,7 @@ add_test(NAME repaddu_test_analysis_views COMMAND repaddu_test_analysis_views)
 add_test(NAME repaddu_test_cli_parse_analysis COMMAND repaddu_test_cli_parse_analysis)
 add_test(NAME repaddu_test_config_analysis COMMAND repaddu_test_config_analysis)
 add_test(NAME repaddu_test_cli_config_path COMMAND repaddu_test_cli_config_path)
+add_test(NAME repaddu_test_analysis COMMAND repaddu_test_analysis)
 add_test(NAME repaddu_test_analysis_json COMMAND repaddu_test_analysis_json)
 add_test(NAME repaddu_test_frontmatter_output COMMAND repaddu_test_frontmatter_output)
 add_test(NAME repaddu_test_analysis_tags_report COMMAND repaddu_test_analysis_tags_report)
