@@ -94,6 +94,7 @@ void test_help_mentions_config_generation_formats()
     assert(help.find("--init") != std::string::npos);
     assert(help.find("JSON or YAML") != std::string::npos);
     assert(help.find("--config <path>") != std::string::npos);
+    assert(help.find(".repaddu.yaml/.repaddu.yml") != std::string::npos);
     }
 
 int main()
