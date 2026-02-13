@@ -92,12 +92,40 @@ void test_generate_config_custom_yaml_path()
     std::filesystem::remove(tempPath, errorCode);
     }
 
+void test_generate_config_custom_yml_uppercase_path()
+    {
+    const std::filesystem::path tempPath = std::filesystem::temp_directory_path()
+        / "repaddu_custom_config_test.YML";
+    std::error_code errorCode;
+    std::filesystem::remove(tempPath, errorCode);
+
+    repaddu::core::CliOptions options;
+    options.generateConfig = true;
+    options.configPath = tempPath;
+
+    const auto runResult = repaddu::cli::run(options, nullptr);
+    assert(runResult.code == repaddu::core::ExitCode::success);
+    assert(std::filesystem::exists(tempPath));
+
+    std::ifstream ifs(tempPath);
+    assert(static_cast<bool>(ifs));
+    std::ostringstream content;
+    content << ifs.rdbuf();
+    const std::string value = content.str();
+
+    assert(value.find("group_by: directory\n") != std::string::npos);
+    assert(value.find("\"group_by\"") == std::string::npos);
+
+    std::filesystem::remove(tempPath, errorCode);
+    }
+
 int main()
     {
     test_config_path_parsing();
     test_config_missing_value();
     test_generate_config_custom_path();
     test_generate_config_custom_yaml_path();
+    test_generate_config_custom_yml_uppercase_path();
     std::cout << "CLI config path tests passed." << std::endl;
     return 0;
     }
