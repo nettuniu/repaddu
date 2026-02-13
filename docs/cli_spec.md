@@ -107,7 +107,7 @@ repaddu [options] --input <path> --output <path>
   - Explicit language profile: `auto`, `c`, `cpp`, `rust`, `python`.
   - Default: `auto` (current C/C++ behavior).
 - `--build-system <id>`
-  - Explicit build system profile: `auto`, `cmake`, `make`, `meson`, `bazel`, `cargo`, `python`.
+  - Explicit build system profile: `auto`, `cmake`, `make`, `meson`, `bazel`, `cargo`, `npm`, `python`.
   - Default: `auto`.
 
 ### Misc

@@ -123,7 +123,7 @@ Notes:
 - `--init` or `--generate-config`: Create default `.repaddu.json` in current folder.
 - `--config <path>`: Config path to load and/or generate (default `.repaddu.json`).
 - `--language <id>`: `auto|c|cpp|rust|python`.
-- `--build-system <id>`: `auto|cmake|make|meson|bazel|cargo|python`.
+- `--build-system <id>`: `auto|cmake|make|meson|bazel|cargo|npm|python`.
 - `-h, --help`: Print help.
 - `--version`: Print version string.
 

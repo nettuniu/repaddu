@@ -1,0 +1,7 @@
+{
+  "name": "node_fixture",
+  "version": "0.1.0",
+  "scripts": {
+    "test": "node index.js"
+  }
+}

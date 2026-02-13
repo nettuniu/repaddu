@@ -70,12 +70,25 @@ void test_build_system_precedence()
     assert(detected.buildSystemId == "cargo");
     }
 
+void test_detect_npm_build_system()
+    {
+    const std::vector<repaddu::core::FileEntry> files =
+        {
+            makeFile("package.json", ".json"),
+            makeFile("index.js", ".js")
+        };
+
+    const repaddu::core::DetectionResult detected = repaddu::core::detectLanguageAndBuildSystem(files);
+    assert(detected.buildSystemId == "npm");
+    }
+
 int main()
     {
     test_detect_rust_and_cargo();
     test_detect_cpp_precedence_on_tie();
     test_detect_none_when_unknown();
     test_build_system_precedence();
+    test_detect_npm_build_system();
     std::cout << "Language/build auto-detection tests passed." << std::endl;
     return 0;
     }

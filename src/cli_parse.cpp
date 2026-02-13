@@ -326,7 +326,7 @@ namespace repaddu::cli
                     }
                 if (value != "auto" && core::findBuildSystemProfile(value) == nullptr)
                     {
-                    return { options, { core::ExitCode::invalid_usage, "--build-system must be one of: auto, cmake, make, meson, bazel, cargo, python." }, "" };
+                    return { options, { core::ExitCode::invalid_usage, "--build-system must be one of: auto, cmake, make, meson, bazel, cargo, npm, python." }, "" };
                     }
                 options.buildSystem = (value == "auto") ? "" : value;
                 }
@@ -544,7 +544,7 @@ namespace repaddu::cli
         out << "  --frontmatter               Add YAML frontmatter metadata before each file content block.\n";
         out << "  --scan-languages            Scan repository and report language percentages only.\n";
         out << "  --language <id>             auto|c|cpp|rust|python. Default: auto.\n";
-        out << "  --build-system <id>         auto|cmake|make|meson|bazel|cargo|python. Default: auto.\n";
+        out << "  --build-system <id>         auto|cmake|make|meson|bazel|cargo|npm|python. Default: auto.\n";
         out << "  -h, --help                  Show help.\n";
         out << "  --version                   Show version.\n";
         return out.str();

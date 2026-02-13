@@ -51,6 +51,7 @@ namespace repaddu::core
                     { "meson", { "meson.build" } },
                     { "bazel", { "BUILD", "BUILD.bazel" } },
                     { "cargo", { "Cargo.toml", "Cargo.lock", "rust-toolchain", "rust-toolchain.toml" } },
+                    { "npm", { "package.json", "package-lock.json", "yarn.lock", "pnpm-lock.yaml" } },
                     { "python", { "pyproject.toml", "setup.py", "setup.cfg", "requirements.txt" } }
                 };
             return profiles;
@@ -104,6 +105,7 @@ namespace repaddu::core
         bool hasMeson = false;
         bool hasBazel = false;
         bool hasCargo = false;
+        bool hasNpm = false;
         bool hasPythonBuild = false;
         bool hasMake = false;
 
@@ -126,6 +128,11 @@ namespace repaddu::core
                 || filename == "rust-toolchain" || filename == "rust-toolchain.toml")
                 {
                 hasCargo = true;
+                }
+            else if (filename == "package.json" || filename == "package-lock.json"
+                || filename == "yarn.lock" || filename == "pnpm-lock.yaml")
+                {
+                hasNpm = true;
                 }
             else if (filename == "pyproject.toml" || filename == "setup.py"
                 || filename == "setup.cfg" || filename == "requirements.txt")
@@ -173,6 +180,10 @@ namespace repaddu::core
         if (hasCargo)
             {
             result.buildSystemId = "cargo";
+            }
+        else if (hasNpm)
+            {
+            result.buildSystemId = "npm";
             }
         else if (hasCMake)
             {

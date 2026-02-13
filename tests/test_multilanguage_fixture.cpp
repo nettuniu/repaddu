@@ -66,6 +66,12 @@ void test_auto_detection_per_language()
     assert(detected.languageId == "python");
     assert(detected.buildSystemId == "python");
     }
+
+    {
+    const auto traversal = traverseFixture(root / "node");
+    const auto detected = repaddu::core::detectLanguageAndBuildSystem(traversal.files);
+    assert(detected.buildSystemId == "npm");
+    }
     }
 
 void test_extension_filtering()
@@ -96,6 +102,7 @@ void test_build_file_aggregation()
     assert(containsPath(traversal.buildFiles, std::filesystem::path("cpp/CMakeLists.txt")));
     assert(containsPath(traversal.buildFiles, std::filesystem::path("rust/Cargo.toml")));
     assert(containsPath(traversal.buildFiles, std::filesystem::path("python/pyproject.toml")));
+    assert(containsPath(traversal.buildFiles, std::filesystem::path("node/package.json")));
     }
 
 int main()
