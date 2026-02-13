@@ -61,6 +61,19 @@ void test_resolve_config_path_explicit_override()
     assert(repaddu::cli::resolveConfigPath(args) == std::filesystem::path("configs/custom.yaml"));
     }
 
+void test_resolve_config_path_uses_first_explicit_value()
+    {
+    const std::vector<std::string> args =
+        {
+            "repaddu",
+            "--config",
+            "first.yaml",
+            "--config",
+            "second.json"
+        };
+    assert(repaddu::cli::resolveConfigPath(args) == std::filesystem::path("first.yaml"));
+    }
+
 void test_resolve_config_path_precedence_order()
     {
     const std::filesystem::path tempDir = std::filesystem::temp_directory_path()
@@ -299,6 +312,7 @@ void test_generated_json_and_yaml_defaults_are_equivalent()
 int main()
     {
     test_resolve_config_path_explicit_override();
+    test_resolve_config_path_uses_first_explicit_value();
     test_resolve_config_path_precedence_order();
     test_resolve_config_path_default_when_missing();
     test_resolve_config_path_ignores_missing_config_value();
