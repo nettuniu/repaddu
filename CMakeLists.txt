@@ -64,6 +64,7 @@ target_compile_features(repaddu_grouping PUBLIC cxx_std_20)
 
 add_library(repaddu_format
     src/format_writer.cpp
+    src/format_writer_alt_formats.cpp
     src/format_tree.cpp
     src/format_language_report.cpp
     src/format_analysis_report.cpp

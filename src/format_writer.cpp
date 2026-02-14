@@ -2,6 +2,7 @@
 #include "repaddu/pii_redactor.h"
 #include "repaddu/analysis_tokens.h"
 #include "repaddu/logger.h"
+#include "format_writer_alt_formats.h"
 
 #include "repaddu/core_types.h"
 
@@ -25,120 +26,114 @@
 
 namespace repaddu::format
     {
-    namespace
+    namespace detail
         {
-        std::string padNumber(int value, int width)
+        namespace
             {
-            std::ostringstream out;
-            out.fill('0');
-            out.width(width);
-            out << value;
-            return out.str();
-            }
-
-        bool tryReadFileMmap(const std::filesystem::path& path, std::string& outContent)
-            {
+            bool tryReadFileMmap(const std::filesystem::path& path, std::string& outContent)
+                {
 #if defined(_WIN32)
-            const std::wstring widePath = path.wstring();
-            HANDLE fileHandle = CreateFileW(widePath.c_str(), GENERIC_READ, FILE_SHARE_READ, nullptr,
-                OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
-            if (fileHandle == INVALID_HANDLE_VALUE)
-                {
-                return false;
-                }
+                const std::wstring widePath = path.wstring();
+                HANDLE fileHandle = CreateFileW(widePath.c_str(), GENERIC_READ, FILE_SHARE_READ, nullptr,
+                    OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
+                if (fileHandle == INVALID_HANDLE_VALUE)
+                    {
+                    return false;
+                    }
 
-            LARGE_INTEGER size;
-            if (!GetFileSizeEx(fileHandle, &size))
-                {
-                CloseHandle(fileHandle);
-                return false;
-                }
+                LARGE_INTEGER size;
+                if (!GetFileSizeEx(fileHandle, &size))
+                    {
+                    CloseHandle(fileHandle);
+                    return false;
+                    }
 
-            if (size.QuadPart <= 0)
-                {
-                outContent.clear();
-                CloseHandle(fileHandle);
-                return true;
-                }
+                if (size.QuadPart <= 0)
+                    {
+                    outContent.clear();
+                    CloseHandle(fileHandle);
+                    return true;
+                    }
 
-            if (size.QuadPart > static_cast<LONGLONG>((std::numeric_limits<std::size_t>::max)()))
-                {
-                CloseHandle(fileHandle);
-                return false;
-                }
+                if (size.QuadPart > static_cast<LONGLONG>((std::numeric_limits<std::size_t>::max)()))
+                    {
+                    CloseHandle(fileHandle);
+                    return false;
+                    }
 
-            HANDLE mapping = CreateFileMappingW(fileHandle, nullptr, PAGE_READONLY, 0, 0, nullptr);
-            if (!mapping)
-                {
-                CloseHandle(fileHandle);
-                return false;
-                }
+                HANDLE mapping = CreateFileMappingW(fileHandle, nullptr, PAGE_READONLY, 0, 0, nullptr);
+                if (!mapping)
+                    {
+                    CloseHandle(fileHandle);
+                    return false;
+                    }
 
-            void* view = MapViewOfFile(mapping, FILE_MAP_READ, 0, 0, 0);
-            if (!view)
-                {
+                void* view = MapViewOfFile(mapping, FILE_MAP_READ, 0, 0, 0);
+                if (!view)
+                    {
+                    CloseHandle(mapping);
+                    CloseHandle(fileHandle);
+                    return false;
+                    }
+
+                const std::size_t sizeBytes = static_cast<std::size_t>(size.QuadPart);
+                const char* data = static_cast<const char*>(view);
+                outContent.assign(data, data + sizeBytes);
+
+                UnmapViewOfFile(view);
                 CloseHandle(mapping);
                 CloseHandle(fileHandle);
-                return false;
-                }
-
-            const std::size_t sizeBytes = static_cast<std::size_t>(size.QuadPart);
-            const char* data = static_cast<const char*>(view);
-            outContent.assign(data, data + sizeBytes);
-
-            UnmapViewOfFile(view);
-            CloseHandle(mapping);
-            CloseHandle(fileHandle);
-            return true;
+                return true;
 #else
-            const int fd = ::open(path.c_str(), O_RDONLY);
-            if (fd < 0)
-                {
-                return false;
-                }
+                const int fd = ::open(path.c_str(), O_RDONLY);
+                if (fd < 0)
+                    {
+                    return false;
+                    }
 
-            struct stat statbuf;
-            if (::fstat(fd, &statbuf) != 0)
-                {
-                ::close(fd);
-                return false;
-                }
+                struct stat statbuf;
+                if (::fstat(fd, &statbuf) != 0)
+                    {
+                    ::close(fd);
+                    return false;
+                    }
 
-            if (statbuf.st_size <= 0)
-                {
-                outContent.clear();
+                if (statbuf.st_size <= 0)
+                    {
+                    outContent.clear();
+                    ::close(fd);
+                    return true;
+                    }
+
+                if (static_cast<unsigned long long>(statbuf.st_size) > std::numeric_limits<std::size_t>::max())
+                    {
+                    ::close(fd);
+                    return false;
+                    }
+
+                void* mapping = ::mmap(nullptr, static_cast<std::size_t>(statbuf.st_size), PROT_READ, MAP_PRIVATE, fd, 0);
+                if (mapping == MAP_FAILED)
+                    {
+                    ::close(fd);
+                    return false;
+                    }
+
+                const std::size_t sizeBytes = static_cast<std::size_t>(statbuf.st_size);
+                const char* data = static_cast<const char*>(mapping);
+                outContent.assign(data, data + sizeBytes);
+
+                ::munmap(mapping, sizeBytes);
                 ::close(fd);
                 return true;
-                }
-
-            if (static_cast<unsigned long long>(statbuf.st_size) > std::numeric_limits<std::size_t>::max())
-                {
-                ::close(fd);
-                return false;
-                }
-
-            void* mapping = ::mmap(nullptr, static_cast<std::size_t>(statbuf.st_size), PROT_READ, MAP_PRIVATE, fd, 0);
-            if (mapping == MAP_FAILED)
-                {
-                ::close(fd);
-                return false;
-                }
-
-            const std::size_t sizeBytes = static_cast<std::size_t>(statbuf.st_size);
-            const char* data = static_cast<const char*>(mapping);
-            outContent.assign(data, data + sizeBytes);
-
-            ::munmap(mapping, sizeBytes);
-            ::close(fd);
-            return true;
 #endif
+                }
             }
 
-        std::string readFileContent(const std::filesystem::path& path, 
-                                    core::RunResult& outResult,
-                                    std::uintmax_t* outTokens = nullptr,
-                                    security::PiiRedactor* redactor = nullptr,
-                                    const std::string& relativePath = "")
+        std::string readFileContent(const std::filesystem::path& path,
+            core::RunResult& outResult,
+            std::uintmax_t* outTokens,
+            security::PiiRedactor* redactor,
+            const std::string& relativePath)
             {
             std::string content;
             if (!tryReadFileMmap(path, content))
@@ -160,13 +155,25 @@ namespace repaddu::format
                 {
                 content = redactor->redact(content, relativePath);
                 }
-            
+
             if (outTokens)
                 {
                 *outTokens = analysis::TokenEstimator::estimateTokens(content);
                 }
 
             return content;
+            }
+        }
+
+    namespace
+        {
+        std::string padNumber(int value, int width)
+            {
+            std::ostringstream out;
+            out.fill('0');
+            out.width(width);
+            out << value;
+            return out.str();
             }
 
         std::string escapeQuotes(std::string value)
@@ -449,7 +456,7 @@ namespace repaddu::format
                 }
 
             core::RunResult readResult;
-            outContent = readFileContent(path, readResult, outTokens, redactor, relativePath);
+            outContent = detail::readFileContent(path, readResult, outTokens, redactor, relativePath);
             if (readResult.code != core::ExitCode::success)
                 {
                 return readResult;
@@ -525,176 +532,6 @@ namespace repaddu::format
             return counter.bytes;
             }
 
-        std::string escapeJsonString(const std::string& value)
-            {
-            std::ostringstream ss;
-            ss << '"';
-            for (char c : value)
-                {
-                switch (c)
-                    {
-                    case '"': ss << "\\\""; break;
-                    case '\\': ss << "\\\\"; break;
-                    case '\b': ss << "\\b"; break;
-                    case '\f': ss << "\\f"; break;
-                    case '\n': ss << "\\n"; break;
-                    case '\r': ss << "\\r"; break;
-                    case '\t': ss << "\\t"; break;
-                    default:
-                        if ('\x00' <= c && c <= '\x1f')
-                            {
-                            ss << "\\u" << std::hex << std::setw(4) << std::setfill('0') << (int)c;
-                            }
-                        else
-                            {
-                            ss << c;
-                            }
-                    }
-                }
-            ss << '"';
-            return ss.str();
-            }
-
-        core::RunResult writeJsonlOutput(const core::CliOptions& options,
-            const std::vector<core::FileEntry>& files,
-            const std::vector<core::OutputChunk>& chunks,
-            security::PiiRedactor* redactor)
-            {
-            // For JSONL, we essentially flatten the chunks or just iterate all files in the chunks.
-            // Since chunks just point to files, we can iterate chunks and then their files.
-            // This preserves the "grouping" order which might be desirable.
-            
-            std::string filename = "dataset.jsonl";
-            std::filesystem::path outPath = options.outputPath / filename;
-
-            if (options.dryRun)
-                {
-                LogInfo("[Dry Run] Would write JSONL: " + filename);
-                return { core::ExitCode::success, "" };
-                }
-            
-            std::ofstream stream(outPath, std::ios::binary);
-            if (!stream)
-                {
-                return { core::ExitCode::io_failure, "Failed to create JSONL output file." };
-                }
-
-            // Track visited files to avoid duplicates if chunks overlap (though they shouldn't currently)
-            std::vector<bool> visited(files.size(), false);
-
-            for (const auto& chunk : chunks)
-                {
-                for (std::size_t fileIndex : chunk.fileIndices)
-                    {
-                    if (visited[fileIndex]) continue;
-                    visited[fileIndex] = true;
-
-                    core::RunResult readResult;
-                    core::FileEntry entry = files[fileIndex];
-                    const std::string content = readFileContent(entry.absolutePath, readResult, &entry.tokenCount, redactor, entry.relativePath.string());
-                    
-                    if (readResult.code != core::ExitCode::success)
-                        {
-                        return readResult;
-                        }
-
-                    stream << "{";
-                    stream << "\"path\": " << escapeJsonString(entry.relativePath.generic_string()) << ", ";
-                    stream << "\"class\": " << escapeJsonString(core::fileClassLabel(entry.fileClass)) << ", ";
-                    stream << "\"bytes\": " << entry.sizeBytes << ", ";
-                    stream << "\"tokens\": " << entry.tokenCount << ", ";
-                    stream << "\"content\": " << escapeJsonString(content);
-                    stream << "}\n";
-                    }
-                }
-            
-            return { core::ExitCode::success, "" };
-            }
-
-        core::RunResult writeHtmlOutput(const core::CliOptions& options,
-            const std::vector<core::FileEntry>& files,
-            security::PiiRedactor* redactor)
-            {
-            std::string filename = "index.html";
-            std::filesystem::path outPath = options.outputPath / filename;
-
-            if (options.dryRun)
-                {
-                LogInfo("[Dry Run] Would write HTML: " + filename);
-                return { core::ExitCode::success, "" };
-                }
-
-            std::ofstream stream(outPath);
-            if (!stream)
-                {
-                return { core::ExitCode::io_failure, "Failed to create HTML output file." };
-                }
-
-            // Minimal HTML template with embedded data
-            stream << R"(<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Repaddu Code Report</title>
-    <style>
-        body { font-family: sans-serif; margin: 0; display: flex; height: 100vh; overflow: hidden; }
-        #sidebar { width: 300px; border-right: 1px solid #ccc; overflow-y: auto; background: #f5f5f5; padding: 10px; }
-        #content { flex: 1; padding: 20px; overflow-y: auto; background: #fff; }
-        .file-item { cursor: pointer; padding: 2px 5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .file-item:hover { background: #e0e0e0; }
-        .file-item.active { background: #d0d0ff; font-weight: bold; }
-        pre { background: #f8f8f8; padding: 10px; border: 1px solid #ddd; overflow-x: auto; }
-    </style>
-</head>
-<body>
-    <div id="sidebar"><h3>Files</h3><div id="file-list"></div></div>
-    <div id="content"><h2>Select a file to view content</h2><pre id="code-view"></pre></div>
-    <script>
-        const files = [
-)";
-
-            // Embed file data
-            bool first = true;
-            for (const auto& entry : files)
-                {
-                if (!first) stream << ",\n";
-                first = false;
-
-                core::RunResult readResult;
-                // Re-read content (inefficient but simple for now)
-                std::string content = readFileContent(entry.absolutePath, readResult, nullptr, redactor, entry.relativePath.string());
-                // Note: Ignoring read errors for individual files in HTML report to proceed with others
-                
-                stream << "{ \"path\": " << escapeJsonString(entry.relativePath.generic_string()) 
-                       << ", \"content\": " << escapeJsonString(content) << " }";
-                }
-
-            stream << R"(
-        ];
-
-        const listEl = document.getElementById('file-list');
-        const codeEl = document.getElementById('code-view');
-        const titleEl = document.querySelector('#content h2');
-
-        files.forEach((file, index) => {
-            const div = document.createElement('div');
-            div.className = 'file-item';
-            div.textContent = file.path;
-            div.onclick = () => {
-                document.querySelectorAll('.file-item').forEach(el => el.classList.remove('active'));
-                div.classList.add('active');
-                titleEl.textContent = file.path;
-                codeEl.textContent = file.content;
-            };
-            listEl.appendChild(div);
-        });
-    </script>
-</body>
-</html>)";
-
-            return { core::ExitCode::success, "" };
-            }
 
         core::RunResult planChunkOutputs(const core::CliOptions& options,
             const std::string& overviewName,
@@ -801,12 +638,12 @@ namespace repaddu::format
 
         if (options.format == core::OutputFormat::jsonl)
             {
-            return writeJsonlOutput(options, files, chunks, redactor.get());
+            return detail::writeJsonlOutput(options, files, chunks, redactor.get());
             }
 
         if (options.format == core::OutputFormat::html)
             {
-            return writeHtmlOutput(options, files, redactor.get());
+            return detail::writeHtmlOutput(options, files, redactor.get());
             }
 
         std::vector<OutputPlanEntry> outputs;
