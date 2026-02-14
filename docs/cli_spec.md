@@ -1,5 +1,7 @@
 # CLI Specification
 
+This is the canonical source for CLI flags, defaults, and constraints.
+
 ## Overview
 Command name: `repaddu`
 

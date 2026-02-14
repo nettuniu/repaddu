@@ -2,6 +2,11 @@
 
 Convert a repository/folder into numbered Markdown files for LLM/RAG ingestion.
 
+## Documentation
+
+- Canonical CLI option reference: `docs/cli_spec.md`
+- Full user/contributor manual: `docs/GUIDE.md`
+
 ## Quick start
 
 ```bash
