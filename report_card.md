@@ -1,6 +1,6 @@
 # REPADDU Report Card
 
-Date: 2026-02-12
+Date: 2026-02-14
 Scope: Initial execution package for `AGENT_TESTING_PLAN.md` scenarios.
 
 ## Summary
@@ -8,6 +8,8 @@ Scope: Initial execution package for `AGENT_TESTING_PLAN.md` scenarios.
 This report provides a ready-to-run matrix for evaluating LLM comprehension quality from `repaddu` outputs.
 Current status is bootstrap-ready: scenarios, commands, and scoring rubric are defined.
 Final accuracy scores must be filled after running the multi-agent workflow described in `AGENT_TESTING_PLAN.md`.
+
+Canonical CLI option source: `docs/cli_spec.md`.
 
 ## Scoring Rubric
 
@@ -32,31 +34,31 @@ Final accuracy scores must be filled after running the multi-agent workflow desc
 ### 1. Baseline
 
 ```bash
-./build/repaddu --input . --output out_eval_baseline
+build/repaddu --input . --output out_eval_baseline
 ```
 
 ### 2. Deep Context
 
 ```bash
-./build/repaddu --input . --output out_eval_deep --analysis --analysis-views symbols,dependencies --analysis-collapse folder
+build/repaddu --input . --output out_eval_deep --analysis --analysis-views symbols,dependencies --analysis-collapse folder
 ```
 
 ### 3. Noise Reduction
 
 ```bash
-./build/repaddu --input . --output out_eval_noise --max-file-size 10240 --group-by component --component-map components.json
+build/repaddu --input . --output out_eval_noise --max-file-size 10240 --group-by component --component-map components.json
 ```
 
 ### 4. Safety Check
 
 ```bash
-./build/repaddu --input . --output out_eval_safe --redact-pii
+build/repaddu --input . --output out_eval_safe --redact-pii
 ```
 
 ### 5. Chunk Stress
 
 ```bash
-./build/repaddu --input . --output out_eval_chunks --max-bytes 500
+build/repaddu --input . --output out_eval_chunks --max-bytes 500
 ```
 
 ## Notes
@@ -64,3 +66,4 @@ Final accuracy scores must be filled after running the multi-agent workflow desc
 - `components.json` is required for scenario 3.
 - Fill score column only after Agent B/C/D comparison is complete.
 - Keep one report revision per evaluated target repository.
+- For runtime baselines, see `docs/perf_baseline.md`.
