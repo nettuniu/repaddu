@@ -301,6 +301,11 @@ repaddu_add_test(repaddu_test_dry_run tests/test_dry_run.cpp
     LIBS repaddu_cli
 )
 
+repaddu_add_test(repaddu_test_app_run tests/test_app_run.cpp
+    WITH_TEST_ROOT
+    LIBS repaddu_cli
+)
+
 repaddu_add_test(repaddu_test_analysis_json tests/test_analysis_json.cpp
     LIBS repaddu_format
 )

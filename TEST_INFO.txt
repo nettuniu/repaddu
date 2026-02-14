@@ -24,6 +24,7 @@ cli parse, config loading, app orchestration, main entry
   - tests/test_config_analysis.cpp (`ctest -R repaddu_test_config_analysis`)
   - tests/test_cli_config_path.cpp (`ctest -R repaddu_test_cli_config_path`)
   - tests/test_dry_run.cpp (`ctest -R repaddu_test_dry_run`)
+  - tests/test_app_run.cpp (`ctest -R repaddu_test_app_run`)
   - tests/test_analysis.cpp (`ctest -R repaddu_test_analysis`)
   - tests/test_analysis_tags_report.cpp (`ctest -R repaddu_test_analysis_tags_report`)
 
