@@ -94,6 +94,7 @@ target_include_directories(repaddu_ui
 target_compile_features(repaddu_ui PUBLIC cxx_std_20)
 
 add_library(repaddu_cli
+    src/app_run.cpp
     src/cli_parse.cpp
     src/cli_parse_config.cpp
     src/cli_parse_help.cpp

@@ -25,6 +25,42 @@ namespace repaddu::analysis
 
             return value.substr(start, end - start);
             }
+
+        void appendMatchesForLine(const std::string& line,
+            const std::vector<std::string>& tags,
+            int lineNum,
+            const std::string& filePath,
+            std::vector<TagMatch>& results)
+            {
+            for (const auto& tag : tags)
+                {
+                const std::size_t pos = line.find(tag);
+                if (pos == std::string::npos)
+                    {
+                    continue;
+                    }
+
+                TagMatch match;
+                match.tag = tag;
+                match.lineNumber = lineNum;
+                match.filePath = filePath;
+
+                std::size_t contentPos = pos + tag.length();
+                while (contentPos < line.length() && (line[contentPos] == ':' || std::isspace(static_cast<unsigned char>(line[contentPos])) != 0))
+                    {
+                    ++contentPos;
+                    }
+
+                match.content = line.substr(contentPos);
+                const std::size_t last = match.content.find_last_not_of(" \t\n\r");
+                if (last != std::string::npos)
+                    {
+                    match.content = match.content.substr(0, last + 1);
+                    }
+
+                results.push_back(std::move(match));
+                }
+            }
         }
 
     TagExtractor::TagExtractor()
@@ -88,42 +124,28 @@ namespace repaddu::analysis
 
         while (std::getline(stream, line))
             {
-            for (const auto& tag : tags_)
-                {
-                // Simple search for "TAG:" or "TAG " or "@TAG"
-                // We want to be flexible but avoid false positives.
-                // Case insensitive search might be better, but standard C++ doesn't have it easily for strings.
-                // For now, let's do a simple case-sensitive search.
-                
-                size_t pos = line.find(tag);
-                if (pos != std::string::npos)
-                    {
-                    // Found a potential match
-                    TagMatch match;
-                    match.tag = tag;
-                    match.lineNumber = lineNum;
-                    match.filePath = filePath;
-                    
-                    // Extract content after the tag
-                    size_t contentPos = pos + tag.length();
-                    // Skip colon or spaces
-                    while (contentPos < line.length() && (line[contentPos] == ':' || std::isspace(line[contentPos])))
-                        {
-                        contentPos++;
-                        }
-                    
-                    match.content = line.substr(contentPos);
-                    // Trim trailing whitespace
-                    size_t last = match.content.find_last_not_of(" \t\n\r");
-                    if (last != std::string::npos)
-                        {
-                        match.content = match.content.substr(0, last + 1);
-                        }
+            appendMatchesForLine(line, tags_, lineNum, filePath, results);
+            ++lineNum;
+            }
 
-                    results.push_back(std::move(match));
-                    }
-                }
-            lineNum++;
+        return results;
+        }
+
+    std::vector<TagMatch> TagExtractor::extractFromFile(const std::filesystem::path& path, const std::string& filePath)
+        {
+        std::ifstream input(path);
+        if (!input)
+            {
+            return {};
+            }
+
+        std::vector<TagMatch> results;
+        std::string line;
+        int lineNum = 1;
+        while (std::getline(input, line))
+            {
+            appendMatchesForLine(line, tags_, lineNum, filePath, results);
+            ++lineNum;
             }
 
         return results;
