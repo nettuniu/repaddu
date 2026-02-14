@@ -95,6 +95,8 @@ target_compile_features(repaddu_ui PUBLIC cxx_std_20)
 
 add_library(repaddu_cli
     src/cli_parse.cpp
+    src/cli_parse_config.cpp
+    src/cli_parse_help.cpp
     src/cli_run.cpp
     src/config_generator.cpp
 )
