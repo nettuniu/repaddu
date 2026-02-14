@@ -1,56 +1,67 @@
 # repaddu test map
 
-core/io/grouping/format
-- Files: include/repaddu/*.h, src/core_types.cpp, src/language_profiles.cpp, src/io_*.cpp, src/grouping_*.cpp, src/format_*.cpp
-- Tests: tests/test_filtering.cpp (ctest -R repaddu_test_filtering), tests/test_grouping.cpp (ctest -R repaddu_test_grouping), tests/test_isolate_docs.cpp (ctest -R repaddu_test_isolate_docs), tests/test_language_profiles_detection.cpp (ctest -R repaddu_test_language_profiles), tests/test_multilanguage_fixture.cpp (ctest -R repaddu_test_multilanguage_fixture), tests/test_frontmatter_output.cpp (ctest -R repaddu_test_frontmatter_output)
-- Notes: tests/test_language_profiles_detection.cpp covers detection precedence, case-insensitive build file names, and resolveBuildFileNames() defaults/unions/deduplication/unknown-id fallback; tests/test_frontmatter_output.cpp covers frontmatter/link behavior and JSONL writer output escaping, duplicate suppression, and dry-run no-write behavior.
+This file maps code areas to the tests that must be run when those areas change.
+All commands are run from the build directory unless stated otherwise.
 
-cli
-- Files: src/cli_*.cpp, src/main.cpp
-- Tests: tests/test_grouping.cpp (ctest -R repaddu_test_grouping), tests/test_cli_parse_analysis.cpp (ctest -R repaddu_test_cli_parse_analysis), tests/test_config_analysis.cpp (ctest -R repaddu_test_config_analysis), tests/test_cli_config_path.cpp (ctest -R repaddu_test_cli_config_path), tests/test_dry_run.cpp (ctest -R repaddu_test_dry_run)
-- Notes: tests/test_config_analysis.cpp validates JSON/YAML config loading behavior including inline comments, quoted values, and output `format` parsing/fallback; tests/test_cli_parse_analysis.cpp validates `--format` accepted values and invalid-value rejection; tests/test_cli_config_path.cpp validates config generation for .json/.yaml/.yml paths, config auto-load precedence resolution, and CLI `--format` override of loaded config values.
+core types, language profiles, traversal, grouping, writing
+- Files: include/repaddu/core_types.h, src/core_types.cpp, src/language_profiles.cpp, src/io_traversal.cpp, src/io_binary.cpp, src/grouping_strategies.cpp, src/grouping_component_map.cpp, src/format_writer.cpp, src/format_tree.cpp, src/format_language_report.cpp
+- Tests:
+  - tests/test_filtering.cpp (`ctest -R repaddu_test_filtering`)
+  - tests/test_grouping.cpp (`ctest -R repaddu_test_grouping`)
+  - tests/test_isolate_docs.cpp (`ctest -R repaddu_test_isolate_docs`)
+  - tests/test_cmake_aggregation.cpp (`ctest -R repaddu_test_cmake`)
+  - tests/test_language_profiles_detection.cpp (`ctest -R repaddu_test_language_profiles`)
+  - tests/test_multilanguage_fixture.cpp (`ctest -R repaddu_test_multilanguage_fixture`)
+  - tests/test_frontmatter_output.cpp (`ctest -R repaddu_test_frontmatter_output`)
+  - tests/test_binary_detection.cpp (`ctest -R repaddu_test_binary`)
+  - tests/test_large_file.cpp (`ctest -R repaddu_test_large_file`)
+  - tests/test_concurrency.cpp (`ctest -R repaddu_test_concurrency`)
 
-cmake aggregation
-- Files: src/io_traversal.cpp, src/format_writer.cpp
-- Tests: tests/test_cmake_aggregation.cpp (ctest -R repaddu_test_cmake)
+cli parse, config loading, app orchestration, main entry
+- Files: include/repaddu/cli_parse.h, src/cli_parse.cpp, src/cli_parse_config.cpp, src/cli_parse_help.cpp, include/repaddu/cli_run.h, src/cli_run.cpp, include/repaddu/app_run.h, src/app_run.cpp, src/config_generator.cpp, src/main.cpp
+- Tests:
+  - tests/test_cli_parse_analysis.cpp (`ctest -R repaddu_test_cli_parse_analysis`)
+  - tests/test_config_analysis.cpp (`ctest -R repaddu_test_config_analysis`)
+  - tests/test_cli_config_path.cpp (`ctest -R repaddu_test_cli_config_path`)
+  - tests/test_dry_run.cpp (`ctest -R repaddu_test_dry_run`)
+  - tests/test_analysis.cpp (`ctest -R repaddu_test_analysis`)
+  - tests/test_analysis_tags_report.cpp (`ctest -R repaddu_test_analysis_tags_report`)
 
-# Future Tests (Planned - see PLAN.md)
-logging & safety
-- Files: src/logger.cpp, src/pii_redactor.cpp
-- Tests: tests/test_logging.cpp (ctest -R repaddu_test_logging), tests/test_pii.cpp (ctest -R repaddu_test_pii)
+logging, redaction, token/tag extraction
+- Files: src/logger.cpp, src/pii_redactor.cpp, src/analysis_tokens.cpp, include/repaddu/analysis_tags.h, src/analysis_tags.cpp
+- Tests:
+  - tests/test_logging.cpp (`ctest -R repaddu_test_logging`)
+  - tests/test_pii.cpp (`ctest -R repaddu_test_pii`)
+  - tests/test_tokens.cpp (`ctest -R repaddu_test_tokens`)
+  - tests/test_tags.cpp (`ctest -R repaddu_test_tags`)
+  - tests/test_analysis_tags_report.cpp (`ctest -R repaddu_test_analysis_tags_report`)
 
-analysis & stats
-- Files: src/analysis_*.cpp
-- Tests: tests/test_analysis.cpp (ctest -R repaddu_test_analysis)
+analysis graph/views/json/lsp
+- Files: include/repaddu/analysis_graph.h, src/analysis_graph.cpp, include/repaddu/analysis_view.h, src/analysis_view.cpp, include/repaddu/format_analysis_json.h, src/format_analysis_json.cpp, include/repaddu/analysis_lsp.h, src/analysis_lsp.cpp
+- Tests:
+  - tests/test_analysis_graph.cpp (`ctest -R repaddu_test_analysis_graph`)
+  - tests/test_analysis_views.cpp (`ctest -R repaddu_test_analysis_views`)
+  - tests/test_analysis_json.cpp (`ctest -R repaddu_test_analysis_json`)
+  - tests/test_analysis_lsp.cpp (`ctest -R repaddu_test_analysis_lsp`)
+  - tests/test_lsp_client.cpp (`ctest -R repaddu_test_lsp_client`)
+  - tests/test_lsp_symbols.cpp (`ctest -R repaddu_test_lsp_symbols`)
+  - tests/test_lsp_relationships.cpp (`ctest -R repaddu_test_lsp_relationships`)
 
-analysis tags
-- Files: include/repaddu/analysis_tags.h, src/analysis_tags.cpp
-- Tests: tests/test_tags.cpp (ctest -R repaddu_test_tags), tests/test_analysis_tags_report.cpp (ctest -R repaddu_test_analysis_tags_report)
-
-analysis graph
-- Files: include/repaddu/analysis_graph.h, src/analysis_graph.cpp
-- Tests: tests/test_analysis_graph.cpp (ctest -R repaddu_test_analysis_graph)
-
-analysis views
-- Files: include/repaddu/analysis_view.h, src/analysis_view.cpp
-- Tests: tests/test_analysis_views.cpp (ctest -R repaddu_test_analysis_views)
-
-analysis output json
-- Files: include/repaddu/format_analysis_json.h, src/format_analysis_json.cpp
-- Tests: tests/test_analysis_json.cpp (ctest -R repaddu_test_analysis_json)
-
-analysis cpp
+clang-backed C++ analysis (optional)
 - Files: include/repaddu/analysis_cpp.h, src/analysis_cpp.cpp
-- Tests: tests/test_analysis_cpp.cpp (ctest -R repaddu_test_analysis_cpp) [requires REPADDU_ENABLE_CLANG=ON]
+- Tests:
+  - tests/test_analysis_cpp.cpp (`ctest -R repaddu_test_analysis_cpp`)
+- Notes: requires configure/build with `-DREPADDU_ENABLE_CLANG=ON` and local LLVM/Clang dev packages.
 
-lsp analysis
-- Files: include/repaddu/analysis_lsp.h, src/analysis_lsp.cpp
-- Tests: tests/test_analysis_lsp.cpp (ctest -R repaddu_test_analysis_lsp), tests/test_lsp_client.cpp (ctest -R repaddu_test_lsp_client), tests/test_lsp_symbols.cpp (ctest -R repaddu_test_lsp_symbols), tests/test_lsp_relationships.cpp (ctest -R repaddu_test_lsp_relationships)
+console ui
+- Files: include/repaddu/ui_interface.h, include/repaddu/ui_console.h, src/ui_console.cpp
+- Tests:
+  - tests/test_ui.cpp (`ctest -R repaddu_test_ui`)
 
-fixtures/picobench
+fixture integrity
 - Files: fixtures/picobench, tests/test_fixture_picobench.cpp
-- Tests: tests/test_fixture_picobench.cpp (ctest -R repaddu_test_fixture_picobench)
+- Tests:
+  - tests/test_fixture_picobench.cpp (`ctest -R repaddu_test_fixture_picobench`)
 
-performance & concurrency
-- Files: src/io_traversal.cpp (threaded)
-- Tests: tests/test_concurrency.cpp (ctest -R repaddu_test_concurrency)
+full test sweep
+- Command: `ctest --output-on-failure`
