@@ -1,6 +1,6 @@
 # REPADDU Report Card
 
-Date: 2026-02-14
+Date: 2026-02-16
 Scope: Initial execution package for `AGENT_TESTING_PLAN.md` scenarios.
 
 ## Summary
@@ -8,6 +8,7 @@ Scope: Initial execution package for `AGENT_TESTING_PLAN.md` scenarios.
 This report provides a ready-to-run matrix for evaluating LLM comprehension quality from `repaddu` outputs.
 Current status is bootstrap-ready: scenarios, commands, and scoring rubric are defined.
 Final accuracy scores must be filled after running the multi-agent workflow described in `AGENT_TESTING_PLAN.md`.
+Execution smoke-run status and timings were updated on 2026-02-16 with local `build/repaddu`.
 
 Canonical CLI option source: `docs/cli_spec.md`.
 
@@ -23,13 +24,19 @@ Canonical CLI option source: `docs/cli_spec.md`.
 
 | Scenario | Command Profile | Goal | Status | Score |
 |---|---|---|---|---|
-| Baseline | default | Baseline retrieval accuracy | Ready | TBD |
-| Deep Context | analysis+views | Better architecture answers | Ready | TBD |
-| Noise Reduction | filtering+component grouping | Lower hallucination rate | Ready | TBD |
-| Safety Check | redact PII | Verify secret suppression + location awareness | Ready | TBD |
-| Chunk Stress | low max-bytes | Validate cross-chunk reconstruction | Ready | TBD |
+| Baseline | default | Baseline retrieval accuracy | Executed (34ms, 7 files) | TBD |
+| Deep Context | analysis+views | Better architecture answers | Executed (11ms, 7 files) | TBD |
+| Noise Reduction | filtering+component grouping | Lower hallucination rate | Executed (16ms, 6 files) | TBD |
+| Safety Check | redact PII | Verify secret suppression + location awareness | Executed (368ms, 7 files) | TBD |
+| Chunk Stress | low max-bytes | Validate cross-chunk reconstruction | Executed (failed, exit 4) | TBD |
 
 ## Ready Commands
+
+Smoke-run all scenarios:
+
+```bash
+./docs/run_eval_smoke.sh build/repaddu . /tmp/repaddu_eval_smoke
+```
 
 ### 1. Baseline
 
@@ -64,6 +71,8 @@ build/repaddu --input . --output out_eval_chunks --max-bytes 500
 ## Notes
 
 - `components.json` is required for scenario 3.
+- Local smoke run used generated component map prefixes for `src`, `include`, `tests`, `docs`, `fixtures`.
+- `Chunk Stress` currently fails on this repository with: `A single file block exceeds --max-bytes.`
 - Fill score column only after Agent B/C/D comparison is complete.
 - Keep one report revision per evaluated target repository.
 - For runtime baselines, see `docs/perf_baseline.md`.
