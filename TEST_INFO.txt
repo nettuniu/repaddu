@@ -4,7 +4,7 @@ This file maps code areas to the tests that must be run when those areas change.
 All commands are run from the build directory unless stated otherwise.
 
 core types, language profiles, traversal, grouping, writing
-- Files: include/repaddu/core_types.h, src/core_types.cpp, src/language_profiles.cpp, src/io_traversal.cpp, src/io_binary.cpp, src/grouping_strategies.cpp, src/grouping_component_map.cpp, src/format_writer.cpp, src/format_tree.cpp, src/format_language_report.cpp
+- Files: include/repaddu/core_types.h, src/core_types.cpp, src/language_profiles.cpp, src/io_traversal.cpp, src/io_binary.cpp, src/grouping_strategies.cpp, src/grouping_component_map.cpp, src/format_writer.cpp, src/format_writer_alt_formats.cpp, src/format_tree.cpp, src/format_language_report.cpp
 - Tests:
   - tests/test_filtering.cpp (`ctest -R repaddu_test_filtering`)
   - tests/test_grouping.cpp (`ctest -R repaddu_test_grouping`)

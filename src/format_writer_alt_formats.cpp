@@ -88,7 +88,7 @@ namespace repaddu::format::detail
                 stream << "\"bytes\": " << entry.sizeBytes << ", ";
                 stream << "\"tokens\": " << entry.tokenCount << ", ";
                 stream << "\"content\": " << escapeJsonString(content);
-                stream << "}\\n";
+                stream << "}\n";
                 }
             }
 
