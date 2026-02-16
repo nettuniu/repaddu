@@ -21,4 +21,8 @@ Input: repository root (`--input .`)
 
 - These are wall-clock totals for 20 invocations per profile.
 - Use this file as the pre-change reference for follow-up performance work.
+- CI regression guard uses `docs/perf_regression_guard.sh` with default totals:
+  - `ANALYZE_ONLY_MAX=0.50`
+  - `ANALYZE_TAGS_MAX=0.55`
+  - `DRY_RUN_MAX=0.60`
 - CLI flag semantics are defined in `docs/cli_spec.md`.

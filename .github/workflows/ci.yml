@@ -34,3 +34,6 @@ jobs:
       - name: Test (Windows)
         if: runner.os == 'Windows'
         run: ctest --test-dir build -C Release --output-on-failure
+      - name: Perf Guard (Ubuntu)
+        if: runner.os == 'Linux'
+        run: ./docs/perf_regression_guard.sh build/repaddu . /tmp/repaddu_perf_guard_out 20
