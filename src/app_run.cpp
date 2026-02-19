@@ -1,11 +1,7 @@
 #include "repaddu/app_run.h"
 
-#include "repaddu/analysis_graph.h"
-#include "repaddu/analysis_tags.h"
-#include "repaddu/analysis_view.h"
+#include "repaddu/app_analyze.h"
 #include "repaddu/config_generator.h"
-#include "repaddu/format_analysis_json.h"
-#include "repaddu/format_analysis_report.h"
 #include "repaddu/format_language_report.h"
 #include "repaddu/format_tree.h"
 #include "repaddu/format_writer.h"
@@ -15,66 +11,9 @@
 #include "repaddu/language_profiles.h"
 
 #include <iostream>
-#include <map>
-#include <sstream>
 
 namespace repaddu::app
     {
-    namespace
-        {
-        std::string renderTagSummary(const core::CliOptions& options,
-            const std::vector<core::FileEntry>& files,
-            const std::vector<std::size_t>& includedIndices)
-            {
-            analysis::TagExtractor extractor;
-            if (!options.tagPatternsPath.empty())
-                {
-                extractor.loadTagPatternsFromFile(options.tagPatternsPath, false);
-                }
-
-            std::map<std::string, std::size_t> counts;
-            std::vector<analysis::TagMatch> matches;
-            for (std::size_t index : includedIndices)
-                {
-                const auto& entry = files[index];
-                if (entry.isBinary)
-                    {
-                    continue;
-                    }
-
-                const auto fileMatches = extractor.extractFromFile(entry.absolutePath, entry.relativePath.string());
-                for (const auto& match : fileMatches)
-                    {
-                    counts[match.tag] += 1;
-                    matches.push_back(match);
-                    }
-                }
-
-            std::ostringstream out;
-            out << "\nTAG SUMMARY\n";
-            out << "===========\n";
-            if (matches.empty())
-                {
-                out << "No matching tags found.\n";
-                return out.str();
-                }
-
-            out << "Counts:\n";
-            for (const auto& entry : counts)
-                {
-                out << "- " << entry.first << ": " << entry.second << "\n";
-                }
-
-            out << "\nMatches:\n";
-            for (const auto& match : matches)
-                {
-                out << "- " << match.filePath << ":" << match.lineNumber
-                    << " [" << match.tag << "] " << match.content << "\n";
-                }
-            return out.str();
-            }
-        }
-
     core::RunResult run(const core::CliOptions& options, ui::UserInterface& ui)
         {
         if (options.generateConfig)
@@ -140,21 +79,10 @@ namespace repaddu::app
         if (options.analyzeOnly)
             {
             std::string report;
-            analysis::AnalysisGraph graph;
-            analysis::AnalysisViewOptions viewOptions;
-            viewOptions.collapseMode = effectiveOptions.analysisCollapse;
-            if (effectiveOptions.format == core::OutputFormat::jsonl)
+            const core::RunResult analyzeResult = buildAnalyzeOnlyReport(effectiveOptions, traversal.files, grouped.includedIndices, report);
+            if (analyzeResult.code != core::ExitCode::success)
                 {
-                report = format::renderAnalysisJson(effectiveOptions, traversal.files, grouped.includedIndices,
-                    &graph, &viewOptions);
-                }
-            else
-                {
-                report = format::renderAnalysisReportWithViews(effectiveOptions, traversal.files, grouped.includedIndices, graph, viewOptions);
-                }
-            if (effectiveOptions.extractTags)
-                {
-                report += renderTagSummary(effectiveOptions, traversal.files, grouped.includedIndices);
+                return analyzeResult;
                 }
             std::cout << report;
             return { core::ExitCode::success, "" };

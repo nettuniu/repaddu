@@ -25,6 +25,9 @@ jobs:
       - name: Build (Unix)
         if: runner.os != 'Windows'
         run: cmake --build build -j 4
+      - name: Dependency Policy Check (Unix)
+        if: runner.os != 'Windows'
+        run: ./tools/check_component_deps.sh
       - name: Build (Windows)
         if: runner.os == 'Windows'
         run: cmake --build build --config Release -j 4

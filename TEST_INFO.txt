@@ -4,7 +4,7 @@ This file maps code areas to the tests that must be run when those areas change.
 All commands are run from the build directory unless stated otherwise.
 
 core types, language profiles, traversal, grouping, writing
-- Files: include/repaddu/core_types.h, src/core_types.cpp, src/language_profiles.cpp, src/io_traversal.cpp, src/io_binary.cpp, src/grouping_strategies.cpp, src/grouping_component_map.cpp, src/format_writer.cpp, src/format_writer_alt_formats.cpp, src/format_tree.cpp, src/format_language_report.cpp
+- Files: include/repaddu/core_types.h, src/core_types.cpp, src/language_profiles.cpp, src/io_traversal.cpp, src/io_binary.cpp, src/grouping_strategies.cpp, src/grouping_component_map.cpp, src/format_writer.cpp, src/format_writer_alt_formats.cpp, src/format_tree.cpp, src/format_language_report.cpp, src/format_analysis_tags.cpp, include/repaddu/format_analysis_tags.h
 - Tests:
   - tests/test_filtering.cpp (`ctest -R repaddu_test_filtering`)
   - tests/test_grouping.cpp (`ctest -R repaddu_test_grouping`)
@@ -18,7 +18,7 @@ core types, language profiles, traversal, grouping, writing
   - tests/test_concurrency.cpp (`ctest -R repaddu_test_concurrency`)
 
 cli parse, config loading, app orchestration, main entry
-- Files: include/repaddu/cli_parse.h, src/cli_parse.cpp, src/cli_parse_config.cpp, src/cli_parse_help.cpp, include/repaddu/cli_run.h, src/cli_run.cpp, include/repaddu/app_run.h, src/app_run.cpp, src/config_generator.cpp, src/main.cpp
+- Files: include/repaddu/cli_parse.h, src/cli_parse.cpp, src/cli_parse_config.cpp, src/cli_parse_help.cpp, include/repaddu/cli_run.h, src/cli_run.cpp, include/repaddu/app_run.h, src/app_run.cpp, include/repaddu/app_analyze.h, src/app_analyze.cpp, src/config_generator.cpp, src/main.cpp
 - Tests:
   - tests/test_cli_parse_analysis.cpp (`ctest -R repaddu_test_cli_parse_analysis`)
   - tests/test_config_analysis.cpp (`ctest -R repaddu_test_config_analysis`)
@@ -66,3 +66,9 @@ fixture integrity
 
 full test sweep
 - Command: `ctest --output-on-failure`
+
+architecture dependency policy
+- Files: docs/architecture_layers.md, docs/refactor_master_plan.md, tools/check_component_deps.sh, .github/workflows/ci.yml
+- Tests:
+  - dependency checker (`tools/check_component_deps.sh`)
+  - full sweep (`ctest --output-on-failure`)

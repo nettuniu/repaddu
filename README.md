@@ -6,6 +6,8 @@ Convert a repository/folder into numbered Markdown files for LLM/RAG ingestion.
 
 - Canonical CLI option reference: `docs/cli_spec.md`
 - Full user/contributor manual: `docs/GUIDE.md`
+- Architecture dependency contract: `docs/architecture_layers.md`
+- Refactor master plan: `docs/refactor_master_plan.md`
 
 ## Quick start
 
