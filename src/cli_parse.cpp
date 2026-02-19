@@ -396,6 +396,11 @@ namespace repaddu::cli
                 {
                 options.extractTags = true;
                 }
+            else if (arg == "--token-count")
+                {
+                // Token estimation is already part of output/analysis paths.
+                // Keep this flag as a compatibility alias for documented scenarios.
+                }
             else if (arg == "--tag-patterns")
                 {
                 std::string value;

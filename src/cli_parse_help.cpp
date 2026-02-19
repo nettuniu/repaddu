@@ -33,6 +33,7 @@ namespace repaddu::cli
         out << "  --analysis-views <csv>      Comma-separated analysis views to emit.\n";
         out << "  --analysis-deep             Enable deeper relationship analysis (optional edges).\n";
         out << "  --analysis-collapse <mode>  none|folder|target. Default: none.\n";
+        out << "  --token-count               Compatibility flag; token estimates are included by current outputs.\n";
         out << "  --extract-tags              Extract TODO/FIXME-like tags in analyze output.\n";
         out << "  --tag-patterns <path>       Load additional tag patterns from file (one per line).\n";
         out << "  --isolate-docs              Group all documentation files (*.md, *.txt) into a separate chunk.\n";

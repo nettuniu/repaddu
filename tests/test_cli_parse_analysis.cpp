@@ -15,6 +15,7 @@ void test_analysis_flags()
         "--analysis-deep",
         "--analysis-collapse",
         "folder",
+        "--token-count",
         "--extract-tags",
         "--tag-patterns",
         "tags.txt",
@@ -95,6 +96,7 @@ void test_help_mentions_config_generation_formats()
     assert(help.find("JSON or YAML") != std::string::npos);
     assert(help.find("--config <path>") != std::string::npos);
     assert(help.find(".repaddu.yaml/.repaddu.yml") != std::string::npos);
+    assert(help.find("--token-count") != std::string::npos);
     }
 
 void test_format_flag_accepts_known_values()

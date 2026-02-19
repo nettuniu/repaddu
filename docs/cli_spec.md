@@ -92,6 +92,10 @@ repaddu [options] --input <path> --output <path>
   - Collapse level for analysis output.
   - Allowed values: `none`, `folder`, `target`.
   - Default: `none`.
+- `--token-count`
+  - Compatibility flag; accepted for scenario parity.
+  - Current output paths already include token estimates where applicable.
+  - Default: `false` (no behavioral change when omitted).
 - `--extract-tags`
   - Include TODO/FIXME-like tag summary in analyze output.
   - Default: `false`.
