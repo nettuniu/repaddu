@@ -1,11 +1,15 @@
 #ifndef REPADDU_JSON_LITE_H
 #define REPADDU_JSON_LITE_H
 
-#include "repaddu/core_types.h"
 #include <string>
 #include <vector>
 #include <map>
 #include <variant>
+
+namespace repaddu::core
+    {
+    struct RunResult;
+    }
 
 namespace repaddu::json
     {

@@ -88,11 +88,12 @@ target_compile_features(repaddu_grouping PUBLIC cxx_std_20)
 
 add_library(repaddu_format
     src/format_writer.cpp
+    src/format_writer_read.cpp
     src/format_writer_alt_formats.cpp
     src/format_tree.cpp
     src/format_language_report.cpp
     src/format_analysis_report.cpp
-    src/format_analysis_tags.cpp
+    src/format/analysis_tags_report.cpp
     src/format_analysis_json.cpp
 )
 
@@ -121,9 +122,10 @@ target_include_directories(repaddu_ui
 target_compile_features(repaddu_ui PUBLIC cxx_std_20)
 
 add_library(repaddu_cli
-    src/app_analyze.cpp
+    src/app/app_analyze.cpp
     src/app_run.cpp
     src/cli_parse.cpp
+    src/cli_parse_values.cpp
     src/cli_parse_config.cpp
     src/cli_parse_help.cpp
     src/cli_run.cpp

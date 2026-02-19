@@ -59,6 +59,15 @@ Disallowed examples:
 - `ui`: user-interface abstraction and console implementation.
 - `cli/app`: argument parse/config load/generation and app orchestration.
 
+## Incremental Physical Structure
+
+Refactor work introduces explicit subfolders incrementally while preserving compatibility include paths:
+
+- Application: `include/repaddu/app/*`, `src/app/*`
+- Infrastructure format: `include/repaddu/format/*`, `src/format/*`
+
+Compatibility wrappers under `include/repaddu/*.h` are kept during migration.
+
 ## Verification
 
 Run dependency policy checker:

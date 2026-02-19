@@ -1,5 +1,8 @@
 #include "repaddu/analysis_cpp.h"
 
+#include "repaddu/analysis_graph.h"
+#include "repaddu/core_types.h"
+
 #include <clang/AST/ASTContext.h>
 #include <clang/AST/DeclCXX.h>
 #include <clang/ASTMatchers/ASTMatchFinder.h>

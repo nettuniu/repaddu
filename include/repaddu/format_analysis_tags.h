@@ -1,16 +1,6 @@
-#ifndef REPADDU_FORMAT_ANALYSIS_TAGS_H
-#define REPADDU_FORMAT_ANALYSIS_TAGS_H
+#ifndef REPADDU_FORMAT_ANALYSIS_TAGS_COMPAT_H
+#define REPADDU_FORMAT_ANALYSIS_TAGS_COMPAT_H
 
-#include "repaddu/core_types.h"
+#include "repaddu/format/analysis_tags_report.h"
 
-#include <string>
-#include <vector>
-
-namespace repaddu::format
-    {
-    std::string renderTagSummaryReport(const core::CliOptions& options,
-        const std::vector<core::FileEntry>& files,
-        const std::vector<std::size_t>& includedIndices);
-    }
-
-#endif // REPADDU_FORMAT_ANALYSIS_TAGS_H
+#endif // REPADDU_FORMAT_ANALYSIS_TAGS_COMPAT_H

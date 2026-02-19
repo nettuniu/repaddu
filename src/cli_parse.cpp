@@ -3,65 +3,10 @@
 #include "repaddu/core_types.h"
 #include "repaddu/language_profiles.h"
 
-#include <sstream>
+#include "cli_parse_values.h"
 
 namespace repaddu::cli
     {
-    namespace
-        {
-        std::vector<std::string> splitCsv(const std::string& value)
-            {
-            std::vector<std::string> result;
-            std::string current;
-            std::istringstream stream(value);
-            while (std::getline(stream, current, ','))
-                {
-                if (!current.empty())
-                    {
-                    result.push_back(current);
-                    }
-                }
-            return result;
-            }
-
-        bool parseInt(const std::string& value, int& outValue)
-            {
-            try
-                {
-                std::size_t pos = 0;
-                const int parsed = std::stoi(value, &pos, 10);
-                if (pos != value.size())
-                    {
-                    return false;
-                    }
-                outValue = parsed;
-                return true;
-                }
-            catch (...)
-                {
-                return false;
-                }
-            }
-
-        bool parseUInt64(const std::string& value, std::uintmax_t& outValue)
-            {
-            try
-                {
-                std::size_t pos = 0;
-                const unsigned long long parsed = std::stoull(value, &pos, 10);
-                if (pos != value.size())
-                    {
-                    return false;
-                    }
-                outValue = static_cast<std::uintmax_t>(parsed);
-                return true;
-                }
-            catch (...)
-                {
-                return false;
-                }
-            }
-        }
 
     ParseResult parseArgs(const std::vector<std::string>& args, const core::CliOptions& baseOptions)
         {
@@ -126,7 +71,7 @@ namespace repaddu::cli
                     return { options, { core::ExitCode::invalid_usage, "--max-files requires a value." }, "" };
                     }
                 int parsed = 0;
-                if (!parseInt(value, parsed) || parsed < 0)
+                if (!detail::parseInt(value, parsed) || parsed < 0)
                     {
                     return { options, { core::ExitCode::invalid_usage, "--max-files must be a non-negative integer." }, "" };
                     }
@@ -140,7 +85,7 @@ namespace repaddu::cli
                     return { options, { core::ExitCode::invalid_usage, "--max-bytes requires a value." }, "" };
                     }
                 std::uintmax_t parsed = 0;
-                if (!parseUInt64(value, parsed))
+                if (!detail::parseUInt64(value, parsed))
                     {
                     return { options, { core::ExitCode::invalid_usage, "--max-bytes must be a non-negative integer." }, "" };
                     }
@@ -154,7 +99,7 @@ namespace repaddu::cli
                     return { options, { core::ExitCode::invalid_usage, "--number-width requires a value." }, "" };
                     }
                 int parsed = 0;
-                if (!parseInt(value, parsed) || parsed <= 0)
+                if (!detail::parseInt(value, parsed) || parsed <= 0)
                     {
                     return { options, { core::ExitCode::invalid_usage, "--number-width must be a positive integer." }, "" };
                     }
@@ -177,7 +122,7 @@ namespace repaddu::cli
                     {
                     return { options, { core::ExitCode::invalid_usage, "--extensions requires a value." }, "" };
                     }
-                options.extensions = splitCsv(value);
+                options.extensions = detail::splitCsv(value);
                 }
             else if (arg == "--exclude-extensions")
                 {
@@ -186,7 +131,7 @@ namespace repaddu::cli
                     {
                     return { options, { core::ExitCode::invalid_usage, "--exclude-extensions requires a value." }, "" };
                     }
-                options.excludeExtensions = splitCsv(value);
+                options.excludeExtensions = detail::splitCsv(value);
                 }
             else if (arg == "--include-hidden")
                 {
@@ -244,7 +189,7 @@ namespace repaddu::cli
                     return { options, { core::ExitCode::invalid_usage, "--group-depth requires a value." }, "" };
                     }
                 int parsed = 0;
-                if (!parseInt(value, parsed) || parsed <= 0)
+                if (!detail::parseInt(value, parsed) || parsed <= 0)
                     {
                     return { options, { core::ExitCode::invalid_usage, "--group-depth must be a positive integer." }, "" };
                     }
@@ -341,7 +286,7 @@ namespace repaddu::cli
                     return { options, { core::ExitCode::invalid_usage, "--max-file-size requires a value." }, "" };
                     }
                 std::uintmax_t parsed = 0;
-                if (!parseUInt64(value, parsed))
+                if (!detail::parseUInt64(value, parsed))
                     {
                     return { options, { core::ExitCode::invalid_usage, "--max-file-size must be a non-negative integer." }, "" };
                     }
@@ -370,7 +315,7 @@ namespace repaddu::cli
                     {
                     return { options, { core::ExitCode::invalid_usage, "--analysis-views requires a value." }, "" };
                     }
-                options.analysisViews = splitCsv(value);
+                options.analysisViews = detail::splitCsv(value);
                 }
             else if (arg == "--analysis-deep")
                 {

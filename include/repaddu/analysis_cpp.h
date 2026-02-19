@@ -1,10 +1,17 @@
 #ifndef REPADDU_ANALYSIS_CPP_H
 #define REPADDU_ANALYSIS_CPP_H
 
-#include "repaddu/analysis_graph.h"
-#include "repaddu/core_types.h"
-
 #include <filesystem>
+
+namespace repaddu::analysis
+    {
+    class AnalysisGraph;
+    }
+
+namespace repaddu::core
+    {
+    struct RunResult;
+    }
 
 namespace repaddu::analysis
     {

@@ -1,4 +1,5 @@
 #include "repaddu/json_lite.h"
+#include "repaddu/core_types.h"
 #include <cctype>
 #include <iostream>
 

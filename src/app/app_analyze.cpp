@@ -1,10 +1,10 @@
-#include "repaddu/app_analyze.h"
+#include "repaddu/app/app_analyze.h"
 
 #include "repaddu/analysis_graph.h"
 #include "repaddu/analysis_view.h"
 #include "repaddu/format_analysis_json.h"
 #include "repaddu/format_analysis_report.h"
-#include "repaddu/format_analysis_tags.h"
+#include "repaddu/format/analysis_tags_report.h"
 
 namespace repaddu::app
     {
