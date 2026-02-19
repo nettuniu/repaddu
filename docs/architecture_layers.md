@@ -4,16 +4,19 @@ This document is the canonical dependency contract for repository components.
 
 ## Layer Model
 
-1. `base/core`:
+1. `base`:
    - Contains foundational types, parsing-independent utilities, analysis models/utilities.
    - Must not depend on app orchestration or UI implementation details.
+2. `analysis`:
+   - Contains graph/view/LSP analysis logic.
+   - May depend on `base`.
 2. `infra`:
    - `io`, `grouping`, `format`, `ui`.
-   - May depend on `core`.
+   - May depend on `base` and `analysis` where required.
    - Must not depend on `cli`/application orchestration.
 3. `application`:
    - `cli` orchestration modules and run flow.
-   - May depend on `core` and infra libraries.
+   - May depend on `base`, `analysis`, and infra libraries.
 4. `entrypoint`:
    - `repaddu` executable only.
    - Delegates to application layer (`cli`).
@@ -22,27 +25,34 @@ This document is the canonical dependency contract for repository components.
 
 Allowed direct internal edges:
 
-- `repaddu_io -> repaddu_core`
-- `repaddu_grouping -> repaddu_core`
-- `repaddu_format -> repaddu_core`
-- `repaddu_cli -> repaddu_core`
+- `repaddu_analysis -> repaddu_base`
+- `repaddu_core -> repaddu_base` (compatibility aggregate)
+- `repaddu_core -> repaddu_analysis` (compatibility aggregate)
+- `repaddu_io -> repaddu_base`
+- `repaddu_grouping -> repaddu_base`
+- `repaddu_format -> repaddu_base`
+- `repaddu_format -> repaddu_analysis`
+- `repaddu_cli -> repaddu_base`
+- `repaddu_cli -> repaddu_analysis`
 - `repaddu_cli -> repaddu_io`
 - `repaddu_cli -> repaddu_grouping`
 - `repaddu_cli -> repaddu_format`
 - `repaddu_cli -> repaddu_ui`
-- `repaddu_cpp_analyzer -> repaddu_core` (optional target)
+- `repaddu_cpp_analyzer -> repaddu_analysis` (optional target)
 - `repaddu -> repaddu_cli`
 
 Disallowed examples:
 
-- `repaddu_core -> repaddu_*` (other than itself)
+- `repaddu_base -> repaddu_*` (other than itself)
+- `repaddu_analysis -> repaddu_*` except `repaddu_base`
 - `repaddu_format -> repaddu_cli`
 - `repaddu_io -> repaddu_grouping`
 - Any cycle across repo targets
 
 ## Component Ownership
 
-- `core`: `core_types`, `language_profiles`, logger/redaction, token/tag extraction, analysis graph/view/lsp, lightweight json parser.
+- `base`: `core_types`, `language_profiles`, logger/redaction, token/tag extraction, lightweight json parser.
+- `analysis`: analysis graph/view/lsp.
 - `io`: filesystem traversal and binary detection.
 - `grouping`: filtering/grouping/chunk planning inputs.
 - `format`: markdown/jsonl/html writers and analysis rendering.

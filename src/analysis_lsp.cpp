@@ -1,5 +1,9 @@
 #include "repaddu/analysis_lsp.h"
 
+#include "repaddu/analysis_graph.h"
+#include "repaddu/core_types.h"
+#include "repaddu/json_lite.h"
+
 #include <cctype>
 #include <sstream>
 

@@ -10,11 +10,13 @@ if [[ ! -f "${cmake_file}" ]]; then
 fi
 
 declare -A allowed
-allowed["repaddu_io"]="repaddu_core"
-allowed["repaddu_grouping"]="repaddu_core"
-allowed["repaddu_format"]="repaddu_core"
-allowed["repaddu_cli"]="repaddu_core repaddu_io repaddu_grouping repaddu_format repaddu_ui"
-allowed["repaddu_cpp_analyzer"]="repaddu_core"
+allowed["repaddu_analysis"]="repaddu_base"
+allowed["repaddu_core"]="repaddu_base repaddu_analysis"
+allowed["repaddu_io"]="repaddu_base"
+allowed["repaddu_grouping"]="repaddu_base"
+allowed["repaddu_format"]="repaddu_base repaddu_analysis"
+allowed["repaddu_cli"]="repaddu_base repaddu_analysis repaddu_io repaddu_grouping repaddu_format repaddu_ui"
+allowed["repaddu_cpp_analyzer"]="repaddu_analysis"
 allowed["repaddu"]="repaddu_cli"
 
 edges_file="$(mktemp)"

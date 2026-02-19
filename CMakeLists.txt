@@ -8,25 +8,49 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 
 option(REPADDU_ENABLE_CLANG "Enable Clang-based C++ analysis" OFF)
 
-add_library(repaddu_core
+add_library(repaddu_base
     src/core_types.cpp
     src/language_profiles.cpp
     src/logger.cpp
     src/pii_redactor.cpp
     src/analysis_tokens.cpp
     src/analysis_tags.cpp
-    src/analysis_graph.cpp
-    src/analysis_view.cpp
-    src/analysis_lsp.cpp
     src/json_lite.cpp
 )
 
-target_include_directories(repaddu_core
+target_include_directories(repaddu_base
     PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}/include
 )
 
-target_compile_features(repaddu_core PUBLIC cxx_std_20)
+target_compile_features(repaddu_base PUBLIC cxx_std_20)
+
+add_library(repaddu_analysis
+    src/analysis_graph.cpp
+    src/analysis_view.cpp
+    src/analysis_lsp.cpp
+)
+
+target_include_directories(repaddu_analysis
+    PUBLIC
+        ${CMAKE_CURRENT_SOURCE_DIR}/include
+)
+
+target_link_libraries(repaddu_analysis
+    PUBLIC
+        repaddu_base
+)
+
+target_compile_features(repaddu_analysis PUBLIC cxx_std_20)
+
+# Compatibility aggregate target retained for existing links/tests.
+add_library(repaddu_core INTERFACE)
+
+target_link_libraries(repaddu_core
+    INTERFACE
+        repaddu_base
+        repaddu_analysis
+)
 
 add_library(repaddu_io
     src/io_traversal.cpp
@@ -40,7 +64,7 @@ target_include_directories(repaddu_io
 
 target_link_libraries(repaddu_io
     PUBLIC
-        repaddu_core
+        repaddu_base
 )
 
 target_compile_features(repaddu_io PUBLIC cxx_std_20)
@@ -57,7 +81,7 @@ target_include_directories(repaddu_grouping
 
 target_link_libraries(repaddu_grouping
     PUBLIC
-        repaddu_core
+        repaddu_base
 )
 
 target_compile_features(repaddu_grouping PUBLIC cxx_std_20)
@@ -79,7 +103,8 @@ target_include_directories(repaddu_format
 
 target_link_libraries(repaddu_format
     PUBLIC
-        repaddu_core
+        repaddu_base
+        repaddu_analysis
 )
 
 target_compile_features(repaddu_format PUBLIC cxx_std_20)
@@ -112,7 +137,8 @@ target_include_directories(repaddu_cli
 
 target_link_libraries(repaddu_cli
     PUBLIC
-        repaddu_core
+        repaddu_base
+        repaddu_analysis
         repaddu_io
         repaddu_grouping
         repaddu_format
@@ -156,7 +182,7 @@ if (REPADDU_ENABLE_CLANG)
 
         target_link_libraries(repaddu_cpp_analyzer
             PUBLIC
-                repaddu_core
+                repaddu_analysis
                 clangTooling
                 clangAST
                 clangASTMatchers

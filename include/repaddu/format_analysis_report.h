@@ -2,10 +2,14 @@
 #define REPADDU_FORMAT_ANALYSIS_REPORT_H
 
 #include "repaddu/core_types.h"
-#include "repaddu/analysis_graph.h"
-#include "repaddu/analysis_view.h"
 #include <string>
 #include <vector>
+
+namespace repaddu::analysis
+    {
+    class AnalysisGraph;
+    struct AnalysisViewOptions;
+    }
 
 namespace repaddu::format
     {
