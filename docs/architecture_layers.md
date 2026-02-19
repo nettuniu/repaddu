@@ -58,6 +58,8 @@ Disallowed examples:
 - `format`: markdown/jsonl/html writers and analysis rendering.
 - `ui`: user-interface abstraction and console implementation.
 - `cli/app`: argument parse/config load/generation and app orchestration.
+  - `src/cli_bootstrap.cpp` is the boundary for config resolution+load before parse.
+  - `src/app/effective_options.cpp` builds immutable run-time options snapshot.
 
 ## Incremental Physical Structure
 

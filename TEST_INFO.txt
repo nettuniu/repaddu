@@ -18,7 +18,7 @@ core types, language profiles, traversal, grouping, writing
   - tests/test_concurrency.cpp (`ctest -R repaddu_test_concurrency`)
 
 cli parse, config loading, app orchestration, main entry
-- Files: include/repaddu/cli_parse.h, src/cli_parse.cpp, src/cli_parse_values.cpp, src/cli_parse_values.h, src/cli_parse_config.cpp, src/cli_parse_help.cpp, include/repaddu/cli_run.h, src/cli_run.cpp, include/repaddu/app_run.h, src/app_run.cpp, include/repaddu/app_analyze.h, include/repaddu/app/app_analyze.h, src/app/app_analyze.cpp, src/config_generator.cpp, src/main.cpp
+- Files: include/repaddu/cli_parse.h, include/repaddu/cli_bootstrap.h, src/cli_bootstrap.cpp, src/cli_parse.cpp, src/cli_parse_values.cpp, src/cli_parse_values.h, src/cli_parse_config.cpp, src/cli_parse_help.cpp, include/repaddu/cli_run.h, src/cli_run.cpp, include/repaddu/app_run.h, src/app_run.cpp, include/repaddu/app_analyze.h, include/repaddu/app/app_analyze.h, src/app/app_analyze.cpp, include/repaddu/app/analysis_backend.h, src/app/analysis_backend_default.cpp, include/repaddu/app/effective_options.h, src/app/effective_options.cpp, include/repaddu/app/fs_services.h, src/app/fs_services.cpp, src/config_generator.cpp, src/main.cpp
 - Tests:
   - tests/test_cli_parse_analysis.cpp (`ctest -R repaddu_test_cli_parse_analysis`)
   - tests/test_config_analysis.cpp (`ctest -R repaddu_test_config_analysis`)
@@ -71,4 +71,5 @@ architecture dependency policy
 - Files: docs/architecture_layers.md, docs/error_handling_contract.md, docs/refactor_master_plan.md, tools/check_component_deps.sh, .github/workflows/ci.yml
 - Tests:
   - dependency checker (`tools/check_component_deps.sh`)
+  - dependency policy ctest (`ctest -R repaddu_test_dependency_policy`)
   - full sweep (`ctest --output-on-failure`)

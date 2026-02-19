@@ -1,10 +1,10 @@
 #include "repaddu/cli_parse.h"
+#include "repaddu/cli_bootstrap.h"
 #include "repaddu/cli_run.h"
 #include "repaddu/ui_console.h"
 
 #include <iostream>
 #include <vector>
-#include <filesystem>
 
 int main(int argc, char** argv)
     {
@@ -15,19 +15,7 @@ int main(int argc, char** argv)
         args.emplace_back(argv[i]);
         }
 
-    repaddu::core::CliOptions options;
-
-    // 1. Try to load config from file
-    const std::filesystem::path configPath = repaddu::cli::resolveConfigPath(args);
-
-    options.configPath = configPath;
-    if (std::filesystem::exists(configPath))
-        {
-        repaddu::cli::loadConfigFile(configPath, options);
-        }
-
-    // 2. Parse args (overwrites config)
-    repaddu::cli::ParseResult parseResult = repaddu::cli::parseArgs(args, options);
+    repaddu::cli::ParseResult parseResult = repaddu::cli::parseArgsWithConfig(args);
     
     if (!parseResult.output.empty())
         {

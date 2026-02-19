@@ -1,14 +1,14 @@
 #include "repaddu/app_run.h"
 
 #include "repaddu/app_analyze.h"
+#include "repaddu/app/effective_options.h"
+#include "repaddu/app/fs_services.h"
 #include "repaddu/config_generator.h"
 #include "repaddu/format_language_report.h"
 #include "repaddu/format_tree.h"
 #include "repaddu/format_writer.h"
 #include "repaddu/grouping_component_map.h"
 #include "repaddu/grouping_strategies.h"
-#include "repaddu/io_traversal.h"
-#include "repaddu/language_profiles.h"
 
 #include <iostream>
 
@@ -24,8 +24,9 @@ namespace repaddu::app
             }
 
         io::TraversalResult traversal;
+        DefaultRepositoryTraversalService traversalService;
         ui.startProgress("Scanning repository", 0);
-        core::RunResult traversalResult = io::traverseRepository(options, traversal);
+        core::RunResult traversalResult = traversalService.traverse(options, traversal);
         ui.endProgress();
 
         if (traversalResult.code != core::ExitCode::success)
@@ -40,19 +41,7 @@ namespace repaddu::app
             return { core::ExitCode::success, "" };
             }
 
-        core::CliOptions effectiveOptions = options;
-        if (effectiveOptions.language.empty() || effectiveOptions.buildSystem.empty())
-            {
-            const core::DetectionResult detected = core::detectLanguageAndBuildSystem(traversal.files);
-            if (effectiveOptions.language.empty())
-                {
-                effectiveOptions.language = detected.languageId;
-                }
-            if (effectiveOptions.buildSystem.empty())
-                {
-                effectiveOptions.buildSystem = detected.buildSystemId;
-                }
-            }
+        const core::CliOptions effectiveOptions = buildEffectiveOptions(options, traversal.files);
 
         grouping::ComponentMap componentMap;
         const grouping::ComponentMap* componentMapPtr = nullptr;

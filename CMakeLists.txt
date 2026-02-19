@@ -122,7 +122,11 @@ target_include_directories(repaddu_ui
 target_compile_features(repaddu_ui PUBLIC cxx_std_20)
 
 add_library(repaddu_cli
+    src/app/analysis_backend_default.cpp
     src/app/app_analyze.cpp
+    src/app/effective_options.cpp
+    src/app/fs_services.cpp
+    src/cli_bootstrap.cpp
     src/app_run.cpp
     src/cli_parse.cpp
     src/cli_parse_values.cpp
@@ -255,8 +259,13 @@ function(repaddu_add_test target source)
         target_compile_definitions(${target} PRIVATE REPADDU_TEST_ROOT="${CMAKE_CURRENT_SOURCE_DIR}")
     endif()
 
-    add_test(NAME ${target} COMMAND ${target})
+add_test(NAME ${target} COMMAND ${target})
 endfunction()
+
+if (UNIX)
+    add_test(NAME repaddu_test_dependency_policy
+        COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/tools/check_component_deps.sh)
+endif()
 
 repaddu_add_test(repaddu_test_filtering tests/test_filtering.cpp
     WITH_TEST_ROOT
