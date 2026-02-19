@@ -102,8 +102,13 @@ Detailed changes:
 - `dbbc2ee` **vm_agent**: fix(format): emit real newline delimiters in jsonl output
 
 ## 2026-02-19
-Main message: Follow-up improvements: safer @todo tag extraction, full historical changelog creation, and --token-count compatibility.
+Main message: Large refactor execution day: changelog formalization plus AGENTS-aligned architecture refactors (tasks 1-10 in progress/complete).
 Detailed changes:
 - `0ddc6d5` **vm_agent**: analysis: support @todo-style tags with safe matching
 - `ed7f94b` **vm_agent**: docs: add full historical changelog from repository history
 - `2b8a1e7` **vm_agent**: cli: accept --token-count as compatibility flag
+- `ab68623` **vm_agent**: docs(changelog): add main and detailed messages per date
+- `d670070` **vm_agent**: refactor: start AGENTS alignment tasks 1-4
+- `4b745d0` **vm_agent**: refactor(core): split base and analysis libraries
+- `42d52e4` **vm_agent**: refactor: continue tasks 71-75 with safe structural splits
+- `946c97e` **vm_agent**: refactor: advance tasks 76-80 with app boundaries and policy test
