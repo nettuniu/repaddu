@@ -9,6 +9,21 @@ namespace repaddu::analysis
     {
     namespace
         {
+        bool isWordChar(char value)
+            {
+            return std::isalnum(static_cast<unsigned char>(value)) != 0 || value == '_';
+            }
+
+        std::string toUpperCopy(const std::string& value)
+            {
+            std::string upper = value;
+            std::transform(upper.begin(), upper.end(), upper.begin(), [](unsigned char ch)
+                {
+                return static_cast<char>(std::toupper(ch));
+                });
+            return upper;
+            }
+
         std::string trimCopy(const std::string& value)
             {
             std::size_t start = 0;
@@ -26,16 +41,74 @@ namespace repaddu::analysis
             return value.substr(start, end - start);
             }
 
+        bool findTagStart(const std::string& line,
+            const std::string& lineUpper,
+            const std::string& tag,
+            const std::string& tagUpper,
+            std::size_t& outTagStart)
+            {
+            std::size_t searchStart = 0;
+            while (searchStart < lineUpper.size())
+                {
+                const std::size_t pos = lineUpper.find(tagUpper, searchStart);
+                if (pos == std::string::npos)
+                    {
+                    return false;
+                    }
+
+                bool prefixIsAt = false;
+                if (pos > 0 && line[pos - 1] == '@')
+                    {
+                    prefixIsAt = true;
+                    if (pos > 1 && isWordChar(line[pos - 2]))
+                        {
+                        searchStart = pos + 1;
+                        continue;
+                        }
+                    }
+                else if (pos > 0 && isWordChar(line[pos - 1]))
+                    {
+                    searchStart = pos + 1;
+                    continue;
+                    }
+
+                const std::size_t suffixPos = pos + tagUpper.size();
+                if (suffixPos < line.size() && isWordChar(line[suffixPos]))
+                    {
+                    searchStart = pos + 1;
+                    continue;
+                    }
+
+                if (!prefixIsAt && line.compare(pos, tag.size(), tag) != 0)
+                    {
+                    searchStart = pos + 1;
+                    continue;
+                    }
+
+                outTagStart = prefixIsAt ? (pos - 1) : pos;
+                return true;
+                }
+
+            return false;
+            }
+
         void appendMatchesForLine(const std::string& line,
             const std::vector<std::string>& tags,
             int lineNum,
             const std::string& filePath,
             std::vector<TagMatch>& results)
             {
+            const std::string lineUpper = toUpperCopy(line);
             for (const auto& tag : tags)
                 {
-                const std::size_t pos = line.find(tag);
-                if (pos == std::string::npos)
+                if (tag.empty())
+                    {
+                    continue;
+                    }
+
+                const std::string tagUpper = toUpperCopy(tag);
+                std::size_t tagStart = 0;
+                if (!findTagStart(line, lineUpper, tag, tagUpper, tagStart))
                     {
                     continue;
                     }
@@ -45,7 +118,12 @@ namespace repaddu::analysis
                 match.lineNumber = lineNum;
                 match.filePath = filePath;
 
-                std::size_t contentPos = pos + tag.length();
+                std::size_t contentPos = tagStart;
+                if (line[contentPos] == '@')
+                    {
+                    ++contentPos;
+                    }
+                contentPos += tag.length();
                 while (contentPos < line.length() && (line[contentPos] == ':' || std::isspace(static_cast<unsigned char>(line[contentPos])) != 0))
                     {
                     ++contentPos;

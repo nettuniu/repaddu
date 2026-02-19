@@ -71,9 +71,30 @@ void test_tag_patterns_from_file()
     std::filesystem::remove(tempFile, errorCode);
     }
 
+void test_case_insensitive_and_at_prefix_matching()
+    {
+    repaddu::analysis::TagExtractor extractor;
+
+    const std::string content =
+        "// @todo: lowercase with at-sign\n"
+        "// @fixme: lowercase plain tag\n"
+        "// TODOABLE should not match\n"
+        "// alpha@todo should not match\n";
+
+    const auto matches = extractor.extract(content, "case.cpp");
+    assert(matches.size() == 2);
+    assert(matches[0].tag == "TODO");
+    assert(matches[0].content == "lowercase with at-sign");
+    assert(matches[0].lineNumber == 1);
+    assert(matches[1].tag == "FIXME");
+    assert(matches[1].content == "lowercase plain tag");
+    assert(matches[1].lineNumber == 2);
+    }
+
 int main()
     {
     test_tag_extraction();
     test_tag_patterns_from_file();
+    test_case_insensitive_and_at_prefix_matching();
     return 0;
     }
