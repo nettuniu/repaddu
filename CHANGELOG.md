@@ -1,11 +1,12 @@
 # Changelog
 
-Complete repository history derived from git commits (oldest to newest).
+Main message: repaddu evolved from initial CLI export tooling into a modular, tested analysis-capable system with safety, configuration, multi-format output, and CI hardening.
 
-## Format
-- `<short-hash>` **<author>**: <commit subject>
+Detailed message: sections below provide a per-day main message followed by the full detailed commit list.
 
 ## 2026-02-01
+Main message: Initial foundation: core CLI, grouping/writer pipeline, early docs, scripts, CI bootstrap, and language/build profiling.
+Detailed changes:
 - `104626a` **daniele**: adding agent files
 - `b8f4f05` **daniele**: addig docs
 - `f835fe6` **vm_agent**: Implement repaddu CLI, grouping, writer, and tests
@@ -15,12 +16,18 @@ Complete repository history derived from git commits (oldest to newest).
 - `c08fb05` **vm_agent**: Add language/build profiles and build-file aggregation
 
 ## 2026-02-07
+Main message: Major feature wave: analysis/UI/config/HTML capabilities delivered as a large integrated phase.
+Detailed changes:
 - `71ceaa6` **vm_agent**: feat: Implement Phases 2-4 (Analysis, UI, Config, HTML)
 
 ## 2026-02-08
+Main message: Advanced analysis expansion: graph/views plus LSP/C++ analysis support landed.
+Detailed changes:
 - `3d0a56b` **daniele**: Add analysis graph, views, and LSP/C++ analysis support
 
 ## 2026-02-12
+Main message: Capability broadening: analysis quality improvements, fixtures/tests, docs, detection, and evaluation assets.
+Detailed changes:
 - `90c775d` **vm_agent**: Improve analysis CLI/config handling and aggregation output
 - `14cecde` **vm_agent**: Add fixture-based analysis integration tests
 - `c843733` **vm_agent**: Document pinned picobench submodule fixture
@@ -38,6 +45,8 @@ Complete repository history derived from git commits (oldest to newest).
 - `5680efc` **vm_agent**: Add file-based custom tag pattern loading
 
 ## 2026-02-13
+Main message: Hardening sprint: config/YAML robustness, CLI/help clarity, CI portability, Windows fixes, and extensive test coverage.
+Detailed changes:
 - `af42614` **vm_agent**: Ensure isolate-docs applies to size grouping
 - `467ea46` **vm_agent**: Add optional tag summary in analyze-only reports
 - `3878edc` **vm_agent**: Add optional YAML frontmatter emission for output blocks
@@ -74,6 +83,8 @@ Complete repository history derived from git commits (oldest to newest).
 - `adcf4a5` **vm_agent**: Test format precedence between config and CLI
 
 ## 2026-02-14
+Main message: Architecture cleanup: component splits/refactors, test target deduplication, and documentation alignment.
+Detailed changes:
 - `e7a0e83` **vm_agent**: refactor(cli): split cli_parse into parse/config/help units
 - `7bfe9d1` **vm_agent**: build(cmake): add test helper and deduplicate test targets
 - `8dcdd4e` **vm_agent**: refactor(app): extract run orchestration and stream tag scanning
@@ -84,9 +95,15 @@ Complete repository history derived from git commits (oldest to newest).
 - `e575a7c` **vm_agent**: docs(perf): add repeatable baseline script and update eval report
 
 ## 2026-02-16
+Main message: Stabilization: docs/spec sync, evaluation smoke tooling, and JSONL newline correctness fix.
+Detailed changes:
 - `f95f2b4` **vm_agent**: docs(cli): align spec with implemented flags and add perf guard
 - `138618a` **vm_agent**: docs(eval): add smoke runner and update scenario execution status
 - `dbbc2ee` **vm_agent**: fix(format): emit real newline delimiters in jsonl output
 
 ## 2026-02-19
+Main message: Follow-up improvements: safer @todo tag extraction, full historical changelog creation, and --token-count compatibility.
+Detailed changes:
 - `0ddc6d5` **vm_agent**: analysis: support @todo-style tags with safe matching
+- `ed7f94b` **vm_agent**: docs: add full historical changelog from repository history
+- `2b8a1e7` **vm_agent**: cli: accept --token-count as compatibility flag
