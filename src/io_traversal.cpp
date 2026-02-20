@@ -10,6 +10,7 @@
 #include <deque>
 #include <condition_variable>
 #include <cctype>
+#include <iterator>
 #include <mutex>
 #include <thread>
 
@@ -186,31 +187,33 @@ namespace repaddu::io
                 queueCv.notify_one();
                 };
 
-            auto addDirectory = [&](const std::filesystem::path& relativePath)
+            auto appendBatch = [&](std::vector<std::filesystem::path>& directories,
+                std::vector<core::FileEntry>& files,
+                std::vector<std::filesystem::path>& cmakeLists,
+                std::vector<std::filesystem::path>& buildFiles)
                 {
                 std::lock_guard<std::mutex> lock(resultMutex);
-                outResult.directories.push_back(relativePath);
-                };
-
-            auto addFileEntry = [&](core::FileEntry&& entry,
-                const std::filesystem::path& relativePath,
-                const std::string& filenameLower)
-                {
-                std::lock_guard<std::mutex> lock(resultMutex);
-                outResult.files.push_back(std::move(entry));
-                if (filenameLower == "cmakelists.txt")
-                    {
-                    outResult.cmakeLists.push_back(relativePath);
-                    }
-                if (std::find(buildFileNamesLower.begin(), buildFileNamesLower.end(), filenameLower)
-                    != buildFileNamesLower.end())
-                    {
-                    outResult.buildFiles.push_back(relativePath);
-                    }
+                outResult.directories.insert(outResult.directories.end(),
+                    std::make_move_iterator(directories.begin()),
+                    std::make_move_iterator(directories.end()));
+                outResult.files.insert(outResult.files.end(),
+                    std::make_move_iterator(files.begin()),
+                    std::make_move_iterator(files.end()));
+                outResult.cmakeLists.insert(outResult.cmakeLists.end(),
+                    std::make_move_iterator(cmakeLists.begin()),
+                    std::make_move_iterator(cmakeLists.end()));
+                outResult.buildFiles.insert(outResult.buildFiles.end(),
+                    std::make_move_iterator(buildFiles.begin()),
+                    std::make_move_iterator(buildFiles.end()));
                 };
 
             auto processDirectory = [&](const std::filesystem::path& directory)
                 {
+                std::vector<std::filesystem::path> localDirectories;
+                std::vector<core::FileEntry> localFiles;
+                std::vector<std::filesystem::path> localCmakeLists;
+                std::vector<std::filesystem::path> localBuildFiles;
+
                 std::error_code iterError;
                 std::filesystem::directory_iterator iterator(directory, dirOptions, iterError);
                 if (iterError)
@@ -261,7 +264,7 @@ namespace repaddu::io
 
                     if (isDirectory)
                         {
-                        addDirectory(relativePath);
+                        localDirectories.push_back(relativePath);
                         std::error_code symlinkError;
                         const bool isSymlink = entry.is_symlink(symlinkError);
                         if (symlinkError)
@@ -315,8 +318,22 @@ namespace repaddu::io
                     fileEntry.isBinary = looksBinary(currentPath);
 
                     const std::string filenameLower = normalizeFileName(currentPath.filename().string());
-                    addFileEntry(std::move(fileEntry), relativePath, filenameLower);
+                    if (filenameLower == "cmakelists.txt")
+                        {
+                        localCmakeLists.push_back(relativePath);
+                        }
+                    if (std::find(buildFileNamesLower.begin(), buildFileNamesLower.end(), filenameLower)
+                        != buildFileNamesLower.end())
+                        {
+                        localBuildFiles.push_back(relativePath);
+                        }
+                    localFiles.push_back(std::move(fileEntry));
                     }
+                if (hasError.load())
+                    {
+                    return;
+                    }
+                appendBatch(localDirectories, localFiles, localCmakeLists, localBuildFiles);
                 };
 
             const unsigned int hardwareThreads = std::thread::hardware_concurrency();

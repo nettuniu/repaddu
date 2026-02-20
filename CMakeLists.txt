@@ -127,6 +127,7 @@ add_library(repaddu_cli
     src/app/app_analyze.cpp
     src/app/effective_options.cpp
     src/app/fs_services.cpp
+    src/entrypoint_main.cpp
     src/cli_bootstrap.cpp
     src/app_run.cpp
     src/cli_parse.cpp
