@@ -235,6 +235,7 @@ repaddu \
 - `tests/`: test executables
 - `fixtures/`: test fixtures and submodules
 - `docs/`: documentation
+- `docs/components/`: concise per-component purpose/dependency/invariant notes
 
 ### Refactor migration map (for contributors)
 

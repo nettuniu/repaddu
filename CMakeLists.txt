@@ -112,6 +112,7 @@ target_compile_features(repaddu_format PUBLIC cxx_std_20)
 
 add_library(repaddu_ui
     src/ui_console.cpp
+    src/ui_plain.cpp
 )
 
 target_include_directories(repaddu_ui

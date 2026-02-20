@@ -9,6 +9,7 @@ Convert a repository/folder into numbered Markdown files for LLM/RAG ingestion.
 - Architecture dependency contract: `docs/architecture_layers.md`
 - Error handling contract: `docs/error_handling_contract.md`
 - Refactor master plan: `docs/refactor_master_plan.md`
+- Internal component docs: `docs/components/README.md`
 
 ## Contributor migration notes (module layout)
 

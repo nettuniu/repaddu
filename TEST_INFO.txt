@@ -55,7 +55,7 @@ clang-backed C++ analysis (optional)
 - Notes: requires configure/build with `-DREPADDU_ENABLE_CLANG=ON` and local LLVM/Clang dev packages.
 
 console ui
-- Files: include/repaddu/ui_interface.h, include/repaddu/ui_console.h, src/ui_console.cpp
+- Files: include/repaddu/ui_interface.h, include/repaddu/ui_console.h, src/ui_console.cpp, include/repaddu/ui_plain.h, src/ui_plain.cpp
 - Tests:
   - tests/test_ui.cpp (`ctest -R repaddu_test_ui`)
 

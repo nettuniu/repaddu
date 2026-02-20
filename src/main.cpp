@@ -1,7 +1,6 @@
 #include "repaddu/cli_parse.h"
 #include "repaddu/cli_bootstrap.h"
 #include "repaddu/cli_run.h"
-#include "repaddu/ui_console.h"
 
 #include <iostream>
 #include <vector>
@@ -30,8 +29,7 @@ int main(int argc, char** argv)
         return static_cast<int>(parseResult.result.code);
         }
 
-    repaddu::ui::ConsoleUI ui;
-    repaddu::core::RunResult runResult = repaddu::cli::run(parseResult.options, &ui);
+    repaddu::core::RunResult runResult = repaddu::cli::run(parseResult.options);
     
     if (runResult.code != repaddu::core::ExitCode::success)
         {
