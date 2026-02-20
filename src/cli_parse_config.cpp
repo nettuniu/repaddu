@@ -3,6 +3,8 @@
 #include "repaddu/core_types.h"
 #include "repaddu/json_lite.h"
 
+#include "cli_parse_values.h"
+
 #include <cctype>
 #include <fstream>
 #include <map>
@@ -249,12 +251,10 @@ namespace repaddu::cli
                     {
                     return;
                     }
-                try
+                int parsedValue = 0;
+                if (detail::parseInt(it->second, parsedValue))
                     {
-                    target = std::stoi(it->second);
-                    }
-                catch (...)
-                    {
+                    target = parsedValue;
                     }
                 };
             auto getUInt64 = [&](const std::string& key, std::uintmax_t& target)
@@ -264,12 +264,10 @@ namespace repaddu::cli
                     {
                     return;
                     }
-                try
+                std::uintmax_t parsedValue = 0;
+                if (detail::parseUInt64(it->second, parsedValue))
                     {
-                    target = static_cast<std::uintmax_t>(std::stoull(it->second));
-                    }
-                catch (...)
-                    {
+                    target = parsedValue;
                     }
                 };
             auto getStringArray = [&](const std::string& key, std::vector<std::string>& target)

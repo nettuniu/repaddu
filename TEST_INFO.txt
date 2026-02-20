@@ -39,7 +39,7 @@ grouping (group strategy and component map)
   - tests/test_cmake_aggregation.cpp (`ctest --test-dir build -R repaddu_test_cmake --output-on-failure`)
 
 format (writers and reports)
-- Files: include/repaddu/format_writer.h, src/format_writer.cpp, src/format_writer_read.cpp, src/format_writer_alt_formats.cpp, src/format_tree.cpp, include/repaddu/format_tree.h, include/repaddu/format_language_report.h, src/format_language_report.cpp, include/repaddu/format_analysis_report.h, src/format_analysis_report.cpp, include/repaddu/format_analysis_json.h, src/format_analysis_json.cpp, include/repaddu/format_analysis_tags.h, include/repaddu/format/analysis_tags_report.h, src/format/analysis_tags_report.cpp
+- Files: include/repaddu/format_writer.h, src/format_writer.cpp, src/format_writer_internal.h, src/format_writer_markdown.cpp, src/format_writer_plan.cpp, src/format_writer_read.cpp, src/format_writer_alt_formats.cpp, src/format_tree.cpp, include/repaddu/format_tree.h, include/repaddu/format_language_report.h, src/format_language_report.cpp, include/repaddu/format_analysis_report.h, src/format_analysis_report.cpp, include/repaddu/format_analysis_json.h, src/format_analysis_json.cpp, include/repaddu/format_analysis_tags.h, include/repaddu/format/analysis_tags_report.h, src/format/analysis_tags_report.cpp
 - Tests:
   - tests/test_frontmatter_output.cpp (`ctest --test-dir build -R repaddu_test_frontmatter_output --output-on-failure`)
   - tests/test_analysis_json.cpp (`ctest --test-dir build -R repaddu_test_analysis_json --output-on-failure`)
