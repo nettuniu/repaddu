@@ -3,6 +3,7 @@
 #include "repaddu/core_types.h"
 #include "repaddu/language_profiles.h"
 
+#include "cli_parse_policy.h"
 #include "cli_parse_values.h"
 
 namespace repaddu::cli
@@ -12,19 +13,18 @@ namespace repaddu::cli
         {
         ParseResult result;
         core::CliOptions options = baseOptions;
-        bool includeHeadersFlag = false;
-        bool includeSourcesFlag = false;
+        detail::SourceSelectionFlags sourceSelectionFlags;
 
-        for (std::size_t i = 1; i < args.size(); ++i)
+        for (std::size_t argIndex = 1; argIndex < args.size(); ++argIndex)
             {
-            const std::string& arg = args[i];
-            auto requireValue = [&args, &i](std::string& outValue) -> bool
+            const std::string& arg = args[argIndex];
+            auto requireValue = [&args, &argIndex](std::string& parsedValue) -> bool
                 {
-                if (i + 1 >= args.size())
+                if (argIndex + 1 >= args.size())
                     {
                     return false;
                     }
-                outValue = args[++i];
+                parsedValue = args[++argIndex];
                 return true;
                 };
 
@@ -108,12 +108,12 @@ namespace repaddu::cli
             else if (arg == "--include-headers")
                 {
                 options.includeHeaders = true;
-                includeHeadersFlag = true;
+                sourceSelectionFlags.includeHeadersExplicit = true;
                 }
             else if (arg == "--include-sources")
                 {
                 options.includeSources = true;
-                includeSourcesFlag = true;
+                sourceSelectionFlags.includeSourcesExplicit = true;
                 }
             else if (arg == "--extensions")
                 {
@@ -397,14 +397,7 @@ namespace repaddu::cli
                 }
             }
 
-        if (includeHeadersFlag && !includeSourcesFlag)
-            {
-            options.includeSources = false;
-            }
-        if (!includeHeadersFlag && !includeSourcesFlag)
-            {
-            options.includeSources = true;
-            }
+        detail::mergeSourceSelectionDefaults(options, sourceSelectionFlags);
 
         if (options.showHelp)
             {
@@ -422,18 +415,10 @@ namespace repaddu::cli
             return result;
             }
 
-        if (options.inputPath.empty() && !options.generateConfig)
+        const core::RunResult validationResult = detail::validateParsedOptions(options);
+        if (validationResult.code != core::ExitCode::success)
             {
-            return { options, { core::ExitCode::invalid_usage, "--input is required." }, "" };
-            }
-        if (!options.scanLanguages && !options.analyzeOnly && !options.generateConfig && options.outputPath.empty())
-            {
-            return { options, { core::ExitCode::invalid_usage, "--output is required unless --scan-languages, --analyze-only, or --init is used." }, "" };
-            }
-
-        if (options.groupBy == core::GroupingMode::component && options.componentMapPath.empty())
-            {
-            return { options, { core::ExitCode::invalid_usage, "--group-by component requires --component-map." }, "" };
+            return { options, validationResult, "" };
             }
 
         result.options = options;

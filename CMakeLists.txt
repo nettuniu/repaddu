@@ -131,6 +131,7 @@ add_library(repaddu_cli
     src/cli_bootstrap.cpp
     src/app_run.cpp
     src/cli_parse.cpp
+    src/cli_parse_policy.cpp
     src/cli_parse_values.cpp
     src/cli_parse_config.cpp
     src/cli_parse_help.cpp
