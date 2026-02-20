@@ -5,11 +5,12 @@ BIN=${1:-build/repaddu}
 INPUT=${2:-.}
 OUT=${3:-/tmp/repaddu_perf_guard_out}
 LOOPS=${4:-20}
+READ_INPUT=${5:-fixtures/sample_repo}
 
 # Thresholds are totals over LOOPS runs.
 ANALYZE_ONLY_MAX=${ANALYZE_ONLY_MAX:-0.50}
 ANALYZE_TAGS_MAX=${ANALYZE_TAGS_MAX:-0.55}
-DRY_RUN_MAX=${DRY_RUN_MAX:-0.60}
+READ_EMIT_MAX=${READ_EMIT_MAX:-0.35}
 
 run_total_seconds()
 {
@@ -25,10 +26,10 @@ run_total_seconds()
   awk -v actual="${value}" -v threshold="${max_allowed}" 'BEGIN { exit !(actual <= threshold) }'
 }
 
-echo "Performance guard: bin=${BIN} input=${INPUT} loops=${LOOPS}"
+echo "Performance guard: bin=${BIN} input=${INPUT} read_input=${READ_INPUT} loops=${LOOPS}"
 
 run_total_seconds "analyze_only" "${BIN} --input ${INPUT} --output ${OUT} --analyze-only" "${ANALYZE_ONLY_MAX}"
 run_total_seconds "analyze_tags" "${BIN} --input ${INPUT} --output ${OUT} --analyze-only --extract-tags" "${ANALYZE_TAGS_MAX}"
-run_total_seconds "dry_run" "${BIN} --input ${INPUT} --output ${OUT} --dry-run" "${DRY_RUN_MAX}"
+run_total_seconds "read_emit" "${BIN} --input ${READ_INPUT} --output ${OUT} --group-by directory --group-depth 2 --max-bytes 200000" "${READ_EMIT_MAX}"
 
 echo "Performance guard passed."

@@ -1,75 +1,86 @@
 # repaddu test map
 
 This file maps code areas to the tests that must be run when those areas change.
-All commands are run from the build directory unless stated otherwise.
+Commands are run from the repository root using `--test-dir build` unless stated otherwise.
 
-core types, language profiles, traversal, grouping, writing
-- Files: include/repaddu/core_types.h, src/core_types.cpp, src/language_profiles.cpp, include/repaddu/language_profiles.h, src/io_traversal.cpp, src/io_binary.cpp, src/grouping_strategies.cpp, src/grouping_component_map.cpp, src/format_writer.cpp, src/format_writer_read.cpp, src/format_writer_alt_formats.cpp, src/format_tree.cpp, src/format_language_report.cpp, src/format_analysis_report.cpp, include/repaddu/format_analysis_report.h, src/format/analysis_tags_report.cpp, include/repaddu/format/analysis_tags_report.h, include/repaddu/format_analysis_tags.h
+base (core types, language profiles, logging, redaction, tokens, tags, json)
+- Files: include/repaddu/core_types.h, src/core_types.cpp, include/repaddu/language_profiles.h, src/language_profiles.cpp, include/repaddu/logger.h, src/logger.cpp, include/repaddu/pii_redactor.h, src/pii_redactor.cpp, include/repaddu/analysis_tokens.h, src/analysis_tokens.cpp, include/repaddu/analysis_tags.h, src/analysis_tags.cpp, include/repaddu/json_lite.h, src/json_lite.cpp
 - Tests:
-  - tests/test_filtering.cpp (`ctest -R repaddu_test_filtering`)
-  - tests/test_grouping.cpp (`ctest -R repaddu_test_grouping`)
-  - tests/test_isolate_docs.cpp (`ctest -R repaddu_test_isolate_docs`)
-  - tests/test_cmake_aggregation.cpp (`ctest -R repaddu_test_cmake`)
-  - tests/test_language_profiles_detection.cpp (`ctest -R repaddu_test_language_profiles`)
-  - tests/test_multilanguage_fixture.cpp (`ctest -R repaddu_test_multilanguage_fixture`)
-  - tests/test_frontmatter_output.cpp (`ctest -R repaddu_test_frontmatter_output`)
-  - tests/test_binary_detection.cpp (`ctest -R repaddu_test_binary`)
-  - tests/test_large_file.cpp (`ctest -R repaddu_test_large_file`)
-  - tests/test_concurrency.cpp (`ctest -R repaddu_test_concurrency`)
+  - tests/test_logging.cpp (`ctest --test-dir build -R repaddu_test_logging --output-on-failure`)
+  - tests/test_pii.cpp (`ctest --test-dir build -R repaddu_test_pii --output-on-failure`)
+  - tests/test_tokens.cpp (`ctest --test-dir build -R repaddu_test_tokens --output-on-failure`)
+  - tests/test_tags.cpp (`ctest --test-dir build -R repaddu_test_tags --output-on-failure`)
+  - tests/test_language_profiles_detection.cpp (`ctest --test-dir build -R repaddu_test_language_profiles --output-on-failure`)
 
-cli parse, config loading, app orchestration, main entry
-- Files: include/repaddu/cli_parse.h, include/repaddu/cli_bootstrap.h, src/cli_bootstrap.cpp, src/cli_parse.cpp, src/cli_parse_values.cpp, src/cli_parse_values.h, src/cli_parse_config.cpp, src/cli_parse_help.cpp, include/repaddu/cli_run.h, src/cli_run.cpp, include/repaddu/app_run.h, src/app_run.cpp, include/repaddu/app_analyze.h, include/repaddu/app/app_analyze.h, src/app/app_analyze.cpp, include/repaddu/app/analysis_backend.h, src/app/analysis_backend_default.cpp, include/repaddu/app/effective_options.h, src/app/effective_options.cpp, include/repaddu/app/fs_services.h, src/app/fs_services.cpp, src/config_generator.cpp, src/main.cpp
+analysis (graph/views/lsp)
+- Files: include/repaddu/analysis_graph.h, src/analysis_graph.cpp, include/repaddu/analysis_view.h, src/analysis_view.cpp, include/repaddu/analysis_lsp.h, src/analysis_lsp.cpp
 - Tests:
-  - tests/test_cli_parse_analysis.cpp (`ctest -R repaddu_test_cli_parse_analysis`)
-  - tests/test_config_analysis.cpp (`ctest -R repaddu_test_config_analysis`)
-  - tests/test_cli_config_path.cpp (`ctest -R repaddu_test_cli_config_path`)
-  - tests/test_dry_run.cpp (`ctest -R repaddu_test_dry_run`)
-  - tests/test_app_run.cpp (`ctest -R repaddu_test_app_run`)
-  - tests/test_analysis.cpp (`ctest -R repaddu_test_analysis`)
-  - tests/test_analysis_tags_report.cpp (`ctest -R repaddu_test_analysis_tags_report`)
+  - tests/test_analysis_graph.cpp (`ctest --test-dir build -R repaddu_test_analysis_graph --output-on-failure`)
+  - tests/test_analysis_views.cpp (`ctest --test-dir build -R repaddu_test_analysis_views --output-on-failure`)
+  - tests/test_analysis_lsp.cpp (`ctest --test-dir build -R repaddu_test_analysis_lsp --output-on-failure`)
+  - tests/test_lsp_client.cpp (`ctest --test-dir build -R repaddu_test_lsp_client --output-on-failure`)
+  - tests/test_lsp_symbols.cpp (`ctest --test-dir build -R repaddu_test_lsp_symbols --output-on-failure`)
+  - tests/test_lsp_relationships.cpp (`ctest --test-dir build -R repaddu_test_lsp_relationships --output-on-failure`)
 
-logging, redaction, token/tag extraction
-- Files: src/logger.cpp, src/pii_redactor.cpp, src/analysis_tokens.cpp, include/repaddu/analysis_tags.h, src/analysis_tags.cpp
+io (traversal and binary detection)
+- Files: include/repaddu/io_traversal.h, src/io_traversal.cpp, include/repaddu/io_binary.h, src/io_binary.cpp
 - Tests:
-  - tests/test_logging.cpp (`ctest -R repaddu_test_logging`)
-  - tests/test_pii.cpp (`ctest -R repaddu_test_pii`)
-  - tests/test_tokens.cpp (`ctest -R repaddu_test_tokens`)
-  - tests/test_tags.cpp (`ctest -R repaddu_test_tags`)
-  - tests/test_analysis_tags_report.cpp (`ctest -R repaddu_test_analysis_tags_report`)
+  - tests/test_filtering.cpp (`ctest --test-dir build -R repaddu_test_filtering --output-on-failure`)
+  - tests/test_isolate_docs.cpp (`ctest --test-dir build -R repaddu_test_isolate_docs --output-on-failure`)
+  - tests/test_binary_detection.cpp (`ctest --test-dir build -R repaddu_test_binary --output-on-failure`)
+  - tests/test_concurrency.cpp (`ctest --test-dir build -R repaddu_test_concurrency --output-on-failure`)
 
-analysis graph/views/json/lsp
-- Files: include/repaddu/analysis_graph.h, src/analysis_graph.cpp, include/repaddu/analysis_view.h, src/analysis_view.cpp, include/repaddu/format_analysis_json.h, src/format_analysis_json.cpp, include/repaddu/analysis_lsp.h, src/analysis_lsp.cpp, include/repaddu/json_lite.h, src/json_lite.cpp
+grouping (group strategy and component map)
+- Files: include/repaddu/grouping_strategies.h, src/grouping_strategies.cpp, include/repaddu/grouping_component_map.h, src/grouping_component_map.cpp
 - Tests:
-  - tests/test_analysis_graph.cpp (`ctest -R repaddu_test_analysis_graph`)
-  - tests/test_analysis_views.cpp (`ctest -R repaddu_test_analysis_views`)
-  - tests/test_analysis_json.cpp (`ctest -R repaddu_test_analysis_json`)
-  - tests/test_analysis_lsp.cpp (`ctest -R repaddu_test_analysis_lsp`)
-  - tests/test_lsp_client.cpp (`ctest -R repaddu_test_lsp_client`)
-  - tests/test_lsp_symbols.cpp (`ctest -R repaddu_test_lsp_symbols`)
-  - tests/test_lsp_relationships.cpp (`ctest -R repaddu_test_lsp_relationships`)
+  - tests/test_grouping.cpp (`ctest --test-dir build -R repaddu_test_grouping --output-on-failure`)
+  - tests/test_filtering.cpp (`ctest --test-dir build -R repaddu_test_filtering --output-on-failure`)
+  - tests/test_large_file.cpp (`ctest --test-dir build -R repaddu_test_large_file --output-on-failure`)
+  - tests/test_cmake_aggregation.cpp (`ctest --test-dir build -R repaddu_test_cmake --output-on-failure`)
 
-clang-backed C++ analysis (optional)
-- Files: include/repaddu/analysis_cpp.h, src/analysis_cpp.cpp
+format (writers and reports)
+- Files: include/repaddu/format_writer.h, src/format_writer.cpp, src/format_writer_read.cpp, src/format_writer_alt_formats.cpp, src/format_tree.cpp, include/repaddu/format_tree.h, include/repaddu/format_language_report.h, src/format_language_report.cpp, include/repaddu/format_analysis_report.h, src/format_analysis_report.cpp, include/repaddu/format_analysis_json.h, src/format_analysis_json.cpp, include/repaddu/format_analysis_tags.h, include/repaddu/format/analysis_tags_report.h, src/format/analysis_tags_report.cpp
 - Tests:
-  - tests/test_analysis_cpp.cpp (`ctest -R repaddu_test_analysis_cpp`)
-- Notes: requires configure/build with `-DREPADDU_ENABLE_CLANG=ON` and local LLVM/Clang dev packages.
+  - tests/test_frontmatter_output.cpp (`ctest --test-dir build -R repaddu_test_frontmatter_output --output-on-failure`)
+  - tests/test_analysis_json.cpp (`ctest --test-dir build -R repaddu_test_analysis_json --output-on-failure`)
+  - tests/test_analysis_tags_report.cpp (`ctest --test-dir build -R repaddu_test_analysis_tags_report --output-on-failure`)
 
-console ui
+ui (interface and adapters)
 - Files: include/repaddu/ui_interface.h, include/repaddu/ui_console.h, src/ui_console.cpp, include/repaddu/ui_plain.h, src/ui_plain.cpp
 - Tests:
-  - tests/test_ui.cpp (`ctest -R repaddu_test_ui`)
+  - tests/test_ui.cpp (`ctest --test-dir build -R repaddu_test_ui --output-on-failure`)
+
+cli/app/entrypoint (parse, bootstrap, run orchestration)
+- Files: include/repaddu/cli_parse.h, include/repaddu/cli_bootstrap.h, src/cli_bootstrap.cpp, src/cli_parse.cpp, src/cli_parse_values.h, src/cli_parse_values.cpp, src/cli_parse_config.cpp, src/cli_parse_help.cpp, include/repaddu/cli_run.h, src/cli_run.cpp, include/repaddu/app_run.h, src/app_run.cpp, include/repaddu/app_analyze.h, include/repaddu/app/app_analyze.h, src/app/app_analyze.cpp, include/repaddu/app/analysis_backend.h, src/app/analysis_backend_default.cpp, include/repaddu/app/effective_options.h, src/app/effective_options.cpp, include/repaddu/app/fs_services.h, src/app/fs_services.cpp, include/repaddu/config_generator.h, src/config_generator.cpp, src/main.cpp
+- Tests:
+  - tests/test_cli_parse_analysis.cpp (`ctest --test-dir build -R repaddu_test_cli_parse_analysis --output-on-failure`)
+  - tests/test_config_analysis.cpp (`ctest --test-dir build -R repaddu_test_config_analysis --output-on-failure`)
+  - tests/test_cli_config_path.cpp (`ctest --test-dir build -R repaddu_test_cli_config_path --output-on-failure`)
+  - tests/test_dry_run.cpp (`ctest --test-dir build -R repaddu_test_dry_run --output-on-failure`)
+  - tests/test_app_run.cpp (`ctest --test-dir build -R repaddu_test_app_run --output-on-failure`)
+  - tests/test_analysis.cpp (`ctest --test-dir build -R repaddu_test_analysis --output-on-failure`)
+
+clang-backed C++ analysis (optional component)
+- Files: include/repaddu/analysis_cpp.h, src/analysis_cpp.cpp
+- Tests:
+  - tests/test_analysis_cpp.cpp (`ctest --test-dir build -R repaddu_test_analysis_cpp --output-on-failure`)
+- Notes: requires configure/build with `-DREPADDU_ENABLE_CLANG=ON` and local LLVM/Clang dev packages.
 
 fixture integrity
 - Files: fixtures/picobench, tests/test_fixture_picobench.cpp
 - Tests:
-  - tests/test_fixture_picobench.cpp (`ctest -R repaddu_test_fixture_picobench`)
-
-full test sweep
-- Command: `ctest --output-on-failure`
+  - tests/test_fixture_picobench.cpp (`ctest --test-dir build -R repaddu_test_fixture_picobench --output-on-failure`)
 
 architecture dependency policy
-- Files: docs/architecture_layers.md, docs/error_handling_contract.md, docs/refactor_master_plan.md, tools/check_component_deps.sh, .github/workflows/ci.yml
+- Files: docs/architecture_layers.md, docs/error_handling_contract.md, docs/refactor_master_plan.md, tools/check_component_deps.sh, CMakeLists.txt, .github/workflows/ci.yml
 - Tests:
   - dependency checker (`tools/check_component_deps.sh`)
-  - dependency policy ctest (`ctest -R repaddu_test_dependency_policy`)
-  - full sweep (`ctest --output-on-failure`)
+  - dependency policy ctest (`ctest --test-dir build -R repaddu_test_dependency_policy --output-on-failure`)
+
+performance guardrails
+- Files: docs/perf_baseline.md, docs/perf_analysis_tags_baseline.sh, docs/perf_regression_guard.sh
+- Tests:
+  - baseline command set (`docs/perf_baseline.md`)
+
+full test sweep
+- Command: `ctest --test-dir build --output-on-failure`
