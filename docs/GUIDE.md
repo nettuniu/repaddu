@@ -236,6 +236,28 @@ repaddu \
 - `fixtures/`: test fixtures and submodules
 - `docs/`: documentation
 
+### Refactor migration map (for contributors)
+
+The repository now follows a layered target model. Use this map when deciding
+where new code belongs or where to move legacy logic:
+
+- `repaddu_base`: shared domain types/utilities with no app knowledge.
+- `repaddu_analysis`: analysis graph/view/LSP logic.
+- `repaddu_io`: filesystem traversal and binary detection.
+- `repaddu_grouping`: grouping/filtering strategy and component map logic.
+- `repaddu_format`: markdown/jsonl/html and analysis report renderers.
+- `repaddu_ui`: UI abstraction and console adapter.
+- `repaddu_cli`: CLI parse/config/bootstrap and run orchestration.
+- `repaddu` executable: thin entrypoint only (`src/main.cpp`).
+
+Migration compatibility rules currently in effect:
+
+- Keep compatibility headers in `include/repaddu/*.h` working while migrating
+  internal implementation files.
+- Keep behavior identical during refactors (output bytes, ordering, errors).
+- Preserve dependency direction from `docs/architecture_layers.md`; do not
+  introduce reverse edges or cycles.
+
 ### Build and test workflow
 
 1. Configure and build:

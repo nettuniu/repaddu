@@ -112,3 +112,12 @@ Detailed changes:
 - `4b745d0` **vm_agent**: refactor(core): split base and analysis libraries
 - `42d52e4` **vm_agent**: refactor: continue tasks 71-75 with safe structural splits
 - `946c97e` **vm_agent**: refactor: advance tasks 76-80 with app boundaries and policy test
+
+## 2026-02-20
+Main message: Refactor signoff phase: contributor migration documentation plus full verification sweep across build, tests, and dependency policy.
+Detailed changes:
+- document module migration path for contributors in top-level docs (`README.md`, `docs/GUIDE.md`)
+- run final signoff checks for AGENTS alignment:
+  - `cmake --build build`
+  - `ctest --output-on-failure`
+  - `tools/check_component_deps.sh`

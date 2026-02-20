@@ -10,6 +10,29 @@ Convert a repository/folder into numbered Markdown files for LLM/RAG ingestion.
 - Error handling contract: `docs/error_handling_contract.md`
 - Refactor master plan: `docs/refactor_master_plan.md`
 
+## Contributor migration notes (module layout)
+
+`repaddu` has moved from a mostly flat/core-heavy structure to layered modules.
+When touching older code, use this mapping:
+
+- Foundational and shared domain types/utilities: `repaddu_base`
+- Analysis domain logic (graph/view/LSP): `repaddu_analysis`
+- Infrastructure adapters:
+  - Filesystem/binary detection: `repaddu_io`
+  - Grouping/filter planning: `repaddu_grouping`
+  - Output/report formatting: `repaddu_format`
+  - Console/UI adapters: `repaddu_ui`
+- Application orchestration and CLI policy: `repaddu_cli`
+- Entrypoint executable: `src/main.cpp` (thin handoff to CLI layer)
+
+Current compatibility targets and wrappers remain in place during migration:
+- `repaddu_core` is a compatibility aggregate target.
+- Compatibility headers under `include/repaddu/*.h` are preserved while files are
+  incrementally relocated (for example `include/repaddu/app/*`,
+  `include/repaddu/format/*`).
+
+Before and after moving code, validate affected test scopes from `TEST_INFO.txt`.
+
 ## Quick start
 
 ```bash
