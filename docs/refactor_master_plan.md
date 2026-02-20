@@ -1,6 +1,7 @@
 # Refactoring Master Plan (AGENTS.md Alignment)
 
 Objective: refactor the repository so all libraries, executables, and tests align with AGENTS.md architecture constraints without breaking behavior.
+Status: completed on 2026-02-20 (all 24 tasks delivered with verification).
 
 Scope constraints:
 - Behavior compatibility is mandatory.
@@ -10,7 +11,7 @@ Scope constraints:
 
 ## Task List
 
-### 1. Define layer/package architecture contract (started)
+### 1. Define layer/package architecture contract (completed)
 Acceptance criteria:
 - Add a canonical architecture doc with package/layer definitions and allowed dependencies.
 - Document a strict dependency direction (`core -> io/grouping/format/ui -> cli -> app/bin`).
@@ -19,7 +20,7 @@ Tests:
 - `ctest --output-on-failure` (no regressions expected).
 - Manual check: doc matches actual CMake target graph.
 
-### 2. Add automated dependency-policy checker (started)
+### 2. Add automated dependency-policy checker (completed)
 Acceptance criteria:
 - Add a script that validates:
   - only allowed target edges exist;
@@ -30,7 +31,7 @@ Tests:
 - `tools/check_component_deps.sh`
 - `ctest --output-on-failure`
 
-### 3. Extract analyze-only orchestration from `app_run` (started)
+### 3. Extract analyze-only orchestration from `app_run` (completed)
 Acceptance criteria:
 - Move analyze-only flow from `src/app_run.cpp` into dedicated app module.
 - Keep output bytes and error paths unchanged.
@@ -39,7 +40,7 @@ Tests:
 - `ctest -R repaddu_test_app_run --output-on-failure`
 - `ctest -R repaddu_test_analysis --output-on-failure`
 
-### 4. Extract tag-summary rendering from app layer (started)
+### 4. Extract tag-summary rendering from app layer (completed)
 Acceptance criteria:
 - Move tag-summary report rendering into format/analysis-focused module.
 - Keep exact output structure used by analyze-only mode.

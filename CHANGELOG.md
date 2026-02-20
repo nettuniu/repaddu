@@ -121,3 +121,9 @@ Detailed changes:
   - `cmake --build build`
   - `ctest --output-on-failure`
   - `tools/check_component_deps.sh`
+- complete remaining AGENTS alignment refactor tasks (11-23), including:
+  - non-rich default UI adapter and thin entrypoint delegation module
+  - component-level README set and strengthened `TEST_INFO.txt`
+  - performance guardrails for analysis/tag/read paths with variance threshold docs
+  - `format_writer` split into focused planning/rendering/orchestration units
+  - parse-policy separation and naming normalization in CLI parsing flow
