@@ -156,3 +156,24 @@ void MyClass::privateMethod()
 
 ### filenames
 my_file.h my_file.cpp
+
+
+## Versioned delivery
+
+- Every completed goal or accepted update must end with all three delivery
+  actions: commit the tested outcome, push its branch, then create and push an
+  annotated semantic-version tag (`vMAJOR.MINOR.PATCH`) on that commit.
+- Give each distinct completed goal its own commit and tag. Do not combine
+  unrelated goals under one version.
+- Select the bump from the highest existing semantic-version tag:
+  - PATCH for fixes, documentation, maintenance, and small backward-compatible
+    updates.
+  - MINOR for completed backward-compatible features, substantial goals, and
+    significant compatible updates.
+  - MAJOR for breaking API, data, behavior, or compatibility changes.
+- Reset lower components after a MINOR or MAJOR bump. If the repository has no
+  semantic-version tag, begin at `v0.0.1` for a PATCH-only update or `v0.1.0`
+  for a completed feature.
+- Never tag incomplete or untested work, and never move or reuse a published
+  tag. Verify that both the commit and tag exist on the remote before reporting
+  completion.
