@@ -1,0 +1,2759 @@
+# REPADDU - STRATEGIC & TECHNICAL ROADMAP
+
+## 0. Nuovo obiettivo del progetto
+
+La direzione non dovrebbe più essere semplicemente:
+
+```text
+Repository
+    ↓
+Markdown files
+```
+
+ma:
+
+```text
+Repository
+    +
+Task opzionale
+    +
+Git state
+    +
+AST / symbols
+    +
+Build graph
+    +
+Security policies
+    +
+Token budget
+        ↓
+      REPADDU
+        ↓
+Portable Context
+```
+
+La nuova value proposition potrebbe essere:
+
+> **Turn any codebase into deterministic, secure and task-relevant context for humans, LLMs, agents and RAG systems.**
+
+Principio fondamentale:
+
+> **LLM optional, never required.**
+
+Repaddu deve poter funzionare completamente offline e deterministicamente.
+
+---
+
+# 1. OBIETTIVI PRINCIPALI
+
+## 1.1 Portable Context Pack
+
+**Priorità: 10/10**
+**Probabilità di valore: 95%**
+
+Mantenere quello che repaddu già fa bene, ma formalizzarlo.
+
+Input:
+
+```bash
+repaddu context -i .
+```
+
+Output:
+
+```text
+context/
+├── 000_overview.md
+├── 001_architecture.md
+├── 002_core.md
+├── 003_io.md
+├── 004_tests.md
+└── manifest.json
+```
+
+Il context pack deve essere:
+
+* deterministico;
+* versionabile;
+* riproducibile;
+* leggibile dagli umani;
+* leggibile dalle macchine;
+* indipendente dal provider;
+* utilizzabile con ChatGPT, Claude, Gemini, local LLM, RAG e agenti.
+
+### Acceptance criteria
+
+Due esecuzioni sulla stessa repository e stesso commit devono produrre lo stesso contenuto, salvo metadata esplicitamente non deterministici.
+
+---
+
+# 2. SISTEMARE IL CHUNKING
+
+## 2.1 Semantic chunking
+
+**Priorità: 10/10**
+**Probabilità: 97%**
+
+È probabilmente il primo problema tecnico da risolvere.
+
+Oggi:
+
+```text
+BigFile.cpp
+    ↓
+too large
+    ↓
+error
+```
+
+Obiettivo:
+
+```text
+BigFile.cpp
+    ↓
+AST
+    ↓
+namespace
+    ↓
+class
+    ↓
+method/function
+    ↓
+semantic chunks
+```
+
+Gerarchia di splitting:
+
+```text
+file
+ ↓
+namespace
+ ↓
+class / struct
+ ↓
+function / method
+ ↓
+statement groups
+ ↓
+line boundaries
+ ↓
+hard split, ultima risorsa
+```
+
+### Regola fondamentale
+
+Mai spezzare una funzione se esiste un'alternativa.
+
+### Metadata da preservare
+
+Ogni chunk deve conoscere:
+
+```json
+{
+    "source": "src/server.cpp",
+    "start_line": 125,
+    "end_line": 281,
+    "symbols": [
+        "Server::shutdown",
+        "Server::cleanup"
+    ]
+}
+```
+
+### Problemi
+
+* macro C/C++;
+* template enormi;
+* codice non parsabile;
+* conditional compilation;
+* parser non disponibile.
+
+### Soluzione
+
+Pipeline fallback:
+
+```text
+AST
+ ↓ fail
+heuristic parser
+ ↓ fail
+line-aware splitter
+```
+
+---
+
+# 3. TOKEN BUDGETING
+
+## 3.1 `--max-tokens`
+
+**Priorità: 10/10**
+**Probabilità: 95%**
+
+Aggiungere:
+
+```bash
+--max-tokens 50000
+```
+
+al posto di affidarsi esclusivamente a:
+
+```bash
+--max-bytes
+```
+
+Il sistema deve cercare di produrre il **miglior contesto possibile entro il budget**.
+
+Esempio:
+
+```bash
+repaddu context \
+    -i . \
+    --max-tokens 50000
+```
+
+Pipeline:
+
+```text
+candidate content
+ ↓
+importance score
+ ↓
+token cost
+ ↓
+packing algorithm
+ ↓
+50k context
+```
+
+---
+
+## 3.2 Token estimator astratto
+
+**Priorità: 8/10**
+**Probabilità: 90%**
+
+Non implementerei immediatamente tokenizer BPE complessi.
+
+Interfaccia:
+
+```cpp
+class TokenEstimator
+{
+    public:
+        virtual std::size_t estimate(
+            std::string_view text
+        ) const = 0;
+};
+```
+
+Backend iniziale:
+
+```text
+HeuristicTokenEstimator
+```
+
+Backend futuri:
+
+```text
+OpenAITokenEstimator
+ClaudeTokenEstimator
+GeminiTokenEstimator
+CustomTokenizerEstimator
+```
+
+Il core non deve conoscere OpenAI o Anthropic.
+
+---
+
+# 4. MANIFEST DI CONTESTO
+
+## 4.1 `manifest.json`
+
+**Priorità: 9.8/10**
+**Probabilità: 94%**
+
+Ogni context pack dovrebbe avere un manifest machine-readable.
+
+Esempio:
+
+```json
+{
+    "schema_version": 1,
+    "repository": "repaddu",
+    "git_commit": "ef94a21",
+    "generator": {
+        "name": "repaddu",
+        "version": "1.0"
+    },
+    "files": [
+        {
+            "path": "src/server.cpp",
+            "sha256": "...",
+            "language": "cpp",
+            "component": "network",
+            "tokens": 1834
+        }
+    ]
+}
+```
+
+### Contenuti importanti
+
+* hash;
+* commit;
+* branch opzionale;
+* language;
+* component;
+* tokens;
+* size;
+* symbols;
+* output chunk;
+* security transformations;
+* exclusion reason;
+* dependency metadata.
+
+### Utilità
+
+* benchmark;
+* CI;
+* caching;
+* dataset;
+* debugging;
+* reproducibility;
+* audit;
+* stale-context detection.
+
+---
+
+# 5. GIT-AWARE CONTEXT
+
+## 5.1 `--diff`
+
+**Priorità: 10/10**
+**Probabilità: 95%**
+
+Comando:
+
+```bash
+repaddu context \
+    --diff main
+```
+
+Deve capire:
+
+```text
+added
+modified
+deleted
+renamed
+```
+
+e generare contesto intorno ai cambiamenti.
+
+---
+
+## 5.2 PR review mode
+
+**Priorità: 10/10**
+**Probabilità: 94%**
+
+Preset:
+
+```bash
+repaddu review \
+    --base main
+```
+
+oppure:
+
+```bash
+repaddu context \
+    --preset pr-review \
+    --diff main
+```
+
+Output:
+
+```text
+000_overview.md
+001_changes.md
+002_affected_symbols.md
+003_affected_components.md
+004_related_tests.md
+005_dependency_context.md
+```
+
+Questo sarebbe estremamente utile per ChatGPT normale.
+
+---
+
+## 5.3 Context diff
+
+**Priorità: 9/10**
+**Probabilità: 87%**
+
+Non solo line diff.
+
+Produrre:
+
+```text
+Added symbols:
+    AuthManager::refreshToken
+
+Removed symbols:
+    LegacyAuth::login
+
+Changed dependencies:
+    ApiServer
+        old → LegacyAuth
+        new → AuthManager
+
+Build graph changes:
+    auth_tests now links auth_core
+```
+
+Questa è una feature molto più interessante del semplice `git diff`.
+
+---
+
+# 6. TASK-AWARE CONTEXT
+
+## 6.1 `--task`
+
+**Priorità: 10/10**
+**Probabilità: 96%**
+
+Comando:
+
+```bash
+repaddu context \
+    --task "Fix shutdown deadlock"
+```
+
+Repaddu deve capire il task abbastanza da selezionare il contesto rilevante.
+
+Non serve necessariamente un LLM.
+
+Prima versione:
+
+```text
+task text
+ ↓
+terms
+ ↓
+symbol lookup
+ ↓
+filename lookup
+ ↓
+comments/docs lookup
+ ↓
+dependency expansion
+ ↓
+tests
+ ↓
+ranking
+```
+
+---
+
+# 7. TASK PARSER DETERMINISTICO
+
+**Priorità: 9/10**
+**Probabilità: 90%**
+
+Estrarre dal task:
+
+```text
+keywords
+symbol-looking identifiers
+filenames
+components
+error strings
+technical concepts
+```
+
+Input:
+
+```text
+"Fix deadlock in Server::shutdown when database closes"
+```
+
+Output interno:
+
+```json
+{
+    "keywords": [
+        "deadlock",
+        "shutdown",
+        "database"
+    ],
+    "symbols": [
+        "Server::shutdown"
+    ]
+}
+```
+
+---
+
+# 8. RELEVANCE SCORING
+
+**Priorità: 10/10**
+**Probabilità: 94%**
+
+Costruire una vera funzione:
+
+```text
+relevance(file, task)
+```
+
+Esempio:
+
+```text
+score =
+    symbol_match            * 5
+  + exact_text_match        * 3
+  + dependency_distance     * 2
+  + changed_file_bonus      * 4
+  + test_relationship       * 2
+  + component_match         * 2
+  + filename_match          * 2
+```
+
+Non necessariamente questi numeri, ma il ranking deve essere esplicito.
+
+---
+
+# 9. EXPLAINABLE RANKING
+
+**Priorità: 9.5/10**
+**Probabilità: 92%**
+
+Ogni scelta deve essere spiegabile.
+
+Esempio:
+
+```text
+src/thread_pool.cpp
+
+relevance: 0.92
+
+included because:
+- contains ThreadPool::join
+- called by Server::shutdown
+- Server::shutdown matches task
+- referenced by shutdown_test.cpp
+```
+
+È fondamentale per:
+
+* debugging;
+* fiducia;
+* benchmark;
+* tuning;
+* capire falsi positivi.
+
+---
+
+# 10. DEPENDENCY EXPANSION
+
+**Priorità: 9.8/10**
+**Probabilità: 93%**
+
+Una volta trovato un simbolo importante:
+
+```text
+Server::shutdown
+```
+
+espandere:
+
+```text
+callers
+callees
+types
+headers
+tests
+targets
+```
+
+Esempio:
+
+```text
+Server::shutdown
+   ↓
+WorkerPool::stop
+   ↓
+ThreadPool::join
+   ↓
+Database::flush
+```
+
+---
+
+## 10.1 Dependency depth
+
+```bash
+--dependency-depth 2
+```
+
+**Priorità: 8.5/10**
+**Probabilità: 90%**
+
+Per evitare esplosioni del graph.
+
+---
+
+# 11. SYMBOL GRAPH
+
+**Priorità: 10/10**
+**Probabilità: 92%**
+
+Creare un modello interno:
+
+```text
+Symbol
+    name
+    kind
+    file
+    lines
+    namespace
+    parent
+```
+
+Tipi:
+
+```text
+class
+struct
+function
+method
+enum
+variable
+namespace
+type alias
+```
+
+---
+
+# 12. CALL GRAPH
+
+**Priorità: 9.5/10**
+**Probabilità: 86%**
+
+Relazioni:
+
+```text
+A calls B
+B calls C
+C accesses D
+```
+
+È particolarmente potente per task:
+
+```text
+deadlock
+crash
+resource lifecycle
+security review
+ownership
+performance
+```
+
+### Difficoltà
+
+C++ virtual dispatch e function pointers rendono il call graph non perfetto.
+
+Non promettere precisione assoluta.
+
+Meglio:
+
+```text
+confirmed edge
+probable edge
+unknown/dynamic edge
+```
+
+---
+
+# 13. INCLUDE GRAPH
+
+**Priorità: 9/10**
+**Probabilità: 92%**
+
+Per C/C++:
+
+```text
+foo.cpp
+ ↓
+foo.hpp
+ ↓
+bar.hpp
+ ↓
+types.hpp
+```
+
+Utilissimo per:
+
+* architecture;
+* coupling;
+* dependency analysis;
+* include bloat;
+* context expansion.
+
+---
+
+# 14. C++ SPECIALIZATION
+
+Questa dovrebbe diventare una delle caratteristiche distintive.
+
+## 14.1 Clang AST
+
+**Priorità: 9.7/10**
+**Probabilità: 90%**
+
+Espandere fortemente l'integrazione esistente.
+
+Estrarre:
+
+```text
+symbols
+references
+calls
+inheritance
+templates
+types
+source ranges
+```
+
+---
+
+# 15. `compile_commands.json`
+
+**Priorità: 10/10**
+**Probabilità: 92%**
+
+Questa la considero fondamentale per C++ serio.
+
+Utilizzare:
+
+```text
+compile_commands.json
+```
+
+per conoscere realmente:
+
+```text
+include paths
+defines
+compiler flags
+language standard
+translation units
+```
+
+Senza questi dati un parser C++ può interpretare male una quantità enorme di codice.
+
+---
+
+# 16. CMAKE TARGET GRAPH
+
+**Priorità: 10/10**
+**Probabilità: 89%**
+
+Output:
+
+```text
+repaddu
+└── repaddu_cli
+    ├── repaddu_grouping
+    ├── repaddu_analysis
+    ├── repaddu_io
+    └── repaddu_format
+```
+
+Per ogni target:
+
+```text
+sources
+include dirs
+defines
+linked targets
+libraries
+tests
+```
+
+Questa è vera informazione architetturale.
+
+---
+
+# 17. TEST RELATIONSHIP DISCOVERY
+
+**Priorità: 9.3/10**
+**Probabilità: 87%**
+
+Quando selezioni:
+
+```text
+src/server.cpp
+```
+
+repaddu dovrebbe provare a trovare:
+
+```text
+tests/server_test.cpp
+tests/shutdown_test.cpp
+```
+
+Scoring tramite:
+
+* naming;
+* symbol references;
+* build targets;
+* CMake tests;
+* coverage data opzionale.
+
+---
+
+# 18. CONTEXT LEVELS
+
+**Priorità: 9.5/10**
+**Probabilità: 94%**
+
+Interfaccia:
+
+```bash
+--context-level overview
+--context-level standard
+--context-level deep
+```
+
+### Overview
+
+```text
+tree
+architecture
+build targets
+important symbols
+```
+
+### Standard
+
+```text
+overview
++
+public interfaces
++
+important implementations
++
+tests
+```
+
+### Deep
+
+```text
+standard
++
+expanded implementations
++
+dependency context
++
+secondary files
+```
+
+Perfetto per chat web.
+
+---
+
+# 19. PRESET CHATGPT
+
+**Priorità: 9/10**
+**Probabilità: 93%**
+
+```bash
+--preset chatgpt
+```
+
+Configurazione consigliata automaticamente.
+
+Output dovrebbe dire:
+
+```text
+Upload first:
+1. 000_overview.md
+2. 001_architecture.md
+
+Then:
+3. 002_core.md
+4. 003_io.md
+...
+```
+
+---
+
+# 20. PRESET ARCHITECTURE REVIEW
+
+**Priorità: 9/10**
+**Probabilità: 91%**
+
+```bash
+--preset architecture-review
+```
+
+Priorità a:
+
+```text
+directory tree
+components
+targets
+interfaces
+dependencies
+cycles
+public APIs
+```
+
+Ridurre implementazioni irrilevanti.
+
+---
+
+# 21. PRESET SECURITY REVIEW
+
+**Priorità: 9/10**
+**Probabilità: 89%**
+
+```bash
+--preset security-review
+```
+
+Priorità a:
+
+```text
+networking
+authentication
+authorization
+crypto
+filesystem
+serialization
+input parsing
+config
+secrets
+```
+
+---
+
+# 22. PRESET BUG ANALYSIS
+
+**Priorità: 9.5/10**
+**Probabilità: 90%**
+
+```bash
+--preset bug-analysis \
+--task "Crash when shutting down"
+```
+
+Priorità a:
+
+```text
+matching symbols
+callers/callees
+error handling
+tests
+recent changes
+```
+
+---
+
+# 23. PRESET RAG
+
+**Priorità: 8/10**
+**Probabilità: 85%**
+
+```bash
+--preset rag
+```
+
+Output JSONL con chunk semantici e metadata completi.
+
+---
+
+# 24. SECURITY GATEWAY
+
+**Priorità: 9.5/10**
+**Probabilità: 93%**
+
+Portare `--redact-pii` molto più avanti.
+
+---
+
+## 24.1 Secret scanner
+
+Cercare:
+
+```text
+API keys
+private keys
+JWT
+AWS credentials
+GitHub tokens
+password-like strings
+database URLs
+connection strings
+certificates
+```
+
+---
+
+## 24.2 Security profiles
+
+```bash
+--security-profile relaxed
+--security-profile standard
+--security-profile strict
+```
+
+**Priorità: 8.5/10**
+**Probabilità: 91%**
+
+---
+
+## 24.3 Security report
+
+```text
+Security sanitization report
+
+3 potential API keys redacted
+12 email addresses redacted
+4 IP addresses redacted
+
+Excluded:
+.env
+prod.pem
+credentials.json
+```
+
+Mai riportare il valore segreto.
+
+---
+
+# 25. POLICY FILE
+
+**Priorità: 9/10**
+**Probabilità: 87%**
+
+Esempio:
+
+```yaml
+security:
+    exclude:
+        - "**/.env"
+        - "**/*.pem"
+        - "**/credentials/**"
+
+    redact:
+        emails: true
+        ip_addresses: true
+        api_keys: true
+```
+
+Utilissimo in azienda.
+
+---
+
+# 26. NOISE DETECTION
+
+**Priorità: 9/10**
+**Probabilità: 95%**
+
+Rilevare automaticamente:
+
+```text
+node_modules
+vendor
+third_party
+build
+dist
+coverage
+.generated
+generated
+cache
+package lock files
+minified JS
+compiled outputs
+```
+
+---
+
+# 27. GENERATED CODE DETECTION
+
+**Priorità: 8.5/10**
+**Probabilità: 89%**
+
+Riconoscere header tipo:
+
+```text
+DO NOT EDIT
+Generated by...
+Automatically generated...
+```
+
+Abbassare relevance score o escludere.
+
+---
+
+# 28. VENDORED CODE DETECTION
+
+**Priorità: 8.5/10**
+**Probabilità: 90%**
+
+Separare codice proprio da dipendenze copiate nel repository.
+
+Molto utile perché gli LLM non dovrebbero sprecare context su SQLite, protobuf o librerie vendored se il task riguarda il codice applicativo.
+
+---
+
+# 29. DUPLICATE CONTENT DETECTION
+
+**Priorità: 8/10**
+**Probabilità: 84%**
+
+Hash esatti e near-duplicate opzionali.
+
+Se due artifact contengono praticamente lo stesso file, non duplicarlo nel context.
+
+---
+
+# 30. IMPORTANCE SCORING
+
+**Priorità: 9/10**
+**Probabilità: 91%**
+
+Ogni file deve avere una priorità indipendente dal task.
+
+Possibili segnali:
+
+```text
+build target membership
+number of incoming dependencies
+public header
+entry point
+git activity
+test coverage
+component centrality
+documentation importance
+```
+
+Poi:
+
+```text
+final relevance =
+    static importance
+  + task relevance
+```
+
+---
+
+# 31. GIT ACTIVITY SIGNALS
+
+**Priorità: 7.5/10**
+**Probabilità: 78%**
+
+Usare opzionalmente:
+
+```text
+recent modifications
+change frequency
+files frequently modified together
+```
+
+Interessante per capire coupling reale.
+
+Non deve però dominare il ranking.
+
+---
+
+# 32. CHANGE COUPLING
+
+**Priorità: 8.5/10**
+**Probabilità: 82%**
+
+Se:
+
+```text
+A.cpp
+B.cpp
+```
+
+vengono modificati insieme nel 90% dei commit, potrebbe esserci una relazione architetturale non evidente.
+
+Ottimo dato secondario.
+
+---
+
+# 33. CONTEXT IR
+
+Questa è probabilmente la modifica architetturale più importante.
+
+**Priorità: 10/10**
+**Probabilità: 94%**
+
+Non fare:
+
+```text
+filesystem → markdown
+```
+
+Fare:
+
+```text
+filesystem
+ ↓
+Context IR
+ ↓
+Markdown
+JSONL
+HTML
+MCP
+RAG
+```
+
+---
+
+## 33.1 Modello Context IR
+
+Esempio concettuale:
+
+```text
+Repository
+Component
+File
+Symbol
+Relation
+BuildTarget
+Test
+Chunk
+SecurityFinding
+GitChange
+```
+
+Relazioni:
+
+```text
+contains
+depends_on
+calls
+includes
+inherits
+tests
+modified_by
+belongs_to
+```
+
+Questo è il vero cuore futuro di repaddu.
+
+---
+
+# 34. CONTEXT GRAPH
+
+**Priorità: 9.5/10**
+**Probabilità: 90%**
+
+Context IR rappresentabile come graph:
+
+```text
+Component
+ ↓ contains
+File
+ ↓ defines
+Symbol
+ ↓ calls
+Symbol
+ ↓ belongs_to
+Target
+```
+
+Il context pack diventa una proiezione del graph.
+
+---
+
+# 35. PLUGGABLE ANALYZERS
+
+**Priorità: 9/10**
+**Probabilità: 90%**
+
+Architettura:
+
+```text
+IAnalyzer
+├── CppAnalyzer
+├── PythonAnalyzer
+├── RustAnalyzer
+└── GenericAnalyzer
+```
+
+Il core non deve conoscere dettagli linguistici.
+
+---
+
+# 36. PLUGGABLE RANKERS
+
+**Priorità: 9/10**
+**Probabilità: 89%**
+
+```text
+IRanker
+├── DeterministicRanker
+├── SemanticRanker
+└── LLMRanker
+```
+
+Default:
+
+```text
+DeterministicRanker
+```
+
+---
+
+# 37. EMBEDDINGS OPZIONALI
+
+**Priorità: 7.5/10**
+**Probabilità: 80%**
+
+Non partirei da qui.
+
+Possibile modalità:
+
+```bash
+--ranking semantic
+```
+
+con modello locale.
+
+Serve per task astratti:
+
+```text
+"find authentication lifecycle code"
+```
+
+quando nessun simbolo contiene `authentication`.
+
+---
+
+# 38. LLM RERANKER OPZIONALE
+
+**Priorità: 7/10**
+**Probabilità: 78%**
+
+Solo dopo il ranking deterministico.
+
+Pipeline:
+
+```text
+5000 files
+ ↓ deterministic ranking
+80 candidates
+ ↓ optional LLM
+20 best
+```
+
+Mai:
+
+```text
+5000 files
+ ↓ LLM
+```
+
+---
+
+# 39. INCREMENTAL INDEX
+
+**Priorità: 9/10**
+**Probabilità: 89%**
+
+Cache:
+
+```text
+.repaddu/
+    index/
+```
+
+Se un file non cambia:
+
+```text
+hash same
+    ↓
+reuse AST
+reuse symbols
+reuse embeddings
+reuse dependency data
+```
+
+Questo diventa fondamentale quando l'analisi cresce.
+
+---
+
+# 40. CONTENT-ADDRESSABLE CACHE
+
+**Priorità: 8.5/10**
+**Probabilità: 87%**
+
+Usare hash dei file/chunk come chiavi.
+
+Vantaggi:
+
+```text
+dedup
+incremental builds
+CI caching
+reproducibility
+```
+
+---
+
+# 41. INVALIDATION GRAPH
+
+**Priorità: 8/10**
+**Probabilità: 82%**
+
+Se cambia:
+
+```text
+foo.hpp
+```
+
+potrebbero essere invalidati:
+
+```text
+foo.cpp
+bar.cpp
+target X
+dependency analysis
+```
+
+Non necessariamente tutta la repository.
+
+---
+
+# 42. PERFORMANCE
+
+Ottimizzare solo dopo avere metriche.
+
+## Parallel parsing
+
+**Priorità: 8/10**
+**Probabilità: 88%**
+
+Ha senso.
+
+## mmap
+
+**Priorità: 4/10**
+**Probabilità di impatto reale: 40%**
+
+Solo se profiling dimostra che la lettura è un collo di bottiglia.
+
+## Zero-copy
+
+**Priorità: 3/10**
+**Probabilità: 30%**
+
+Deprioritizzare.
+
+---
+
+# 43. BENCHMARK INTERNI
+
+**Priorità: 10/10**
+**Probabilità: 98%**
+
+Questa è obbligatoria.
+
+Creare repository fixture:
+
+```text
+small
+medium
+large
+huge
+cpp-heavy
+mixed-language
+security-sensitive
+generated-heavy
+```
+
+Misurare:
+
+```text
+scan time
+analysis time
+memory
+output tokens
+number of selected files
+cache hit ratio
+```
+
+---
+
+# 44. LLM QUALITY BENCHMARK
+
+**Priorità: 10/10**
+**Probabilità: 96%**
+
+Test:
+
+```text
+same repository
+same task
+same model
+```
+
+A:
+
+```text
+raw files
+```
+
+B:
+
+```text
+current repaddu
+```
+
+C:
+
+```text
+task-aware repaddu
+```
+
+Metriche:
+
+```text
+answer correctness
+task success
+tokens
+latency
+hallucinations
+missing dependencies
+```
+
+Questo serve per dimostrare che il progetto ha valore.
+
+---
+
+# 45. CONTEXT RECALL METRIC
+
+**Priorità: 9.5/10**
+**Probabilità: 92%**
+
+Per ogni benchmark sapere quali file erano realmente necessari.
+
+Misurare:
+
+```text
+relevant files included / relevant files total
+```
+
+Esempio:
+
+```text
+recall = 9 / 10 = 90%
+```
+
+---
+
+# 46. CONTEXT PRECISION
+
+**Priorità: 9.5/10**
+**Probabilità: 92%**
+
+Misurare:
+
+```text
+relevant selected files / all selected files
+```
+
+Se selezioni 100 file e solo 10 sono utili, il ranking è pessimo.
+
+---
+
+# 47. TOKEN EFFICIENCY
+
+**Priorità: 10/10**
+**Probabilità: 96%**
+
+Metrica:
+
+```text
+task success / tokens supplied
+```
+
+Obiettivo reale di repaddu:
+
+> ottenere la stessa o migliore qualità usando meno contesto.
+
+---
+
+# 48. GOLDEN CONTEXT TESTS
+
+**Priorità: 9/10**
+**Probabilità: 91%**
+
+Per task noti:
+
+```text
+task:
+"Fix shutdown crash"
+
+expected:
+Server.cpp
+Lifecycle.cpp
+WorkerPool.cpp
+shutdown_tests.cpp
+```
+
+Il ranking deve includerli.
+
+---
+
+# 49. DETERMINISM TESTS
+
+**Priorità: 9/10**
+**Probabilità: 95%**
+
+Stessa:
+
+```text
+repository
+config
+commit
+```
+
+deve produrre lo stesso:
+
+```text
+manifest
+ranking
+chunks
+ordering
+```
+
+---
+
+# 50. OUTPUT PROVENANCE
+
+**Priorità: 9/10**
+**Probabilità: 90%**
+
+Ogni chunk deve poter dire esattamente:
+
+```text
+original file
+original hash
+line range
+transformations
+security redactions
+```
+
+Fondamentale per fidarsi del risultato.
+
+---
+
+# 51. LINE-PRESERVING MODE
+
+**Priorità: 8/10**
+**Probabilità: 85%**
+
+Quando possibile preservare numeri di linea.
+
+Permette all'LLM di rispondere:
+
+```text
+src/server.cpp:184
+```
+
+utile per review manuali.
+
+---
+
+# 52. SOURCE MAP
+
+**Priorità: 8.5/10**
+**Probabilità: 88%**
+
+Se un chunk combina più file:
+
+```text
+output lines 120-220
+    ↓
+src/foo.cpp:10-110
+```
+
+Tracciamento preciso.
+
+---
+
+# 53. ARCHITECTURE REPORT
+
+**Priorità: 9/10**
+**Probabilità: 90%**
+
+Generare:
+
+```text
+components
+build targets
+dependency graph
+cycles
+entry points
+public interfaces
+tests
+```
+
+Invece di obbligare l'LLM a ricostruire tutto.
+
+---
+
+# 54. DEPENDENCY CYCLE DETECTION
+
+**Priorità: 8.5/10**
+**Probabilità: 86%**
+
+Esempio:
+
+```text
+core
+ ↓
+storage
+ ↓
+network
+ ↓
+core
+```
+
+Segnalazione automatica.
+
+---
+
+# 55. LAYER VIOLATION CHECK
+
+**Priorità: 8/10**
+**Probabilità: 82%**
+
+Se configuri:
+
+```yaml
+layers:
+    - base
+    - analysis
+    - io
+    - cli
+```
+
+repaddu può segnalare reverse dependencies.
+
+Questo porta il progetto verso architecture tooling.
+
+---
+
+# 56. PUBLIC API EXTRACTION
+
+**Priorità: 8.8/10**
+**Probabilità: 86%**
+
+Separare:
+
+```text
+public interfaces
+```
+
+da:
+
+```text
+implementation details
+```
+
+Molto utile per overview context.
+
+---
+
+# 57. ENTRY POINT DETECTION
+
+**Priorità: 8.5/10**
+**Probabilità: 88%**
+
+Trovare:
+
+```text
+main()
+CLI commands
+server startup
+library public entrypoints
+```
+
+Sono ottimi punti da cui iniziare il contesto.
+
+---
+
+# 58. CONFIGURATION SURFACE ANALYSIS
+
+**Priorità: 8/10**
+**Probabilità: 82%**
+
+Individuare:
+
+```text
+CLI options
+environment variables
+config files
+compile flags
+```
+
+Utile per comprendere comportamento e deployment.
+
+---
+
+# 59. ERROR PATH ANALYSIS
+
+**Priorità: 8/10**
+**Probabilità: 78%**
+
+Per task bug/security:
+
+```text
+throws
+returns error
+logs error
+exit codes
+```
+
+Potrebbe diventare una analysis view.
+
+---
+
+# 60. TODO / FIXME EVOLUTION
+
+Feature già presente, ma espandibile.
+
+**Priorità: 7.5/10**
+**Probabilità: 82%**
+
+Produrre:
+
+```text
+technical debt map
+```
+
+raggruppata per:
+
+```text
+component
+age
+author
+severity
+```
+
+Git history opzionale.
+
+---
+
+# 61. HANDOFF PACK
+
+**Priorità: 8.5/10**
+**Probabilità: 85%**
+
+Preset:
+
+```bash
+--preset agent-handoff
+```
+
+Output:
+
+```text
+architecture
+current changes
+relevant symbols
+known issues
+tests
+manifest
+```
+
+Da passare da un agente all'altro.
+
+---
+
+# 62. CI MODE
+
+**Priorità: 9/10**
+**Probabilità: 89%**
+
+Comando:
+
+```bash
+repaddu ci
+```
+
+Produce artifact del commit.
+
+Possibili use case:
+
+```text
+PR context artifact
+architecture snapshot
+security-sanitized context
+RAG dataset update
+```
+
+---
+
+# 63. CONTEXT ARTIFACT PER RELEASE
+
+**Priorità: 7.5/10**
+**Probabilità: 78%**
+
+Ogni release potrebbe avere:
+
+```text
+repaddu-context-v1.8.tar.gz
+```
+
+contenente una rappresentazione comprensibile della codebase.
+
+Interessante per audit e archiviazione.
+
+---
+
+# 64. MCP SERVER
+
+**Priorità iniziale: 7/10**
+**Priorità dopo Context IR: 9.5/10**
+**Probabilità finale: 90%**
+
+Non implementarlo troppo presto.
+
+Tool interessanti:
+
+```text
+get_context_for_task
+get_symbol
+get_symbol_dependencies
+get_component
+get_build_target
+get_change_context
+get_security_filtered_context
+```
+
+Tool poco interessanti:
+
+```text
+read_file
+list_directory
+```
+
+Claude/Codex li hanno già.
+
+---
+
+# 65. QUERY MODE
+
+**Priorità: 9/10**
+**Probabilità: 88%**
+
+```bash
+repaddu query "Server::shutdown"
+```
+
+Output:
+
+```text
+definition
+references
+callers
+callees
+target
+component
+tests
+```
+
+Potrebbe diventare molto utile anche senza LLM.
+
+---
+
+# 66. IMPACT ANALYSIS
+
+**Priorità: 9.5/10**
+**Probabilità: 89%**
+
+```bash
+repaddu impact Server::shutdown
+```
+
+Output:
+
+```text
+Direct callers
+Potential affected components
+Tests
+Build targets
+Downstream dependencies
+```
+
+Questa è una feature molto forte indipendentemente dagli LLM.
+
+---
+
+# 67. WHY COMMAND
+
+**Priorità: 8.5/10**
+**Probabilità: 86%**
+
+```bash
+repaddu why src/thread_pool.cpp \
+    --task "fix shutdown deadlock"
+```
+
+Output:
+
+```text
+Included because:
+1. defines ThreadPool::join
+2. called by Server::shutdown
+3. shutdown_test references ThreadPool
+```
+
+---
+
+# 68. STATS
+
+**Priorità: 7/10**
+**Probabilità: 82%**
+
+```bash
+repaddu stats
+```
+
+Mostrare:
+
+```text
+files
+languages
+LOC
+tokens
+components
+symbols
+targets
+tests
+dependency edges
+cycles
+generated %
+vendor %
+```
+
+---
+
+# 69. EXCLUSION REPORT
+
+**Priorità: 8/10**
+**Probabilità: 88%**
+
+Non limitarsi a escludere.
+
+Mostrare:
+
+```text
+Excluded 812 files
+
+423 generated
+216 vendor
+101 binaries
+42 too large
+30 security policy
+```
+
+Aiuta moltissimo a capire cosa sta facendo il tool.
+
+---
+
+# 70. CONFIG EXPLAIN
+
+**Priorità: 7.5/10**
+**Probabilità: 85%**
+
+```bash
+repaddu config --explain
+```
+
+Mostrare configurazione finale dopo:
+
+```text
+defaults
+project config
+CLI overrides
+```
+
+Ottimo per debugging.
+
+---
+
+# 71. SCHEMA VERSIONING
+
+**Priorità: 8.5/10**
+**Probabilità: 90%**
+
+Manifest, JSONL e Context IR devono avere:
+
+```json
+{
+    "schema_version": 1
+}
+```
+
+Fondamentale se repaddu diventa infrastruttura.
+
+---
+
+# 72. PLUGIN SYSTEM
+
+**Priorità: 7/10 oggi**
+**Probabilità futura: 82%**
+
+Solo quando le interfacce sono mature.
+
+Possibili plugin:
+
+```text
+language analyzer
+security scanner
+ranker
+formatter
+token estimator
+build system analyzer
+```
+
+Non introdurlo troppo presto.
+
+---
+
+# 73. PYTHON ANALYZER
+
+**Priorità: 7/10**
+**Probabilità: 80%**
+
+Dopo aver consolidato C++.
+
+---
+
+# 74. RUST ANALYZER
+
+**Priorità: 7.5/10**
+**Probabilità: 82%**
+
+Rust potrebbe essere interessante grazie a Cargo metadata.
+
+Ma non disperdere lo sviluppo iniziale.
+
+---
+
+# 75. JS/TS ANALYZER
+
+**Priorità: 6.5/10**
+**Probabilità: 76%**
+
+Mercato enorme, ma tool ecosystem già molto competitivo.
+
+Prima costruire il vantaggio C++.
+
+---
+
+# 76. BUILD SYSTEM: CARGO
+
+**Priorità: 7/10**
+**Probabilità: 83%**
+
+Cargo espone metadata molto strutturati.
+
+Buona seconda integrazione dopo CMake.
+
+---
+
+# 77. BUILD SYSTEM: BAZEL
+
+**Priorità: 6.5/10**
+**Probabilità: 72%**
+
+Potente ma molto complesso.
+
+Solo dopo avere utenti reali che lo chiedono.
+
+---
+
+# 78. BUILD SYSTEM: MESON
+
+**Priorità: 6/10**
+**Probabilità: 70%**
+
+Bassa priorità rispetto a CMake/Cargo.
+
+---
+
+# 79. BUILD SYSTEM: NPM
+
+**Priorità: 6/10**
+**Probabilità: 74%**
+
+Facile da implementare parzialmente, ma basso vantaggio competitivo.
+
+---
+
+# 80. WEB / GUI
+
+**Priorità: 2/10**
+**Probabilità che sia importante presto: 20%**
+
+Non farla.
+
+---
+
+# 81. TUI
+
+**Priorità: 3/10**
+**Probabilità: 30%**
+
+Una progress bar semplice va bene.
+
+Una TUI complessa no.
+
+---
+
+# 82. WATCH MODE
+
+**Priorità: 7.5/10**
+**Probabilità: 82%**
+
+Dopo incremental index:
+
+```bash
+repaddu watch
+```
+
+Aggiorna automaticamente indice/context quando cambiano file.
+
+Interessante per agent integrations.
+
+---
+
+# 83. DAEMON MODE
+
+**Priorità: 6.5/10**
+**Probabilità: 75%**
+
+Solo dopo MCP/query server.
+
+---
+
+# 84. REPOSITORY FINGERPRINT
+
+**Priorità: 8/10**
+**Probabilità: 84%**
+
+Generare un fingerprint basato su:
+
+```text
+commit
+config
+file hashes
+analyzer versions
+```
+
+Permette di sapere immediatamente se due context pack rappresentano lo stesso stato.
+
+---
+
+# 85. STALE CONTEXT DETECTION
+
+**Priorità: 8.5/10**
+**Probabilità: 88%**
+
+```bash
+repaddu verify context/
+```
+
+Output:
+
+```text
+Context created from commit X
+Current repository commit Y
+
+17 source files changed
+context is stale
+```
+
+Molto utile.
+
+---
+
+# 86. CONTEXT REPRODUCTION
+
+**Priorità: 8/10**
+**Probabilità: 86%**
+
+Dal manifest:
+
+```bash
+repaddu reproduce manifest.json
+```
+
+per provare a rigenerare esattamente lo stesso artifact.
+
+---
+
+# 87. CONTEXT SIGNING
+
+**Priorità: 5/10**
+**Probabilità: 55%**
+
+Futuro enterprise.
+
+Firmare manifest/context artifact.
+
+Potenzialmente utile per audit ma assolutamente non prioritario.
+
+---
+
+# 88. SBOM INTEGRATION
+
+**Priorità: 6/10**
+**Probabilità: 65%**
+
+Ingest opzionale di SBOM per capire dipendenze esterne.
+
+Interessante per security context.
+
+---
+
+# 89. CODE OWNERSHIP CONTEXT
+
+**Priorità: 6.5/10**
+**Probabilità: 70%**
+
+Leggere CODEOWNERS e Git history.
+
+Può essere utile per report aziendali, meno per LLM context.
+
+---
+
+# 90. LICENSE AWARENESS
+
+**Priorità: 6.5/10**
+**Probabilità: 68%**
+
+Riconoscere codice vendored/licenze e poter escludere determinati componenti dall'export.
+
+Interessante in ambiente enterprise.
+
+---
+
+# ROADMAP CONCRETA
+
+## PHASE 0 - Baseline e misurazione
+
+**Voto: 10/10**
+**Probabilità: 99%**
+
+Prima di nuove feature:
+
+```text
+benchmark attuali
+golden outputs
+performance baseline
+quality baseline
+```
+
+Deliverable:
+
+```text
+benchmarks/
+eval/
+fixtures/
+```
+
+Durata concettuale: piccola, ma fondamentale.
+
+---
+
+# PHASE 1 - Context Pack v2
+
+**Voto: 10/10**
+**Probabilità: 97%**
+
+Implementare:
+
+1. semantic chunking;
+2. `--max-tokens`;
+3. manifest;
+4. source maps;
+5. deterministic hashes;
+6. exclusion report;
+7. generated/vendor detection.
+
+Obiettivo:
+
+> rendere eccellente il prodotto che già esiste.
+
+---
+
+# PHASE 2 - Git Context
+
+**Voto: 9.8/10**
+**Probabilità: 95%**
+
+Implementare:
+
+```text
+--diff
+--base
+--changed
+PR review preset
+context diff
+```
+
+Questa fase potrebbe già creare forte utilità quotidiana.
+
+---
+
+# PHASE 3 - Task-aware deterministic engine
+
+**Voto: 10/10**
+**Probabilità: 95%**
+
+Implementare:
+
+```text
+--task
+task parser
+symbol lookup
+ranking
+explainability
+dependency expansion
+token-aware selection
+```
+
+Nessun LLM richiesto.
+
+---
+
+# PHASE 4 - C++ Intelligence
+
+**Voto: 10/10**
+**Probabilità: 92%**
+
+Implementare:
+
+```text
+Clang AST
+compile_commands.json
+symbol graph
+include graph
+call graph
+inheritance
+```
+
+Questa fase crea forte differenziazione.
+
+---
+
+# PHASE 5 - CMake Intelligence
+
+**Voto: 9.8/10**
+**Probabilità: 90%**
+
+Implementare:
+
+```text
+target graph
+sources
+linked targets
+defines
+include dirs
+test targets
+```
+
+Risultato:
+
+```text
+source graph
++
+build graph
+```
+
+---
+
+# PHASE 6 - Security Gateway
+
+**Voto: 9.5/10**
+**Probabilità: 91%**
+
+Implementare:
+
+```text
+secret detection
+security profiles
+policy files
+sanitization report
+allow/deny rules
+```
+
+Questo potrebbe aprire un use case completamente indipendente dagli agenti.
+
+---
+
+# PHASE 7 - Incremental engine
+
+**Voto: 9/10**
+**Probabilità: 90%**
+
+Implementare:
+
+```text
+index
+hash cache
+incremental AST
+graph invalidation
+watch mode
+```
+
+---
+
+# PHASE 8 - Query/Impact tooling
+
+**Voto: 9.5/10**
+**Probabilità: 90%**
+
+Comandi:
+
+```bash
+repaddu query Server::shutdown
+
+repaddu impact Server::shutdown
+
+repaddu why src/foo.cpp --task "..."
+```
+
+A questo punto repaddu diventa utile anche senza LLM.
+
+---
+
+# PHASE 9 - MCP
+
+**Voto: 9/10**
+**Probabilità: 88%**
+
+Quando Context IR e graph sono maturi:
+
+```text
+get_context_for_task
+get_symbol
+get_dependencies
+get_impact
+get_change_context
+```
+
+Questo sì che dà qualcosa di utile a Claude/Codex.
+
+---
+
+# PHASE 10 - Semantic / LLM optional extensions
+
+**Voto: 7.5/10**
+**Probabilità: 78%**
+
+Solo dopo tutto il resto:
+
+```text
+embeddings
+semantic retrieval
+LLM reranking
+LLM summarization
+```
+
+Devono essere plugin.
+
+Il core continua a funzionare senza.
+
+---
+
+# COSA NON FARE ADESSO
+
+## TUI sofisticata
+
+**Voto: 3/10**
+**Probabilità che porti valore: 25%**
+
+Rimandare.
+
+## mmap
+
+**Voto: 4/10**
+**Probabilità: 40%**
+
+Solo dopo profiling.
+
+## zero-copy
+
+**Voto: 2/10**
+**Probabilità: 25%**
+
+Non è una value proposition.
+
+## tokenizer BPE scritto da zero
+
+**Voto: 4/10**
+**Probabilità: 40%**
+
+Usare abstraction/backends.
+
+## 15 nuovi formati output
+
+**Voto: 2/10**
+**Probabilità: 20%**
+
+Markdown + JSONL sono già sufficienti per quasi tutto.
+
+## GUI
+
+**Voto: 1/10**
+**Probabilità: 10%**
+
+Non ora.
+
+---
+
+# PRIORITÀ ASSOLUTA
+
+Se dovessi ridurre questa enorme roadmap alle **10 feature migliori**, farei:
+
+| Rank | Feature                 |       Voto | Probabilità |
+| ---- | ----------------------- | ---------: | ----------: |
+| 1    | Semantic chunking       |  **10/10** |     **97%** |
+| 2    | Task-aware context      |  **10/10** |     **96%** |
+| 3    | Token-aware packing     |  **10/10** |     **95%** |
+| 4    | Git/PR context          |  **10/10** |     **95%** |
+| 5    | Context IR              |  **10/10** |     **94%** |
+| 6    | C++ semantic graph      | **9.8/10** |     **92%** |
+| 7    | CMake/build graph       | **9.8/10** |     **90%** |
+| 8    | Manifest + provenance   | **9.7/10** |     **94%** |
+| 9    | Security gateway        | **9.5/10** |     **93%** |
+| 10   | Incremental index/cache |   **9/10** |     **90%** |
+
+---
+
+# Il prodotto finale ideale
+
+Alla fine vorrei poter usare:
+
+```bash
+repaddu context \
+    --input . \
+    --task "Find the cause of the shutdown deadlock" \
+    --diff main \
+    --max-tokens 50000 \
+    --context-level standard \
+    --security-profile strict \
+    --preset chatgpt \
+    --output context/
+```
+
+e ottenere:
+
+```text
+context/
+├── 000_overview.md
+├── 001_changes.md
+├── 002_architecture.md
+├── 003_relevant_symbols.md
+├── 004_shutdown_path.md
+├── 005_dependencies.md
+├── 006_tests.md
+└── manifest.json
+```
+
+L'overview potrebbe spiegare:
+
+```text
+TASK
+
+Find the cause of the shutdown deadlock.
+
+TOP RELEVANT SYMBOLS
+
+Server::shutdown
+WorkerPool::stop
+ThreadPool::join
+Database::flush
+
+TOP RELEVANT FILES
+
+src/server.cpp              relevance 0.98
+src/thread_pool.cpp         relevance 0.95
+src/database.cpp            relevance 0.82
+tests/shutdown_tests.cpp    relevance 0.91
+
+WHY
+
+Server::shutdown directly matches the task.
+ThreadPool::join is two calls downstream.
+shutdown_tests.cpp directly invokes Server::shutdown.
+
+TOKEN BUDGET
+
+Requested: 50,000
+Used: 47,812
+
+EXCLUDED
+
+1,382 unrelated files
+218 generated files
+74 vendor files
+14 binaries
+3 files blocked by security policy
+```
+
+Quello per me sarebbe **repaddu 2.0**.
+
+Non più:
+
+```text
+repository → Markdown
+```
+
+ma:
+
+```text
+repository
+    ↓
+understand structure
+    ↓
+rank importance
+    ↓
+understand changes
+    ↓
+follow dependencies
+    ↓
+apply security policies
+    ↓
+respect token budget
+    ↓
+produce portable context
+```
+
+## Obiettivo strategico finale
+
+Repaddu non deve cercare di essere più intelligente di Claude o Codex.
+
+Deve cercare di essere **più deterministico, più strutturato, più economico e più specializzato nella preparazione del codice**.
+
+Claude/Codex possono decidere *cosa fare*.
+
+Repaddu può diventare estremamente bravo a rispondere:
+
+> **“Qual è il contesto minimo, strutturalmente corretto e verificabile che serve per farlo?”**
+
+Se arriva davvero a questo punto, valuterei il progetto **9-9.5/10 con circa 90% di confidenza sul valore tecnico**, rispetto al circa **7/10 dello stato attuale**.
