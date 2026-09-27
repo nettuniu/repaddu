@@ -55,6 +55,7 @@ target_link_libraries(repaddu_core
 add_library(repaddu_io
     src/io_traversal.cpp
     src/io_binary.cpp
+    src/io_zip.cpp
 )
 
 target_include_directories(repaddu_io
@@ -402,4 +403,9 @@ repaddu_add_test(repaddu_test_lsp_relationships tests/test_lsp_relationships.cpp
 repaddu_add_test(repaddu_test_analysis_lsp tests/test_analysis_lsp.cpp
     WITH_TEST_ROOT
     LIBS repaddu_core
+)
+
+repaddu_add_test(repaddu_test_zip tests/test_zip.cpp
+    WITH_TEST_ROOT
+    LIBS repaddu_cli repaddu_io
 )

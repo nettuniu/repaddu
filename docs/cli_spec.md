@@ -21,7 +21,7 @@ repaddu [options] --input <path> --output <path>
   - Output directory where generated files are written.
   - Optional for `--scan-languages`, `--analyze-only`, and `--init` / `--generate-config`.
 
-### Output sizing and numbering
+### Output sizing, numbering, and archiving
 - `--max-files <count>`
   - Maximum number of output files to generate.
   - Default: `0` (no limit).
@@ -31,6 +31,13 @@ repaddu [options] --input <path> --output <path>
 - `--number-width <n>`
   - Width of numeric prefix (e.g., `3` -> `000`).
   - Default: `3`.
+- `-z, --zip`
+  - Create a compressed ZIP archive containing all output files for easy upload and ingestion to an LLM.
+  - Automatically enabled if `--output` ends with `.zip`.
+  - Default: `false`.
+- `--zip-path <path>`
+  - Explicit output path for the ZIP archive (default: `<output>.zip`).
+  - Default: empty.
 
 ### Filtering and traversal
 - `--include-headers`
@@ -200,5 +207,7 @@ repaddu -i . --scan-languages
 repaddu -i . --analyze-only --extract-tags
 repaddu -i . -o out --group-by component --component-map components.json
 repaddu -i . -o out --redact-pii --max-file-size 524288
+repaddu -i . -o out --zip
+repaddu -i . -o my_context.zip
 repaddu -i . -o out --format jsonl --analysis --analysis-views symbols,dependencies
 ```

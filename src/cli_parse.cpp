@@ -363,6 +363,20 @@ namespace repaddu::cli
                 {
                 options.dryRun = true;
                 }
+            else if (arg == "-z" || arg == "--zip")
+                {
+                options.zipOutput = true;
+                }
+            else if (arg == "--zip-path")
+                {
+                std::string value;
+                if (!requireValue(value))
+                    {
+                    return { options, { core::ExitCode::invalid_usage, "--zip-path requires a value." }, "" };
+                    }
+                options.zipPath = value;
+                options.zipOutput = true;
+                }
             else if (arg == "--init" || arg == "--generate-config")
                 {
                 options.generateConfig = true;
@@ -413,6 +427,20 @@ namespace repaddu::cli
             result.output = versionText();
             result.result = { core::ExitCode::success, "" };
             return result;
+            }
+
+        if (options.outputPath.extension() == ".zip")
+            {
+            options.zipOutput = true;
+            if (options.zipPath.empty())
+                {
+                options.zipPath = options.outputPath;
+                }
+            options.outputPath = options.outputPath.parent_path() / options.outputPath.stem();
+            if (options.outputPath.empty())
+                {
+                options.outputPath = "output";
+                }
             }
 
         const core::RunResult validationResult = detail::validateParsedOptions(options);

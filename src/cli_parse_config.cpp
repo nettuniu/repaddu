@@ -106,6 +106,9 @@ namespace repaddu::cli
             getBool("isolate_docs", opt.isolateDocs);
             getBool("dry_run", opt.dryRun);
             getBool("parallel_traversal", opt.parallelTraversal);
+            getBool("zip", opt.zipOutput);
+            getBool("zip_output", opt.zipOutput);
+            getPath("zip_path", opt.zipPath);
             getStringArray("extensions", opt.extensions);
             getStringArray("exclude_extensions", opt.excludeExtensions);
 

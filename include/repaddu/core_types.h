@@ -94,6 +94,8 @@ namespace repaddu::core
         bool generateConfig = false;
         std::filesystem::path configPath = ".repaddu.json";
         bool parallelTraversal = true;
+        bool zipOutput = false;
+        std::filesystem::path zipPath;
         };
 
     struct FileEntry

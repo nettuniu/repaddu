@@ -56,6 +56,8 @@ namespace repaddu::config
             ofs << "isolate_docs: false\n";
             ofs << "dry_run: false\n";
             ofs << "parallel_traversal: true\n";
+            ofs << "zip: false\n";
+            ofs << "zip_path: \"\"\n";
             ofs << "format: markdown\n";
             ofs << "group_by: directory\n";
             ofs << "markers: fenced\n";
@@ -95,6 +97,8 @@ namespace repaddu::config
         ofs << "    \"isolate_docs\": false,\n";
         ofs << "    \"dry_run\": false,\n";
         ofs << "    \"parallel_traversal\": true,\n";
+        ofs << "    \"zip\": false,\n";
+        ofs << "    \"zip_path\": \"\",\n";
         ofs << "    \"format\": \"markdown\",\n";
         ofs << "    \"group_by\": \"directory\",\n";
         ofs << "    \"markers\": \"fenced\",\n";

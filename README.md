@@ -66,6 +66,12 @@ repaddu -i . -o out --group-by component --component-map components.json
 
 # Aggregate build-system files for a Rust repo
 repaddu -i . -o out --language rust --emit-build-files
+
+# Export and automatically create a ZIP archive for LLM ingestion
+repaddu -i . -o out --zip
+
+# Directly specify a .zip output target
+repaddu -i . -o repo_context.zip
 ```
 
 ## Component map format

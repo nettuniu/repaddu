@@ -299,6 +299,8 @@ void test_generated_json_and_yaml_defaults_are_equivalent()
     assert(fromJson.isolateDocs == fromYaml.isolateDocs);
     assert(fromJson.dryRun == fromYaml.dryRun);
     assert(fromJson.parallelTraversal == fromYaml.parallelTraversal);
+    assert(fromJson.zipOutput == fromYaml.zipOutput);
+    assert(fromJson.zipPath == fromYaml.zipPath);
     assert(fromJson.format == fromYaml.format);
     assert(fromJson.groupBy == fromYaml.groupBy);
     assert(fromJson.markers == fromYaml.markers);

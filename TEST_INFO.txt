@@ -23,12 +23,13 @@ analysis (graph/views/lsp)
   - tests/test_lsp_relationships.cpp (`ctest --test-dir build -R repaddu_test_lsp_relationships --output-on-failure`)
 
 io (traversal and binary detection)
-- Files: include/repaddu/io_traversal.h, src/io_traversal.cpp, include/repaddu/io_binary.h, src/io_binary.cpp
+- Files: include/repaddu/io_traversal.h, src/io_traversal.cpp, include/repaddu/io_binary.h, src/io_binary.cpp, include/repaddu/io_zip.h, src/io_zip.cpp
 - Tests:
   - tests/test_filtering.cpp (`ctest --test-dir build -R repaddu_test_filtering --output-on-failure`)
   - tests/test_isolate_docs.cpp (`ctest --test-dir build -R repaddu_test_isolate_docs --output-on-failure`)
   - tests/test_binary_detection.cpp (`ctest --test-dir build -R repaddu_test_binary --output-on-failure`)
   - tests/test_concurrency.cpp (`ctest --test-dir build -R repaddu_test_concurrency --output-on-failure`)
+  - tests/test_zip.cpp (`ctest --test-dir build -R repaddu_test_zip --output-on-failure`)
 
 grouping (group strategy and component map)
 - Files: include/repaddu/grouping_strategies.h, src/grouping_strategies.cpp, include/repaddu/grouping_component_map.h, src/grouping_component_map.cpp
@@ -59,6 +60,7 @@ cli/app/entrypoint (parse, bootstrap, run orchestration)
   - tests/test_dry_run.cpp (`ctest --test-dir build -R repaddu_test_dry_run --output-on-failure`)
   - tests/test_app_run.cpp (`ctest --test-dir build -R repaddu_test_app_run --output-on-failure`)
   - tests/test_analysis.cpp (`ctest --test-dir build -R repaddu_test_analysis --output-on-failure`)
+  - tests/test_zip.cpp (`ctest --test-dir build -R repaddu_test_zip --output-on-failure`)
 
 clang-backed C++ analysis (optional component)
 - Files: include/repaddu/analysis_cpp.h, src/analysis_cpp.cpp

@@ -147,6 +147,13 @@ namespace repaddu::format
                 {
                 LogInfo("[Dry Run] Would write: " + output.filename + " (" + std::to_string(output.contentBytes) + " bytes)");
                 }
+            if (options.zipOutput)
+                {
+                const std::filesystem::path zipTarget = options.zipPath.empty()
+                    ? std::filesystem::path(options.outputPath.string() + ".zip")
+                    : options.zipPath;
+                LogInfo("[Dry Run] Would write: " + zipTarget.filename().string() + " (ZIP archive)");
+                }
             LogInfo("[Dry Run] Simulation complete. No files were written.");
             return { core::ExitCode::success, "" };
             }

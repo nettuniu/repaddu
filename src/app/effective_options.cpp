@@ -20,6 +20,23 @@ namespace repaddu::app
                 effectiveOptions.buildSystem = detected.buildSystemId;
                 }
             }
+        if (effectiveOptions.outputPath.extension() == ".zip")
+            {
+            effectiveOptions.zipOutput = true;
+            if (effectiveOptions.zipPath.empty())
+                {
+                effectiveOptions.zipPath = effectiveOptions.outputPath;
+                }
+            effectiveOptions.outputPath = effectiveOptions.outputPath.parent_path() / effectiveOptions.outputPath.stem();
+            if (effectiveOptions.outputPath.empty())
+                {
+                effectiveOptions.outputPath = "output";
+                }
+            }
+        else if (effectiveOptions.zipOutput && effectiveOptions.zipPath.empty() && !effectiveOptions.outputPath.empty())
+            {
+            effectiveOptions.zipPath = effectiveOptions.outputPath.string() + ".zip";
+            }
         return effectiveOptions;
         }
     }

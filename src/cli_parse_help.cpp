@@ -38,6 +38,8 @@ namespace repaddu::cli
         out << "  --tag-patterns <path>       Load additional tag patterns from file (one per line).\n";
         out << "  --isolate-docs              Group all documentation files (*.md, *.txt) into a separate chunk.\n";
         out << "  --dry-run                   Simulate execution without writing files.\n";
+        out << "  -z, --zip                   Create a ZIP archive of the output directory for LLM ingestion.\n";
+        out << "  --zip-path <path>           Explicit output path for the ZIP archive (default: <output>.zip).\n";
         out << "  --init                      Generate a default config file (JSON or YAML by --config extension).\n";
         out << "  --config <path>             Config path to load and/or generate. Default: .repaddu.json (auto-load also checks .repaddu.yaml/.repaddu.yml).\n";
         out << "  --format <fmt>              markdown|jsonl|html. Default: markdown.\n";
@@ -61,6 +63,6 @@ namespace repaddu::cli
 
     std::string versionText()
         {
-        return "repaddu 0.1.0\n";
+        return "repaddu 0.2.0\n";
         }
     }

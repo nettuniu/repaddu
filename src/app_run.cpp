@@ -9,6 +9,7 @@
 #include "repaddu/format_writer.h"
 #include "repaddu/grouping_component_map.h"
 #include "repaddu/grouping_strategies.h"
+#include "repaddu/io_zip.h"
 
 #include <iostream>
 
@@ -96,6 +97,25 @@ namespace repaddu::app
         ui.startProgress("Writing outputs", static_cast<int>(chunks.size()));
         core::RunResult writeResult = format::writeOutputs(effectiveOptions, traversal.files, chunks, treeListing, traversal.cmakeLists, traversal.buildFiles);
         ui.endProgress();
+
+        if (writeResult.code != core::ExitCode::success)
+            {
+            return writeResult;
+            }
+
+        if (effectiveOptions.zipOutput && !effectiveOptions.dryRun)
+            {
+            const std::filesystem::path zipTarget = effectiveOptions.zipPath.empty()
+                ? std::filesystem::path(effectiveOptions.outputPath.string() + ".zip")
+                : effectiveOptions.zipPath;
+            ui.startProgress("Creating ZIP archive", 0);
+            const core::RunResult zipResult = io::createZipFromDirectory(effectiveOptions.outputPath, zipTarget);
+            ui.endProgress();
+            if (zipResult.code != core::ExitCode::success)
+                {
+                return zipResult;
+                }
+            }
 
         return writeResult;
         }
