@@ -381,6 +381,14 @@ namespace repaddu::cli
                 {
                 options.generateConfig = true;
                 }
+            else if (arg == "--emit-manifest" || arg == "--manifest")
+                {
+                options.emitManifest = true;
+                }
+            else if (arg == "--no-manifest")
+                {
+                options.emitManifest = false;
+                }
             else if (arg == "--format")
                 {
                 std::string value;

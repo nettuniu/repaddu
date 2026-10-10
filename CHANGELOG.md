@@ -127,3 +127,8 @@ Detailed changes:
   - performance guardrails for analysis/tag/read paths with variance threshold docs
   - `format_writer` split into focused planning/rendering/orchestration units
   - parse-policy separation and naming normalization in CLI parsing flow
+
+## 2026-10-10
+Main message: Context Pack v2 milestone: SHA-256 deterministic file hashing, git metadata discovery, and machine-readable context manifest (`manifest.json`).
+Detailed changes:
+- feat(manifest,crypto): add deterministic SHA-256 hashing and manifest.json generation (v0.3.0)

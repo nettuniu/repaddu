@@ -152,6 +152,12 @@ repaddu [options] --input <path> --output <path>
 - `--frontmatter`
   - Add YAML frontmatter metadata before each emitted file content block.
   - Default: `false`.
+- `--emit-manifest`
+  - Emit machine-readable context manifest `manifest.json` containing SHA-256 hashes, file metadata, and outputs.
+  - Default: `true`.
+- `--no-manifest`
+  - Disable creation of `manifest.json`.
+  - Default: `false`.
 - `--format <fmt>`
   - Output format.
   - Allowed values: `markdown`, `jsonl`, `html`.

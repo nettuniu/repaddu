@@ -58,6 +58,7 @@ namespace repaddu::config
             ofs << "parallel_traversal: true\n";
             ofs << "zip: false\n";
             ofs << "zip_path: \"\"\n";
+            ofs << "emit_manifest: true\n";
             ofs << "format: markdown\n";
             ofs << "group_by: directory\n";
             ofs << "markers: fenced\n";
@@ -99,6 +100,7 @@ namespace repaddu::config
         ofs << "    \"parallel_traversal\": true,\n";
         ofs << "    \"zip\": false,\n";
         ofs << "    \"zip_path\": \"\",\n";
+        ofs << "    \"emit_manifest\": true,\n";
         ofs << "    \"format\": \"markdown\",\n";
         ofs << "    \"group_by\": \"directory\",\n";
         ofs << "    \"markers\": \"fenced\",\n";

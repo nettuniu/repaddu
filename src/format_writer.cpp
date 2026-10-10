@@ -3,10 +3,14 @@
 #include "format_writer_alt_formats.h"
 #include "format_writer_internal.h"
 
+#include "repaddu/format_manifest.h"
+#include "repaddu/git_util.h"
 #include "repaddu/logger.h"
+#include "repaddu/sha256.h"
 
 #include <filesystem>
 #include <fstream>
+#include <map>
 #include <memory>
 
 namespace repaddu::format
@@ -140,12 +144,76 @@ namespace repaddu::format
             return { core::ExitCode::output_constraints, "Output file exceeds --max-bytes." };
             }
 
+        std::string manifestContent;
+        if (options.emitManifest)
+            {
+            ContextManifestData manifestData;
+            manifestData.schemaVersion = 1;
+            manifestData.generatorName = "repaddu";
+            manifestData.generatorVersion = std::string(core::kRepadduVersion);
+            manifestData.repositoryRoot = options.inputPath.string();
+            manifestData.gitCommit = git::detectGitCommit(options.inputPath);
+            manifestData.gitBranch = git::detectGitBranch(options.inputPath);
+
+            std::map<std::size_t, std::string> fileToChunk;
+            for (const auto& part : chunkParts)
+                {
+                for (std::size_t idx : part.fileIndices)
+                    {
+                    fileToChunk[idx] = part.filename;
+                    }
+                }
+
+            std::uintmax_t totalBytes = 0;
+            std::uintmax_t totalTokens = 0;
+            for (const auto& part : chunkParts)
+                {
+                for (std::size_t fileIndex : part.fileIndices)
+                    {
+                    if (fileIndex >= files.size())
+                        {
+                        continue;
+                        }
+                    const auto& entry = files[fileIndex];
+                    ManifestFileEntry mf;
+                    mf.path = entry.relativePath.generic_string();
+                    mf.sha256 = crypto::sha256File(entry.absolutePath);
+                    mf.sizeBytes = entry.sizeBytes;
+                    mf.tokenCount = tokenCounts[fileIndex];
+                    mf.language = entry.extensionLower;
+                    mf.fileClass = core::fileClassLabel(entry.fileClass);
+                    mf.outputChunk = fileToChunk[fileIndex];
+
+                    totalBytes += entry.sizeBytes;
+                    totalTokens += mf.tokenCount;
+                    manifestData.files.push_back(std::move(mf));
+                    }
+                }
+
+            manifestData.outputs.push_back({ overviewName, overviewBytes });
+            for (const auto& out : outputs)
+                {
+                manifestData.outputs.push_back({ out.filename, out.contentBytes });
+                }
+
+            manifestData.stats.totalFiles = manifestData.files.size();
+            manifestData.stats.totalBytes = totalBytes;
+            manifestData.stats.totalTokens = totalTokens;
+            manifestData.stats.totalOutputs = manifestData.outputs.size();
+
+            manifestContent = buildManifestJson(manifestData);
+            }
+
         if (options.dryRun)
             {
             LogInfo("[Dry Run] Would write: " + overviewName + " (" + std::to_string(overviewBytes) + " bytes)");
             for (const auto& output : outputs)
                 {
                 LogInfo("[Dry Run] Would write: " + output.filename + " (" + std::to_string(output.contentBytes) + " bytes)");
+                }
+            if (options.emitManifest)
+                {
+                LogInfo("[Dry Run] Would write: manifest.json (" + std::to_string(manifestContent.size()) + " bytes)");
                 }
             if (options.zipOutput)
                 {
@@ -290,6 +358,21 @@ namespace repaddu::format
             if (!stream)
                 {
                 return { core::ExitCode::io_failure, "Failed to flush output file." };
+                }
+            }
+
+        if (options.emitManifest)
+            {
+            const std::filesystem::path manifestPath = options.outputPath / "manifest.json";
+            std::ofstream stream(manifestPath, std::ios::binary);
+            if (!stream)
+                {
+                return { core::ExitCode::io_failure, "Failed to write manifest.json." };
+                }
+            stream << manifestContent;
+            if (!stream)
+                {
+                return { core::ExitCode::io_failure, "Failed to flush manifest.json." };
                 }
             }
 

@@ -3,14 +3,15 @@
 This file maps code areas to the tests that must be run when those areas change.
 Commands are run from the repository root using `--test-dir build` unless stated otherwise.
 
-base (core types, language profiles, logging, redaction, tokens, tags, json)
-- Files: include/repaddu/core_types.h, src/core_types.cpp, include/repaddu/language_profiles.h, src/language_profiles.cpp, include/repaddu/logger.h, src/logger.cpp, include/repaddu/pii_redactor.h, src/pii_redactor.cpp, include/repaddu/analysis_tokens.h, src/analysis_tokens.cpp, include/repaddu/analysis_tags.h, src/analysis_tags.cpp, include/repaddu/json_lite.h, src/json_lite.cpp
+base (core types, language profiles, logging, redaction, tokens, tags, json, sha256, git)
+- Files: include/repaddu/core_types.h, src/core_types.cpp, include/repaddu/language_profiles.h, src/language_profiles.cpp, include/repaddu/logger.h, src/logger.cpp, include/repaddu/pii_redactor.h, src/pii_redactor.cpp, include/repaddu/analysis_tokens.h, src/analysis_tokens.cpp, include/repaddu/analysis_tags.h, src/analysis_tags.cpp, include/repaddu/json_lite.h, src/json_lite.cpp, include/repaddu/sha256.h, src/sha256.cpp, include/repaddu/git_util.h, src/git_util.cpp
 - Tests:
   - tests/test_logging.cpp (`ctest --test-dir build -R repaddu_test_logging --output-on-failure`)
   - tests/test_pii.cpp (`ctest --test-dir build -R repaddu_test_pii --output-on-failure`)
   - tests/test_tokens.cpp (`ctest --test-dir build -R repaddu_test_tokens --output-on-failure`)
   - tests/test_tags.cpp (`ctest --test-dir build -R repaddu_test_tags --output-on-failure`)
   - tests/test_language_profiles_detection.cpp (`ctest --test-dir build -R repaddu_test_language_profiles --output-on-failure`)
+  - tests/test_sha256.cpp (`ctest --test-dir build -R repaddu_test_sha256 --output-on-failure`)
 
 analysis (graph/views/lsp)
 - Files: include/repaddu/analysis_graph.h, src/analysis_graph.cpp, include/repaddu/analysis_view.h, src/analysis_view.cpp, include/repaddu/analysis_lsp.h, src/analysis_lsp.cpp
@@ -40,11 +41,12 @@ grouping (group strategy and component map)
   - tests/test_cmake_aggregation.cpp (`ctest --test-dir build -R repaddu_test_cmake --output-on-failure`)
 
 format (writers and reports)
-- Files: include/repaddu/format_writer.h, src/format_writer.cpp, src/format_writer_internal.h, src/format_writer_markdown.cpp, src/format_writer_plan.cpp, src/format_writer_read.cpp, src/format_writer_alt_formats.cpp, src/format_tree.cpp, include/repaddu/format_tree.h, include/repaddu/format_language_report.h, src/format_language_report.cpp, include/repaddu/format_analysis_report.h, src/format_analysis_report.cpp, include/repaddu/format_analysis_json.h, src/format_analysis_json.cpp, include/repaddu/format_analysis_tags.h, include/repaddu/format/analysis_tags_report.h, src/format/analysis_tags_report.cpp
+- Files: include/repaddu/format_writer.h, src/format_writer.cpp, src/format_writer_internal.h, src/format_writer_markdown.cpp, src/format_writer_plan.cpp, src/format_writer_read.cpp, src/format_writer_alt_formats.cpp, src/format_tree.cpp, include/repaddu/format_tree.h, include/repaddu/format_language_report.h, src/format_language_report.cpp, include/repaddu/format_analysis_report.h, src/format_analysis_report.cpp, include/repaddu/format_analysis_json.h, src/format_analysis_json.cpp, include/repaddu/format_analysis_tags.h, include/repaddu/format/analysis_tags_report.h, src/format/analysis_tags_report.cpp, include/repaddu/format_manifest.h, src/format_manifest.cpp
 - Tests:
   - tests/test_frontmatter_output.cpp (`ctest --test-dir build -R repaddu_test_frontmatter_output --output-on-failure`)
   - tests/test_analysis_json.cpp (`ctest --test-dir build -R repaddu_test_analysis_json --output-on-failure`)
   - tests/test_analysis_tags_report.cpp (`ctest --test-dir build -R repaddu_test_analysis_tags_report --output-on-failure`)
+  - tests/test_manifest.cpp (`ctest --test-dir build -R repaddu_test_manifest --output-on-failure`)
 
 ui (interface and adapters)
 - Files: include/repaddu/ui_interface.h, include/repaddu/ui_console.h, src/ui_console.cpp, include/repaddu/ui_plain.h, src/ui_plain.cpp
@@ -61,6 +63,7 @@ cli/app/entrypoint (parse, bootstrap, run orchestration)
   - tests/test_app_run.cpp (`ctest --test-dir build -R repaddu_test_app_run --output-on-failure`)
   - tests/test_analysis.cpp (`ctest --test-dir build -R repaddu_test_analysis --output-on-failure`)
   - tests/test_zip.cpp (`ctest --test-dir build -R repaddu_test_zip --output-on-failure`)
+  - tests/test_manifest.cpp (`ctest --test-dir build -R repaddu_test_manifest --output-on-failure`)
 
 clang-backed C++ analysis (optional component)
 - Files: include/repaddu/analysis_cpp.h, src/analysis_cpp.cpp

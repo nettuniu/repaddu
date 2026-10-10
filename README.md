@@ -89,4 +89,5 @@ is an array of relative path prefixes.
 ## Output overview
 
 - `000_overview.md` documents the boundary markers and file layout.
+- `manifest.json` provides machine-readable metadata, SHA-256 file hashes, output mappings, and token statistics.
 - Other output files begin with a reminder to read the overview first.

@@ -56,6 +56,8 @@ namespace repaddu::cli
         out << "  --scan-languages            Scan repository and report language percentages only.\n";
         out << "  --language <id>             auto|c|cpp|rust|python. Default: auto.\n";
         out << "  --build-system <id>         auto|cmake|make|meson|bazel|cargo|npm|python. Default: auto.\n";
+        out << "  --emit-manifest             Emit machine-readable context manifest.json (default: enabled).\n";
+        out << "  --no-manifest               Disable generation of manifest.json.\n";
         out << "  -h, --help                  Show help.\n";
         out << "  --version                   Show version.\n";
         return out.str();
@@ -63,6 +65,6 @@ namespace repaddu::cli
 
     std::string versionText()
         {
-        return "repaddu 0.2.0\n";
+        return std::string("repaddu ") + std::string(core::kRepadduVersion) + "\n";
         }
     }

@@ -16,6 +16,8 @@ add_library(repaddu_base
     src/analysis_tokens.cpp
     src/analysis_tags.cpp
     src/json_lite.cpp
+    src/sha256.cpp
+    src/git_util.cpp
 )
 
 target_include_directories(repaddu_base
@@ -98,6 +100,7 @@ add_library(repaddu_format
     src/format_analysis_report.cpp
     src/format/analysis_tags_report.cpp
     src/format_analysis_json.cpp
+    src/format_manifest.cpp
 )
 
 target_include_directories(repaddu_format
@@ -409,3 +412,13 @@ repaddu_add_test(repaddu_test_zip tests/test_zip.cpp
     WITH_TEST_ROOT
     LIBS repaddu_cli repaddu_io
 )
+
+repaddu_add_test(repaddu_test_sha256 tests/test_sha256.cpp
+    LIBS repaddu_base
+)
+
+repaddu_add_test(repaddu_test_manifest tests/test_manifest.cpp
+    WITH_TEST_ROOT
+    LIBS repaddu_cli repaddu_format repaddu_base
+)
+

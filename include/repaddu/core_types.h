@@ -11,6 +11,8 @@
 
 namespace repaddu::core
     {
+    inline constexpr std::string_view kRepadduVersion = "0.3.0";
+
     enum class ExitCode : int
         {
         success = 0,
@@ -96,6 +98,7 @@ namespace repaddu::core
         bool parallelTraversal = true;
         bool zipOutput = false;
         std::filesystem::path zipPath;
+        bool emitManifest = true;
         };
 
     struct FileEntry
