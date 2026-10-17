@@ -95,6 +95,34 @@ namespace repaddu::format
             json << "    }" << (i + 1 < data.outputs.size() ? "," : "") << "\n";
             }
         json << "  ]\n";
+
+        if (data.exclusionReport.totalExcluded() > 0)
+            {
+            json << "  ,\n  \"exclusions\": {\n";
+            json << "    \"total_excluded\": " << data.exclusionReport.totalExcluded() << ",\n";
+            json << "    \"by_reason\": {\n";
+            json << "      \"binary\": " << data.exclusionReport.countBinary << ",\n";
+            json << "      \"too_large\": " << data.exclusionReport.countTooLarge << ",\n";
+            json << "      \"vendor\": " << data.exclusionReport.countVendor << ",\n";
+            json << "      \"generated\": " << data.exclusionReport.countGenerated << ",\n";
+            json << "      \"extension_filter\": " << data.exclusionReport.countExtension << ",\n";
+            json << "      \"hidden\": " << data.exclusionReport.countHidden << ",\n";
+            json << "      \"noise\": " << data.exclusionReport.countNoise << "\n";
+            json << "    },\n";
+            json << "    \"files\": [\n";
+            for (std::size_t i = 0; i < data.exclusionReport.excludedFiles.size(); ++i)
+                {
+                const auto& ex = data.exclusionReport.excludedFiles[i];
+                json << "      {\n";
+                json << "        \"path\": \"" << escapeJson(ex.relativePath.generic_string()) << "\",\n";
+                json << "        \"reason\": \"" << escapeJson(exclusionReasonLabel(ex.reason)) << "\",\n";
+                json << "        \"size_bytes\": " << ex.sizeBytes << "\n";
+                json << "      }" << (i + 1 < data.exclusionReport.excludedFiles.size() ? "," : "") << "\n";
+                }
+            json << "    ]\n";
+            json << "  }\n";
+            }
+
         json << "}\n";
 
         return json.str();

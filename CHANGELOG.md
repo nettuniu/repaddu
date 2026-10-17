@@ -132,3 +132,9 @@ Detailed changes:
 Main message: Context Pack v2 milestone: SHA-256 deterministic file hashing, git metadata discovery, and machine-readable context manifest (`manifest.json`).
 Detailed changes:
 - feat(manifest,crypto): add deterministic SHA-256 hashing and manifest.json generation (v0.3.0)
+
+## 2026-10-17
+Main message: Noise and exclusion intelligence: vendored code detection, generated code banners, and structured exclusion reporting in overview and manifest (v0.4.0).
+Detailed changes:
+- feat(noise,grouping): add noise detector, vendor/generated exclusion, and exclusion reporting (v0.4.0)
+

@@ -389,6 +389,26 @@ namespace repaddu::cli
                 {
                 options.emitManifest = false;
                 }
+            else if (arg == "--exclude-vendor")
+                {
+                options.excludeVendor = true;
+                }
+            else if (arg == "--exclude-generated")
+                {
+                options.excludeGenerated = true;
+                }
+            else if (arg == "--detect-noise")
+                {
+                options.detectNoise = true;
+                }
+            else if (arg == "--no-detect-noise")
+                {
+                options.detectNoise = false;
+                }
+            else if (arg == "--exclusion-report")
+                {
+                options.emitExclusionReport = true;
+                }
             else if (arg == "--format")
                 {
                 std::string value;

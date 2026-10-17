@@ -11,7 +11,7 @@
 
 namespace repaddu::core
     {
-    inline constexpr std::string_view kRepadduVersion = "0.3.0";
+    inline constexpr std::string_view kRepadduVersion = "0.4.0";
 
     enum class ExitCode : int
         {
@@ -99,6 +99,10 @@ namespace repaddu::core
         bool zipOutput = false;
         std::filesystem::path zipPath;
         bool emitManifest = true;
+        bool excludeVendor = false;
+        bool excludeGenerated = false;
+        bool detectNoise = true;
+        bool emitExclusionReport = false;
         };
 
     struct FileEntry

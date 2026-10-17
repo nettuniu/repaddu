@@ -95,7 +95,13 @@ namespace repaddu::app
         const std::string treeListing = format::renderTree(traversal.directories, treeFiles);
 
         ui.startProgress("Writing outputs", static_cast<int>(chunks.size()));
-        core::RunResult writeResult = format::writeOutputs(effectiveOptions, traversal.files, chunks, treeListing, traversal.cmakeLists, traversal.buildFiles);
+        core::RunResult writeResult = format::writeOutputs(effectiveOptions,
+            traversal.files,
+            chunks,
+            treeListing,
+            traversal.cmakeLists,
+            traversal.buildFiles,
+            grouped.exclusionReport);
         ui.endProgress();
 
         if (writeResult.code != core::ExitCode::success)

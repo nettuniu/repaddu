@@ -18,6 +18,7 @@ add_library(repaddu_base
     src/json_lite.cpp
     src/sha256.cpp
     src/git_util.cpp
+    src/noise_detector.cpp
 )
 
 target_include_directories(repaddu_base
@@ -421,4 +422,14 @@ repaddu_add_test(repaddu_test_manifest tests/test_manifest.cpp
     WITH_TEST_ROOT
     LIBS repaddu_cli repaddu_format repaddu_base
 )
+
+repaddu_add_test(repaddu_test_noise_detector tests/test_noise_detector.cpp
+    LIBS repaddu_base
+)
+
+repaddu_add_test(repaddu_test_exclusion_e2e tests/test_exclusion_e2e.cpp
+    WITH_TEST_ROOT
+    LIBS repaddu_cli repaddu_format repaddu_grouping repaddu_base
+)
+
 

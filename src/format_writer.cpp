@@ -20,7 +20,8 @@ namespace repaddu::format
         const std::vector<core::OutputChunk>& chunks,
         const std::string& treeListing,
         const std::vector<std::filesystem::path>& cmakeLists,
-        const std::vector<std::filesystem::path>& buildFiles)
+        const std::vector<std::filesystem::path>& buildFiles,
+        const noise::ExclusionReport& exclusionReport)
         {
         std::error_code errorCode;
         std::filesystem::create_directories(options.outputPath, errorCode);
@@ -133,11 +134,17 @@ namespace repaddu::format
             outputNames.push_back(output.filename);
             }
 
-        const std::string overviewContent = detail::overviewTemplate(overviewName,
+        std::string overviewContent = detail::overviewTemplate(overviewName,
             options.markers,
             options.emitBuildFiles,
             options.emitLinks,
             outputNames);
+        if (exclusionReport.totalExcluded() > 0)
+            {
+            overviewContent += "## Exclusion summary\n";
+            overviewContent += noise::renderExclusionSummaryText(exclusionReport);
+            overviewContent += "\n";
+            }
         const std::uintmax_t overviewBytes = static_cast<std::uintmax_t>(overviewContent.size());
         if (options.maxBytes > 0 && overviewBytes > options.maxBytes)
             {
@@ -200,6 +207,7 @@ namespace repaddu::format
             manifestData.stats.totalBytes = totalBytes;
             manifestData.stats.totalTokens = totalTokens;
             manifestData.stats.totalOutputs = manifestData.outputs.size();
+            manifestData.exclusionReport = exclusionReport;
 
             manifestContent = buildManifestJson(manifestData);
             }

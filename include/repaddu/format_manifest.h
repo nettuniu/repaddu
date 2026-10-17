@@ -2,6 +2,7 @@
 #define REPADDU_FORMAT_MANIFEST_H
 
 #include "repaddu/core_types.h"
+#include "repaddu/noise_detector.h"
 
 #include <cstddef>
 #include <cstdint>
@@ -47,6 +48,7 @@ namespace repaddu::format
         ManifestStats stats;
         std::vector<ManifestFileEntry> files;
         std::vector<ManifestOutputEntry> outputs;
+        noise::ExclusionReport exclusionReport;
         };
 
     // @note Builds formatted JSON string for context manifest

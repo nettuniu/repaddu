@@ -59,6 +59,8 @@ namespace repaddu::config
             ofs << "zip: false\n";
             ofs << "zip_path: \"\"\n";
             ofs << "emit_manifest: true\n";
+            ofs << "exclude_vendor: false\n";
+            ofs << "exclude_generated: false\n";
             ofs << "format: markdown\n";
             ofs << "group_by: directory\n";
             ofs << "markers: fenced\n";
@@ -101,6 +103,8 @@ namespace repaddu::config
         ofs << "    \"zip\": false,\n";
         ofs << "    \"zip_path\": \"\",\n";
         ofs << "    \"emit_manifest\": true,\n";
+        ofs << "    \"exclude_vendor\": false,\n";
+        ofs << "    \"exclude_generated\": false,\n";
         ofs << "    \"format\": \"markdown\",\n";
         ofs << "    \"group_by\": \"directory\",\n";
         ofs << "    \"markers\": \"fenced\",\n";

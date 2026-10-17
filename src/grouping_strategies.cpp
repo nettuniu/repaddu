@@ -302,6 +302,7 @@ namespace repaddu::grouping
             const bool documentationFile = options.isolateDocs && isDocumentationFile(entry);
             if (!options.includeBinaries && entry.isBinary)
                 {
+                result.exclusionReport.record(entry.relativePath, noise::ExclusionReason::binary, entry.sizeBytes, "binary file");
                 continue;
                 }
             
@@ -311,11 +312,25 @@ namespace repaddu::grouping
                 LogWarn("Skipping large file: " + entry.relativePath.string() + 
                         " (" + std::to_string(entry.sizeBytes) + " bytes > " + 
                         std::to_string(options.maxFileSize) + " bytes)");
+                result.exclusionReport.record(entry.relativePath, noise::ExclusionReason::too_large, entry.sizeBytes, "size exceeds threshold");
+                continue;
+                }
+
+            if (options.excludeVendor && noise::isVendorPath(entry.relativePath))
+                {
+                result.exclusionReport.record(entry.relativePath, noise::ExclusionReason::vendor, entry.sizeBytes, "vendor directory");
+                continue;
+                }
+
+            if (options.excludeGenerated && noise::isGeneratedCode(entry.absolutePath))
+                {
+                result.exclusionReport.record(entry.relativePath, noise::ExclusionReason::generated, entry.sizeBytes, "generated banner detected");
                 continue;
                 }
 
             if (!extensionAllowed(entry.extensionLower, includeExt, excludeExt))
                 {
+                result.exclusionReport.record(entry.relativePath, noise::ExclusionReason::extension_filter, entry.sizeBytes, "extension filter");
                 continue;
                 }
 
@@ -325,6 +340,7 @@ namespace repaddu::grouping
                     {
                     if (entry.fileClass != core::FileClass::header)
                         {
+                        result.exclusionReport.record(entry.relativePath, noise::ExclusionReason::extension_filter, entry.sizeBytes, "headers only filter");
                         continue;
                         }
                     }
@@ -332,6 +348,7 @@ namespace repaddu::grouping
                     {
                     if (entry.fileClass != core::FileClass::source)
                         {
+                        result.exclusionReport.record(entry.relativePath, noise::ExclusionReason::extension_filter, entry.sizeBytes, "sources only filter");
                         continue;
                         }
                     }
@@ -339,12 +356,18 @@ namespace repaddu::grouping
                     {
                     if (entry.fileClass == core::FileClass::other)
                         {
+                        result.exclusionReport.record(entry.relativePath, noise::ExclusionReason::extension_filter, entry.sizeBytes, "non-code file filtered");
                         continue;
                         }
                     }
                 }
 
             result.includedIndices.push_back(index);
+            }
+
+        if (options.emitExclusionReport && result.exclusionReport.totalExcluded() > 0)
+            {
+            LogInfo(noise::renderExclusionSummaryText(result.exclusionReport));
             }
 
         if (options.groupBy == core::GroupingMode::size)

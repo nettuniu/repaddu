@@ -58,6 +58,9 @@ namespace repaddu::cli
         out << "  --build-system <id>         auto|cmake|make|meson|bazel|cargo|npm|python. Default: auto.\n";
         out << "  --emit-manifest             Emit machine-readable context manifest.json (default: enabled).\n";
         out << "  --no-manifest               Disable generation of manifest.json.\n";
+        out << "  --exclude-vendor            Exclude vendored and third-party code.\n";
+        out << "  --exclude-generated         Exclude generated code containing DO NOT EDIT markers.\n";
+        out << "  --exclusion-report          Log detailed summary of excluded files.\n";
         out << "  -h, --help                  Show help.\n";
         out << "  --version                   Show version.\n";
         return out.str();

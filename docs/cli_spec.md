@@ -78,6 +78,15 @@ repaddu [options] --input <path> --output <path>
 - `--redact-pii`
   - Redact emails, IPs, and common secret-like patterns in emitted content.
   - Default: `false`.
+- `--exclude-vendor`
+  - Exclude vendored and third-party dependencies (`vendor/`, `node_modules/`, `third_party/`, etc.).
+  - Default: `false`.
+- `--exclude-generated`
+  - Exclude files containing standard code generator banners (`DO NOT EDIT`, `@generated`, etc.).
+  - Default: `false`.
+- `--exclusion-report`
+  - Print a detailed summary breakdown of excluded files to console/log.
+  - Default: `false`.
 
 ### Analysis and run modes
 - `--scan-languages`

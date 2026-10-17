@@ -111,6 +111,10 @@ namespace repaddu::cli
             getPath("zip_path", opt.zipPath);
             getBool("emit_manifest", opt.emitManifest);
             getBool("manifest", opt.emitManifest);
+            getBool("exclude_vendor", opt.excludeVendor);
+            getBool("exclude_generated", opt.excludeGenerated);
+            getBool("detect_noise", opt.detectNoise);
+            getBool("exclusion_report", opt.emitExclusionReport);
             getStringArray("extensions", opt.extensions);
             getStringArray("exclude_extensions", opt.excludeExtensions);
 

@@ -2,6 +2,7 @@
 #define REPADDU_FORMAT_WRITER_H
 
 #include "repaddu/core_types.h"
+#include "repaddu/noise_detector.h"
 
 #include <filesystem>
 #include <string>
@@ -14,7 +15,8 @@ namespace repaddu::format
         const std::vector<core::OutputChunk>& chunks,
         const std::string& treeListing,
         const std::vector<std::filesystem::path>& cmakeLists,
-        const std::vector<std::filesystem::path>& buildFiles);
+        const std::vector<std::filesystem::path>& buildFiles,
+        const noise::ExclusionReport& exclusionReport = {});
     }
 
 #endif // REPADDU_FORMAT_WRITER_H

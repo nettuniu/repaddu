@@ -3,6 +3,7 @@
 
 #include "repaddu/core_types.h"
 #include "repaddu/grouping_component_map.h"
+#include "repaddu/noise_detector.h"
 
 #include <optional>
 #include <vector>
@@ -13,6 +14,7 @@ namespace repaddu::grouping
         {
         std::vector<core::Group> groups;
         std::vector<std::size_t> includedIndices;
+        noise::ExclusionReport exclusionReport;
         };
 
     GroupingResult filterAndGroupFiles(const core::CliOptions& options,

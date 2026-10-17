@@ -4,3 +4,4 @@ fixtures/out/
 Testing/
 phorge_omnia/
 phorge_out/
+CMakeUserPresets.json
